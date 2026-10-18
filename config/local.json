@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "agent_id": "demo-agent",
+  "tenant_id": "demo-tenant",
+  "llm_adapter": "echo",
+  "token_budget": 20000,
+  "max_output_tokens": 128
+}

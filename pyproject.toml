@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=77,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-foundation-sdk"
+version = "0.3.0"
+description = "Framework-agnostic ports, adapters and reference runtime for agents"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = []
+
+[project.scripts]
+agentic = "agentic_sdk.developer:main"
+
+[project.optional-dependencies]
+platform = ["psycopg[binary]>=3.2,<4"]
+runtime = ["jsonschema>=4.23,<5", "httpx>=0.27,<1"]
+service = ["fastapi>=0.115,<1", "uvicorn>=0.32,<1", "jsonschema>=4.23,<5", "httpx>=0.27,<1"]
+providers = ["openai>=1.109,<3", "qdrant-client>=1.15,<2"]
+telemetry = ["opentelemetry-api>=1.37,<2", "opentelemetry-sdk>=1.37,<2", "opentelemetry-exporter-otlp-proto-http>=1.37,<2"]
+dev = ["jsonschema>=4.23,<5", "build>=1.2,<2", "ruff==0.17.1"]
+
+[tool.setuptools]
+packages = ["agentic_sdk", "agentic_sdk.contracts", "agentic_sdk.contracts.embeddings", "agentic_sdk.contracts.models", "agentic_sdk.contracts.orchestration", "agentic_sdk.contracts.retrieval", "agentic_sdk.contracts.telemetry", "agentic_sdk.contracts.tools", "agentic_sdk.core", "agentic_sdk.core.context", "agentic_sdk.core.execution", "agentic_sdk.core.harness", "agentic_sdk.core.policies", "agentic_sdk.adapters", "agentic_sdk.adapters.embeddings", "agentic_sdk.adapters.llm", "agentic_sdk.adapters.observability", "agentic_sdk.adapters.orchestration", "agentic_sdk.adapters.persistence", "agentic_sdk.adapters.retrieval", "agentic_sdk.adapters.tools", "agentic_sdk.adapters.llm.anthropic", "agentic_sdk.adapters.llm.azure_openai", "agentic_sdk.adapters.llm.openai_compatible", "agentic_sdk.services", "agentic_sdk.services.agent_host", "agentic_sdk.services.agent_registry", "agentic_sdk.services.knowledge_service", "agentic_sdk.services.model_gateway", "agentic_sdk.services.tool_gateway", "agentic_sdk.sdk", "agentic_sdk.sdk.python"]
+
+[tool.setuptools.package-dir]
+"agentic_sdk" = "src/agentic_sdk"
+"agentic_sdk.contracts" = "contracts"
+"agentic_sdk.contracts.embeddings" = "contracts/embeddings"
+"agentic_sdk.contracts.models" = "contracts/models"
+"agentic_sdk.contracts.orchestration" = "contracts/orchestration"
+"agentic_sdk.contracts.retrieval" = "contracts/retrieval"
+"agentic_sdk.contracts.telemetry" = "contracts/telemetry"
+"agentic_sdk.contracts.tools" = "contracts/tools"
+"agentic_sdk.core" = "core"
+"agentic_sdk.core.context" = "core/context"
+"agentic_sdk.core.execution" = "core/execution"
+"agentic_sdk.core.harness" = "core/harness"
+"agentic_sdk.core.policies" = "core/policies"
+"agentic_sdk.adapters" = "adapters"
+"agentic_sdk.adapters.embeddings" = "adapters/embeddings"
+"agentic_sdk.adapters.llm" = "adapters/llm"
+"agentic_sdk.adapters.observability" = "adapters/observability"
+"agentic_sdk.adapters.orchestration" = "adapters/orchestration"
+"agentic_sdk.adapters.persistence" = "adapters/persistence"
+"agentic_sdk.adapters.retrieval" = "adapters/retrieval"
+"agentic_sdk.adapters.tools" = "adapters/tools"
+"agentic_sdk.adapters.llm.anthropic" = "adapters/llm/anthropic"
+"agentic_sdk.adapters.llm.azure_openai" = "adapters/llm/azure_openai"
+"agentic_sdk.adapters.llm.openai_compatible" = "adapters/llm/openai_compatible"
+"agentic_sdk.services" = "services"
+"agentic_sdk.services.agent_host" = "services/agent_host"
+"agentic_sdk.services.agent_registry" = "services/agent_registry"
+"agentic_sdk.services.knowledge_service" = "services/knowledge_service"
+"agentic_sdk.services.model_gateway" = "services/model_gateway"
+"agentic_sdk.services.tool_gateway" = "services/tool_gateway"
+"agentic_sdk.sdk" = "sdk"
+"agentic_sdk.sdk.python" = "sdk/python"
+
+[tool.setuptools.package-data]
+agentic_sdk = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["build", "dist", "*.egg-info"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/agentic_sdk/*.py" = ["F401", "F403", "F405"]
+"adapters/anthropic.py" = ["F403"]
+"adapters/integrations.py" = ["F403"]
+"adapters/otel.py" = ["F403"]
+"adapters/qdrant.py" = ["F403"]

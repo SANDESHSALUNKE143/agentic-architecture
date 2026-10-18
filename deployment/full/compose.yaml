@@ -1,0 +1,340 @@
+{
+  "name": "agentic-full",
+  "services": {
+    "postgres": {
+      "image": "postgres:16.4",
+      "environment": {
+        "POSTGRES_DB": "platform",
+        "POSTGRES_USER": "platform",
+        "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD}"
+      },
+      "volumes": [
+        "postgres:/var/lib/postgresql/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U platform -d platform"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 20
+      },
+      "mem_limit": "1g",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    },
+    "qdrant": {
+      "image": "qdrant/qdrant:v1.15.4",
+      "environment": {
+        "QDRANT__SERVICE__API_KEY": "${QDRANT_API_KEY}"
+      },
+      "volumes": [
+        "qdrant:/qdrant/storage"
+      ],
+      "mem_limit": "2g",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    },
+    "platform": {
+      "build": {
+        "context": "../..",
+        "dockerfile": "deployment/full/Dockerfile"
+      },
+      "image": "agentic-platform:0.3.0-local",
+      "environment": {
+        "DATABASE_URL": "postgresql://platform:${POSTGRES_PASSWORD}@postgres:5432/platform",
+        "QDRANT_URL": "http://qdrant:6333",
+        "QDRANT_API_KEY": "${QDRANT_API_KEY}",
+        "PLATFORM_BINDINGS": "[{\"tenant_id\": \"example-tenant\", \"agent_id\": \"advertising-assistant\", \"token_env\": \"PLATFORM_AGENT_TOKEN\", \"permissions\": [\"registry:read\", \"registry:write\", \"knowledge:read\", \"knowledge:write\", \"model:invoke\", \"tools:invoke\", \"cost:read\"]}, {\"tenant_id\": \"isolation-test\", \"agent_id\": \"other-agent\", \"token_env\": \"PLATFORM_OTHER_TOKEN\", \"permissions\": [\"registry:read\", \"knowledge:read\", \"cost:read\"]}]",
+        "PLATFORM_AGENT_TOKEN": "${PLATFORM_AGENT_TOKEN}",
+        "PLATFORM_OTHER_TOKEN": "${PLATFORM_OTHER_TOKEN}",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector:4318",
+        "MODEL_MODE": "demo",
+        "EMBEDDING_MODE": "demo",
+        "BACKEND_MODE": "demo",
+        "DAILY_TOKEN_LIMIT": "1000000"
+      },
+      "ports": [
+        "127.0.0.1:8020:8020"
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "qdrant": {
+          "condition": "service_started"
+        },
+        "collector": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/health',timeout=5)"
+        ],
+        "interval": "10s",
+        "timeout": "6s",
+        "retries": 18
+      },
+      "read_only": true,
+      "tmpfs": [
+        "/tmp"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "mem_limit": "1g",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    },
+    "worker": {
+      "image": "agentic-platform:0.3.0-local",
+      "command": [
+        "python",
+        "-m",
+        "agentic_sdk.hosted"
+      ],
+      "environment": {
+        "DATABASE_URL": "postgresql://platform:${POSTGRES_PASSWORD}@postgres:5432/platform",
+        "QDRANT_URL": "http://qdrant:6333",
+        "QDRANT_API_KEY": "${QDRANT_API_KEY}",
+        "PLATFORM_BINDINGS": "[{\"tenant_id\": \"example-tenant\", \"agent_id\": \"advertising-assistant\", \"token_env\": \"PLATFORM_AGENT_TOKEN\", \"permissions\": [\"registry:read\", \"registry:write\", \"knowledge:read\", \"knowledge:write\", \"model:invoke\", \"tools:invoke\", \"cost:read\"]}, {\"tenant_id\": \"isolation-test\", \"agent_id\": \"other-agent\", \"token_env\": \"PLATFORM_OTHER_TOKEN\", \"permissions\": [\"registry:read\", \"knowledge:read\", \"cost:read\"]}]",
+        "PLATFORM_AGENT_TOKEN": "${PLATFORM_AGENT_TOKEN}",
+        "PLATFORM_OTHER_TOKEN": "${PLATFORM_OTHER_TOKEN}",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector:4318",
+        "MODEL_MODE": "demo",
+        "EMBEDDING_MODE": "demo",
+        "BACKEND_MODE": "demo",
+        "DAILY_TOKEN_LIMIT": "1000000"
+      },
+      "depends_on": {
+        "platform": {
+          "condition": "service_healthy"
+        }
+      },
+      "read_only": true,
+      "tmpfs": [
+        "/tmp"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "mem_limit": "1g",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0,
+      "pull_policy": "never"
+    },
+    "agentn": {
+      "image": "agentic-agentn:0.3.0-local",
+      "build": {
+        "context": "../..",
+        "dockerfile": "deployment/local/Dockerfile.agentn",
+        "additional_contexts": {
+          "agentn": "${AGENTN_SOURCE}"
+        }
+      },
+      "ports": [
+        "127.0.0.1:8010:8010"
+      ],
+      "environment": {
+        "AGENT_API_TOKEN": "${AGENT_API_TOKEN}",
+        "AGENT_CONFIG": "config/agentn-demo.json",
+        "AGENTN_BACKEND": "platform",
+        "PLATFORM_URL": "http://platform:8020",
+        "PLATFORM_AGENT_TOKEN": "${PLATFORM_AGENT_TOKEN}",
+        "LOCAL_DOCKER_PLATFORM": "1",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector:4318"
+      },
+      "volumes": [
+        "agentn:/state"
+      ],
+      "depends_on": {
+        "platform": {
+          "condition": "service_healthy"
+        }
+      },
+      "read_only": true,
+      "tmpfs": [
+        "/tmp"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "mem_limit": "1g",
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/health',timeout=3)"
+        ],
+        "interval": "10s",
+        "timeout": "6s",
+        "retries": 18
+      },
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    },
+    "collector": {
+      "image": "otel/opentelemetry-collector-contrib:0.135.0",
+      "command": [
+        "--config=/etc/otelcol/config.yaml"
+      ],
+      "volumes": [
+        "./collector.yaml:/etc/otelcol/config.yaml:ro"
+      ],
+      "mem_limit": "512m",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    },
+    "prometheus": {
+      "image": "prom/prometheus:v3.5.0",
+      "command": [
+        "--config.file=/etc/prometheus/prometheus.yml",
+        "--storage.tsdb.retention.time=7d",
+        "--storage.tsdb.retention.size=2GB"
+      ],
+      "volumes": [
+        "./prometheus.yaml:/etc/prometheus/prometheus.yml:ro",
+        "prometheus:/prometheus"
+      ],
+      "mem_limit": "1g",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    },
+    "loki": {
+      "image": "grafana/loki:3.5.5",
+      "command": [
+        "-config.file=/etc/loki/local-config.yaml"
+      ],
+      "volumes": [
+        "./loki.yaml:/etc/loki/local-config.yaml:ro",
+        "loki:/loki"
+      ],
+      "mem_limit": "1g",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    },
+    "tempo": {
+      "image": "grafana/tempo:2.8.2",
+      "command": [
+        "-config.file=/etc/tempo.yaml"
+      ],
+      "volumes": [
+        "./tempo.yaml:/etc/tempo.yaml:ro",
+        "tempo:/var/tempo"
+      ],
+      "mem_limit": "1g",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    },
+    "grafana": {
+      "image": "grafana/grafana:12.1.1",
+      "ports": [
+        "127.0.0.1:3002:3000"
+      ],
+      "environment": {
+        "GF_SECURITY_ADMIN_PASSWORD": "${GRAFANA_PASSWORD}",
+        "GF_AUTH_ANONYMOUS_ENABLED": "false",
+        "GF_USERS_ALLOW_SIGN_UP": "false"
+      },
+      "volumes": [
+        "grafana:/var/lib/grafana",
+        "./grafana:/etc/grafana/provisioning:ro",
+        "./dashboards:/var/lib/grafana/dashboards:ro"
+      ],
+      "mem_limit": "512m",
+      "restart": "unless-stopped",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "cpus": 1.0
+    }
+  },
+  "volumes": {
+    "postgres": {},
+    "qdrant": {},
+    "agentn": {},
+    "prometheus": {},
+    "loki": {},
+    "tempo": {},
+    "grafana": {}
+  }
+}

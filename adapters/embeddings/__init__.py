@@ -1,0 +1,1 @@
+"""adapters/embeddings package."""
