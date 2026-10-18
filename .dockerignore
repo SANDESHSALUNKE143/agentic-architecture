@@ -1,0 +1,14 @@
+.git
+.venv
+.env
+**/__pycache__
+work
+dist
+build
+
+**/*-local.json
+**/.env*
+.agentic
+.test-state
+
+.ruff_cache/

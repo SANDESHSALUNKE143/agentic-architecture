@@ -1,0 +1,18 @@
+include README.md LICENSE CHANGELOG.md CONTRIBUTING.md SECURITY.md compose.yaml Dockerfile Makefile
+recursive-include config *.json
+recursive-include schemas *.json
+recursive-include examples *.py
+recursive-include evaluation *.py
+recursive-include scripts *.py *.ps1
+recursive-include docs *.md
+recursive-include deploy *.yaml *.json *.sql
+recursive-include templates *.md *.py *.toml
+
+include 00-START-HERE.md
+recursive-include contracts *.md *.py
+recursive-include core *.md *.py
+recursive-include adapters *.md *.py
+recursive-include services *.md *.py
+recursive-include sdk *.md *.py
+recursive-include deployment *.md *.yaml *.json Dockerfile*
+recursive-include developer-standards *.md *.yaml *.json *.py *.toml

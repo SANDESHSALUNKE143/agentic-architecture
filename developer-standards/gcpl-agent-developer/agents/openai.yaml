@@ -1,0 +1,6 @@
+interface:
+  display_name: "GCPL Agent Developer"
+  short_description: "Build agents using shared platform contracts"
+  default_prompt: "Use $gcpl-agent-developer to build and validate an agent that consumes the versioned platform SDK."
+policy:
+  allow_implicit_invocation: true

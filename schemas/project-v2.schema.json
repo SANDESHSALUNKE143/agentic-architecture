@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Project runtime v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tenant_id",
+    "agent_id",
+    "model",
+    "limits"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "tenant_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "agent_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "model": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "adapter"
+          ],
+          "properties": {
+            "adapter": {
+              "const": "demo"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "adapter",
+            "base_url",
+            "model",
+            "api_key_env"
+          ],
+          "properties": {
+            "adapter": {
+              "const": "compatible"
+            },
+            "base_url": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1
+            },
+            "api_key_env": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "adapter",
+            "model",
+            "api_key_env"
+          ],
+          "properties": {
+            "adapter": {
+              "const": "anthropic"
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1
+            },
+            "api_key_env": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+            }
+          }
+        }
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 8192
+        },
+        "token_budget": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 10000000
+        },
+        "timeout_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 300
+        },
+        "max_context_bytes": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 1000000
+        },
+        "max_tool_result_bytes": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 1000000
+        }
+      }
+    }
+  }
+}

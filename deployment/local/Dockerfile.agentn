@@ -1,0 +1,24 @@
+# syntax=docker/dockerfile:1
+FROM python:3.12-slim AS sdk-build
+WORKDIR /sdk
+COPY pyproject.toml LICENSE ./
+COPY src ./src
+COPY contracts ./contracts
+COPY core ./core
+COPY adapters ./adapters
+COPY services ./services
+COPY sdk ./sdk
+RUN pip wheel --no-deps --wheel-dir /wheels .
+
+FROM python:3.12-slim
+WORKDIR /app
+COPY --from=sdk-build /wheels /wheels
+RUN pip install --no-cache-dir '/wheels/agentic_foundation_sdk-0.3.0-py3-none-any.whl[service,providers,telemetry]' && rm -r /wheels
+COPY --from=agentn pyproject.toml LICENSE ./
+COPY --from=agentn src ./src
+RUN pip install --no-cache-dir . && mkdir /state && chown 65532:65532 /state
+COPY --from=agentn config ./config
+COPY --from=agentn instructions ./instructions
+ENV AGENT_STATE_PATH=/state/runs.db PYTHONDONTWRITEBYTECODE=1
+USER 65532:65532
+CMD ["python","-m","uvicorn","agentn_assistant.server:create_app","--factory","--host","0.0.0.0","--port","8010"]
