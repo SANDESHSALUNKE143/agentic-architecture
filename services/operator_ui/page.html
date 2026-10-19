@@ -117,6 +117,36 @@
   .split { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 12px; }
   a { color: var(--accent); }
   .stack { display: grid; gap: 12px; }
+  .login {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(18, 23, 29, 0.62);
+  }
+  .login[hidden] { display: none; }
+  .login-card {
+    width: min(420px, 100%);
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 24px 60px rgba(18, 23, 29, 0.28);
+  }
+  .login-card h2 { margin: 0; font-size: 24px; }
+  .login-card p { color: var(--muted); font-size: 14px; line-height: 1.45; }
+  .login-card label { display: block; margin: 18px 0 6px; font-size: 13px; }
+  .login-card input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    background: white;
+  }
+  .login-card .actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .login-card .error { min-height: 1.2em; margin: 10px 0 0; color: var(--bad); }
   @media (max-width: 980px) {
     .shell { grid-template-columns: 1fr; }
     aside { position: static; }
@@ -140,12 +170,10 @@
       <button type="button" data-view="observe">Observability</button>
     </nav>
     <div class="session">
-      <label for="token">Bearer token</label>
-      <input id="token" type="password" autocomplete="off">
+      <p id="status" class="note">Not signed in.</p>
       <div class="row">
-        <button id="connect" type="button">Connect</button>
+        <button id="sign-out" type="button">Sign out</button>
       </div>
-      <p id="status" class="note">The token stays in memory and is sent only as a header.</p>
     </div>
   </aside>
   <main>
@@ -222,6 +250,18 @@
     </section>
   </main>
 </div>
+<div id="login" class="login" role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <form id="login-form" class="login-card">
+    <h2 id="login-title">Sign in</h2>
+    <p>The console is not connected. Enter the operator token to load this tenant.</p>
+    <label for="token">Token</label>
+    <input id="token" type="password" autocomplete="off" autofocus>
+    <p id="login-error" class="error"></p>
+    <div class="actions">
+      <button id="connect" class="primary" type="submit">Continue</button>
+    </div>
+  </form>
+</div>
 <script>
 let token = "";
 let agentId = "";
@@ -254,27 +294,55 @@ function setConn(ok) {
   node.textContent = ok ? "Connected" : "Not connected";
   node.className = "pill" + (ok ? " ok" : "");
 }
-document.getElementById("connect").onclick = async () => {
+function openLogin(message) {
+  setConn(false);
+  document.getElementById("login").hidden = false;
+  document.getElementById("login-error").textContent = message || "";
+  document.getElementById("token").focus();
+}
+function closeLogin() {
+  document.getElementById("login").hidden = true;
+  document.getElementById("login-error").textContent = "";
+}
+document.getElementById("login-form").onsubmit = async (event) => {
+  event.preventDefault();
   token = document.getElementById("token").value;
   document.getElementById("token").value = "";
-  document.getElementById("status").textContent = "Checking credential…";
+  document.getElementById("login-error").textContent = "Checking credential…";
   try {
     const agents = await api("/api/agents");
     agentId = agents.agents.length ? agents.agents[0].agent_id : "";
     renderAgents(agents.agents);
     document.getElementById("stat-agents").textContent = String(agents.agents.length);
-    document.getElementById("status").textContent = agentId ? "Session is held in memory." : "This credential has no agents.";
-    setConn(Boolean(agentId));
-    if (!agentId) return;
+    if (!agentId) {
+      token = "";
+      openLogin("This credential has no agents.");
+      return;
+    }
+    document.getElementById("status").textContent = "Session is held in memory.";
+    setConn(true);
+    closeLogin();
     await loadConfig();
     await loadConnectors();
     await loadEvents();
     await loadObservability();
   } catch (error) {
-    setConn(false);
-    document.getElementById("status").textContent = "Credential was rejected.";
+    token = "";
+    openLogin("That token was rejected.");
   }
 };
+document.getElementById("sign-out").onclick = () => {
+  token = "";
+  agentId = "";
+  document.getElementById("status").textContent = "Not signed in.";
+  openLogin();
+};
+document.querySelectorAll("nav button, #publish, #reload-config, #ask").forEach((node) => {
+  node.addEventListener("click", () => {
+    if (!token) openLogin();
+  });
+});
+openLogin();
 function renderAgents(agents) {
   const body = document.getElementById("agent-rows");
   body.replaceChildren();
