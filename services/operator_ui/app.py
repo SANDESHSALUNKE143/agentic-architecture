@@ -181,8 +181,8 @@ def create_app():
             except Exception:
                 return False
 
-        grafana = os.environ.get("GRAFANA_BROWSER_URL", "http://127.0.0.1:3002")
-        mlflow = os.environ.get("MLFLOW_BROWSER_URL", "http://127.0.0.1:5000")
+        grafana = os.environ.get("GRAFANA_BROWSER_URL", "http://grafana.localhost:3002")
+        mlflow = os.environ.get("MLFLOW_BROWSER_URL", "http://mlflow.localhost:5000")
         return {
             "backends": [
                 {
@@ -198,7 +198,7 @@ def create_app():
                     "reachable": reachable(os.environ.get("LANGFUSE_PROBE_URL", "")),
                     "optional": False,
                     "detail": "One trace per agent run. Tool spans are children. Attributes are status, duration, tool name, and token counts. Prompts and answers stay out.",
-                    "href": os.environ.get("LANGFUSE_BROWSER_URL", "http://127.0.0.1:3003"),
+                    "href": os.environ.get("LANGFUSE_BROWSER_URL", "http://langfuse.localhost:3003"),
                     "link_label": "Open Langfuse",
                 },
                 {
