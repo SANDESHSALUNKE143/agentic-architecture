@@ -16,6 +16,9 @@ Provider-neutral interfaces and compatibility rules. Start here before changing 
 4. [Orchestration contracts](orchestration/README.md)
 5. [Telemetry contracts](telemetry/README.md)
 6. [Tool contracts](tools/README.md)
+7. [SQL contracts](sql/README.md)
+8. [Graph RAG contracts](graph/README.md)
+9. [Inference contracts](inference/README.md)
 
 ## Change rule
 
@@ -34,4 +37,7 @@ Provider-neutral data types and compatibility exports.
 - [orchestration/](orchestration/README.md): Async model decisions, run results and observation port.
 - [retrieval/](retrieval/README.md): Documents, hits and vector-store port.
 - [telemetry/](telemetry/README.md): Content-free telemetry port.
+- [graph/](graph/README.md): One-hop Graph RAG expansion port.
+- [inference/](inference/README.md): Registered-model prediction port.
+- [sql/](sql/README.md): Read-only allowlisted table port.
 - [tools/](tools/README.md): Synchronous tool/idempotency contract.
