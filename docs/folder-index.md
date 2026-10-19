@@ -1,6 +1,6 @@
 # Maintained folder index
 
-All 75 maintained folders were reviewed for purpose, ownership, contents and documentation links. Generated/cache/private state folders are excluded below.
+Maintained folders were reviewed for purpose, ownership, contents and documentation links. Generated/cache/private state folders are excluded below.
 
 | Folder | Responsibility |
 |---|---|
@@ -9,6 +9,8 @@ All 75 maintained folders were reviewed for purpose, ownership, contents and doc
 | [.github/workflows](../.github/workflows/README.md) | Hosted CI definitions; execution is separate from configuration. |
 | [adapters](../adapters/README.md) | External-system implementations and compatibility exports. |
 | [adapters/embeddings](../adapters/embeddings/README.md) | Compatible-provider vector generation and profile validation. |
+| [adapters/graph](../adapters/graph/README.md) | Neo4j one-hop Graph RAG adapter. |
+| [adapters/inference](../adapters/inference/README.md) | Operator-registered model calls. |
 | [adapters/llm](../adapters/llm/README.md) | Generation-provider implementations grouped by API family. |
 | [adapters/llm/anthropic](../adapters/llm/anthropic/README.md) | Native Messages API mapping. |
 | [adapters/llm/azure_openai](../adapters/llm/azure_openai/README.md) | Azure v1 configuration guide using the shared compatible implementation. |
@@ -17,13 +19,17 @@ All 75 maintained folders were reviewed for purpose, ownership, contents and doc
 | [adapters/orchestration](../adapters/orchestration/README.md) | JSON decision adapter; no required agent framework. |
 | [adapters/persistence](../adapters/persistence/README.md) | Scoped SQLite metadata and PostgreSQL platform state/reservations. |
 | [adapters/retrieval](../adapters/retrieval/README.md) | Qdrant collection provisioning, writes and retrieval. |
+| [adapters/sql](../adapters/sql/README.md) | Allowlisted read-only DB-API queries. |
 | [adapters/tools](../adapters/tools/README.md) | Bounded HTTP, explicit MCP-session and n8n webhook integration. |
 | [config](../config/README.md) | Public demo and placeholder configuration; no real endpoints/keys. |
 | [contracts](../contracts/README.md) | Provider-neutral data types and compatibility exports. |
 | [contracts/embeddings](../contracts/embeddings/README.md) | Embedding profile identity and vector validation contracts. |
+| [contracts/graph](../contracts/graph/README.md) | One-hop Graph RAG expansion port. |
+| [contracts/inference](../contracts/inference/README.md) | Registered-model prediction port. |
 | [contracts/models](../contracts/models/README.md) | Synchronous model/completion port. |
 | [contracts/orchestration](../contracts/orchestration/README.md) | Async model decisions, run results and observation port. |
 | [contracts/retrieval](../contracts/retrieval/README.md) | Documents, hits and vector-store port. |
+| [contracts/sql](../contracts/sql/README.md) | Read-only allowlisted table port. |
 | [contracts/telemetry](../contracts/telemetry/README.md) | Content-free telemetry port. |
 | [contracts/tools](../contracts/tools/README.md) | Synchronous tool/idempotency contract. |
 | [core](../core/README.md) | Reusable framework-neutral behavior. |
@@ -71,6 +77,7 @@ All 75 maintained folders were reviewed for purpose, ownership, contents and doc
 | [services/agent_registry](../services/agent_registry/README.md) | Immutable configuration publication and revision lookup. |
 | [services/knowledge_service](../services/knowledge_service/README.md) | Ingestion submission, job state, retrieval and worker. |
 | [services/model_gateway](../services/model_gateway/README.md) | Decision forwarding, token reservations and usage queries. |
+| [services/operator_ui](../services/operator_ui/README.md) | Loopback screens for agents, configuration, connectors and runs. |
 | [services/tool_gateway](../services/tool_gateway/README.md) | Fixed AgentN tool allowlist and backend forwarding. |
 | [src](../src/README.md) | Stable legacy source/import namespace. |
 | [src/agentic_sdk](../src/agentic_sdk/README.md) | Compatibility facade; no copied runtime. |

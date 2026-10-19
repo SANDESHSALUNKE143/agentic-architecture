@@ -23,5 +23,5 @@ Run the relevant SDK tests and the consuming agent tests after a contract change
 
 Content-free OTel event export and the smaller RAG telemetry bridge.
 
-- [events.py](events.py): Content-free run telemetry with optional OTLP traces, metrics and logs.
+- [events.py](events.py): Content-free run telemetry. One run shares a parent span. OTLP export is optional; Langfuse can be a second trace destination.
 - [otel.py](otel.py): Optional traces/metrics bridge; exporter lifecycle belongs to the application.

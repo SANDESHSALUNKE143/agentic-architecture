@@ -11,6 +11,7 @@ flowchart LR
   SDK[SDK traces / metrics / structured logs] --> EDGE[Authenticated collector / routing proxy]
   EDGE --> REDACT[Redaction + bounded batching]
   REDACT --> TEMPO[Tempo traces]
+  REDACT --> LF[Langfuse agent traces]
   REDACT --> LOKI[Loki logs via OTLP]
   REDACT --> PROM[Prometheus metrics endpoint / remote write]
   TEMPO --> GRAF[Grafana scoped data sources]
@@ -18,6 +19,8 @@ flowchart LR
   PROM --> GRAF
   IDP[Identity / role mapping] --> GRAF
 ```
+
+A deployment may add Langfuse beside Tempo. The collector forwards the same content-free trace: one parent span per run, with a child span per tool. Langfuse is the screen for that agent trace. It does not receive the question, retrieved passages, or the answer.
 
 Use service.name, deployment.environment, tenant_id, agent_id, SDK version, config revision and model route. Do not use request IDs, prompts, document IDs or user IDs as metric labels. Correlate trace/span IDs in structured logs. Trace sampling starts at 10% for success and should retain errors using a tested tail-sampling policy; even unsampled requests need aggregate counters. This sampling is a proposal, not implemented configuration.
 

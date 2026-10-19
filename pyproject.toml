@@ -22,15 +22,18 @@ telemetry = ["opentelemetry-api>=1.37,<2", "opentelemetry-sdk>=1.37,<2", "opente
 dev = ["jsonschema>=4.23,<5", "build>=1.2,<2", "ruff==0.17.1"]
 
 [tool.setuptools]
-packages = ["agentic_sdk", "agentic_sdk.contracts", "agentic_sdk.contracts.embeddings", "agentic_sdk.contracts.models", "agentic_sdk.contracts.orchestration", "agentic_sdk.contracts.retrieval", "agentic_sdk.contracts.telemetry", "agentic_sdk.contracts.tools", "agentic_sdk.core", "agentic_sdk.core.context", "agentic_sdk.core.execution", "agentic_sdk.core.harness", "agentic_sdk.core.policies", "agentic_sdk.adapters", "agentic_sdk.adapters.embeddings", "agentic_sdk.adapters.llm", "agentic_sdk.adapters.observability", "agentic_sdk.adapters.orchestration", "agentic_sdk.adapters.persistence", "agentic_sdk.adapters.retrieval", "agentic_sdk.adapters.tools", "agentic_sdk.adapters.llm.anthropic", "agentic_sdk.adapters.llm.azure_openai", "agentic_sdk.adapters.llm.openai_compatible", "agentic_sdk.services", "agentic_sdk.services.agent_host", "agentic_sdk.services.agent_registry", "agentic_sdk.services.knowledge_service", "agentic_sdk.services.model_gateway", "agentic_sdk.services.tool_gateway", "agentic_sdk.sdk", "agentic_sdk.sdk.python"]
+packages = ["agentic_sdk", "agentic_sdk.contracts", "agentic_sdk.contracts.embeddings", "agentic_sdk.contracts.graph", "agentic_sdk.contracts.inference", "agentic_sdk.contracts.models", "agentic_sdk.contracts.orchestration", "agentic_sdk.contracts.retrieval", "agentic_sdk.contracts.sql", "agentic_sdk.contracts.telemetry", "agentic_sdk.contracts.tools", "agentic_sdk.core", "agentic_sdk.core.context", "agentic_sdk.core.execution", "agentic_sdk.core.harness", "agentic_sdk.core.policies", "agentic_sdk.adapters", "agentic_sdk.adapters.embeddings", "agentic_sdk.adapters.graph", "agentic_sdk.adapters.inference", "agentic_sdk.adapters.llm", "agentic_sdk.adapters.observability", "agentic_sdk.adapters.orchestration", "agentic_sdk.adapters.persistence", "agentic_sdk.adapters.retrieval", "agentic_sdk.adapters.sql", "agentic_sdk.adapters.tools", "agentic_sdk.adapters.llm.anthropic", "agentic_sdk.adapters.llm.azure_openai", "agentic_sdk.adapters.llm.openai_compatible", "agentic_sdk.services", "agentic_sdk.services.agent_host", "agentic_sdk.services.agent_registry", "agentic_sdk.services.knowledge_service", "agentic_sdk.services.model_gateway", "agentic_sdk.services.operator_ui", "agentic_sdk.services.tool_gateway", "agentic_sdk.sdk", "agentic_sdk.sdk.python"]
 
 [tool.setuptools.package-dir]
 "agentic_sdk" = "src/agentic_sdk"
 "agentic_sdk.contracts" = "contracts"
 "agentic_sdk.contracts.embeddings" = "contracts/embeddings"
+"agentic_sdk.contracts.graph" = "contracts/graph"
+"agentic_sdk.contracts.inference" = "contracts/inference"
 "agentic_sdk.contracts.models" = "contracts/models"
 "agentic_sdk.contracts.orchestration" = "contracts/orchestration"
 "agentic_sdk.contracts.retrieval" = "contracts/retrieval"
+"agentic_sdk.contracts.sql" = "contracts/sql"
 "agentic_sdk.contracts.telemetry" = "contracts/telemetry"
 "agentic_sdk.contracts.tools" = "contracts/tools"
 "agentic_sdk.core" = "core"
@@ -40,11 +43,14 @@ packages = ["agentic_sdk", "agentic_sdk.contracts", "agentic_sdk.contracts.embed
 "agentic_sdk.core.policies" = "core/policies"
 "agentic_sdk.adapters" = "adapters"
 "agentic_sdk.adapters.embeddings" = "adapters/embeddings"
+"agentic_sdk.adapters.graph" = "adapters/graph"
+"agentic_sdk.adapters.inference" = "adapters/inference"
 "agentic_sdk.adapters.llm" = "adapters/llm"
 "agentic_sdk.adapters.observability" = "adapters/observability"
 "agentic_sdk.adapters.orchestration" = "adapters/orchestration"
 "agentic_sdk.adapters.persistence" = "adapters/persistence"
 "agentic_sdk.adapters.retrieval" = "adapters/retrieval"
+"agentic_sdk.adapters.sql" = "adapters/sql"
 "agentic_sdk.adapters.tools" = "adapters/tools"
 "agentic_sdk.adapters.llm.anthropic" = "adapters/llm/anthropic"
 "agentic_sdk.adapters.llm.azure_openai" = "adapters/llm/azure_openai"
@@ -54,12 +60,14 @@ packages = ["agentic_sdk", "agentic_sdk.contracts", "agentic_sdk.contracts.embed
 "agentic_sdk.services.agent_registry" = "services/agent_registry"
 "agentic_sdk.services.knowledge_service" = "services/knowledge_service"
 "agentic_sdk.services.model_gateway" = "services/model_gateway"
+"agentic_sdk.services.operator_ui" = "services/operator_ui"
 "agentic_sdk.services.tool_gateway" = "services/tool_gateway"
 "agentic_sdk.sdk" = "sdk"
 "agentic_sdk.sdk.python" = "sdk/python"
 
 [tool.setuptools.package-data]
 agentic_sdk = ["py.typed"]
+"agentic_sdk.services.operator_ui" = ["page.html"]
 
 [tool.ruff]
 line-length = 100
