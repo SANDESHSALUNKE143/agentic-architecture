@@ -74,7 +74,7 @@ class TelemetryTests(unittest.TestCase):
         provider = TracerProvider()
         exporter = InMemorySpanExporter()
         provider.add_span_processor(SimpleSpanProcessor(exporter))
-        observer = PlatformObserver("insight-agent")
+        observer = PlatformObserver("sample-agent")
         observer.tracer = provider.get_tracer("test")
         ctx = Context("tenant", "agent", frozenset())
         observer.emit(ctx, "run-1", "run.started", {"question": "secret"})

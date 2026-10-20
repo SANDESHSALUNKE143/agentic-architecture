@@ -24,3 +24,4 @@ Run the relevant SDK tests and the consuming agent tests after a contract change
 Qdrant collection provisioning, writes and retrieval.
 
 - [qdrant.py](qdrant.py): Collection-per-agent/profile adapter; provisioning is an administrator operation.
+- [policy.py](policy.py): Cache key, optional ranking, and delete or restrict in front of a vector store.

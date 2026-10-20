@@ -1,6 +1,6 @@
 # Operator UI
 
-Loopback screens for the agents a credential can see, immutable configuration revisions, registered connector allowlists, and content-free run events.
+Generic console for whatever agents `OPERATOR_AGENTS` lists. Each binding supplies that agent's `url`. Agent configuration stays on that agent's own settings screen. The Guide page shows a sample agent that imports the SDK.
 
 ## Current status
 

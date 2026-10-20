@@ -1,10 +1,23 @@
-"""Allowlisted web fetch. The model may pick a known host and a relative path."""
+"""
+Allowlisted web port.
+
+The agent maps a public host name to an origin. fetch() requires web:read,
+rejects an unknown host before any request, and allows only a relative path.
+The model cannot supply a URL or a credential.
+
+Usage:
+    web = AllowlistedWeb({"notes.example": "http://site:8080"})
+    page = web.fetch(context, "notes.example", "/items/1")
+"""
 
 import json
 import urllib.request
 
 from agentic_sdk.contracts.orchestration.types import ExecutionError
 from agentic_sdk.core.context.identity import Context
+
+
+# ── Allowlisted fetch ─────────────────────────────────────────────────
 
 
 class AllowlistedWeb:

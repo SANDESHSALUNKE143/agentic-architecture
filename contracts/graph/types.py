@@ -1,8 +1,19 @@
-"""Graph RAG contract. Agents name an entity. Adapters own the query language."""
+"""
+Graph RAG contract.
+
+Agents name an entity. The adapter owns the query language and the neighbor
+cap. The model does not send Cypher or a connection string.
+
+Usage:
+    class GraphRag implementation: expand(context, entity) -> dict
+"""
 
 from typing import Protocol
 
 from agentic_sdk.core.context.identity import Context
+
+
+# ── Port ──────────────────────────────────────────────────────────────
 
 
 class GraphRag(Protocol):

@@ -1,11 +1,24 @@
-"""Collection-per-agent/profile adapter; provisioning is an administrator operation.
-Profile is encoded into the collection name; external provisioning must honor it.
+"""
+Retrieval port for Qdrant.
+
+The agent supplies the client and the embedding profile. Collection names
+are derived from the tenant, the agent, and that profile, so one agent's
+vectors are not readable as another's. Provisioning requires index:admin.
+The SDK does not choose the Qdrant server or hold its API key.
+
+Usage:
+    store = QdrantStore(client, embedder.profile)
+    store.provision(admin_context)
+    hits = store.search(context, vector, limit)
 """
 
 import hashlib
 import uuid
 
 from agentic_sdk.contracts import Document, Hit, validate_vector
+
+
+# ── Scoped collection ─────────────────────────────────────────────────
 
 
 class QdrantStore:

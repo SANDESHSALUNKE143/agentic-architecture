@@ -1,4 +1,13 @@
-"""Operator UI and JSON API. Bearer tokens stay in the Authorization header."""
+"""
+Operator console API.
+
+Lists the agents in OPERATOR_AGENTS, proxies each agent's own URL, and
+serves the read-only page. The bearer token is compared with the
+Authorization header and is not written into the HTML. Agent configuration
+is changed on the agent's settings page. This process only reads it.
+
+Run: uvicorn agentic_sdk.services.operator_ui.app:create_app --factory
+"""
 
 from __future__ import annotations
 
@@ -16,6 +25,9 @@ from fastapi.responses import HTMLResponse
 _PAGE = (Path(__file__).with_name("page.html")).read_text(encoding="utf-8")
 
 
+# ── Application ───────────────────────────────────────────────────────
+
+
 def create_app():
     """Serve the operator page and credential-scoped agent, config, connector and run routes.
 
@@ -28,7 +40,6 @@ def create_app():
         raise ValueError("operator token must contain at least 32 characters")
     declared = json.loads(os.environ["OPERATOR_AGENTS"])
     database = Database(os.environ["DATABASE_URL"])
-    agent_url = os.environ.get("INSIGHT_AGENT_URL", "http://insight-agent:8010").rstrip("/")
 
     def authorize(authorization: str | None) -> None:
         """Accept only the configured bearer token. Do not reflect it in errors."""
@@ -47,11 +58,11 @@ def create_app():
                 return item
         raise HTTPException(404, "agent not registered")
 
-    def proxy(method: str, path: str, authorization: str, payload: dict | None = None):
-        """Forward a JSON call to the agent without copying the token into logs."""
+    def proxy(binding: dict, method: str, path: str, authorization: str, payload: dict | None = None):
+        """Forward a JSON call to the agent URL declared for this credential."""
         data = None if payload is None else json.dumps(payload).encode()
         request = urllib.request.Request(
-            agent_url + path,
+            binding["url"].rstrip("/") + path,
             data=data,
             headers={"Authorization": authorization, "Content-Type": "application/json"},
             method=method,
@@ -150,22 +161,25 @@ def create_app():
     def connectors(agent_id: str, authorization: str | None = Header(default=None)):
         """Return the agent tool and allowlist snapshot. This view does not edit them."""
         authorize(authorization)
-        agent_for(agent_id)
-        return proxy("GET", "/v1/connectors", authorization)
+        return proxy(agent_for(agent_id), "GET", "/v1/connectors", authorization)
 
     @app.get("/api/events")
     def events(agent_id: str, authorization: str | None = Header(default=None)):
         """Return content-free run events recorded by the agent."""
         authorize(authorization)
-        agent_for(agent_id)
-        return proxy("GET", "/v1/events", authorization)
+        return proxy(agent_for(agent_id), "GET", "/v1/events", authorization)
 
     @app.post("/api/runs")
     def runs(body: dict, authorization: str | None = Header(default=None)):
         """Forward one question to the agent and return its answer."""
         authorize(authorization)
-        agent_for(body["agent_id"])
-        return proxy("POST", "/v1/runs", authorization, {"question": body["question"]})
+        return proxy(
+            agent_for(body["agent_id"]),
+            "POST",
+            "/v1/runs",
+            authorization,
+            {"question": body["question"]},
+        )
 
     @app.get("/api/observability")
     def observability(authorization: str | None = Header(default=None)):
@@ -205,7 +219,7 @@ def create_app():
                     "name": "MLflow",
                     "reachable": reachable(os.environ.get("MLFLOW_PROBE_URL", "")),
                     "optional": False,
-                    "detail": "Each run logs tool names, status, and duration to the insight-agent experiment. The question text is not a parameter.",
+                    "detail": "Each run logs tool names, status, and duration. The question text is not a parameter.",
                     "href": mlflow,
                     "link_label": "Open MLflow",
                 },

@@ -1,8 +1,21 @@
-"""Content-free run telemetry with optional OTLP traces, metrics and logs."""
+"""
+Content-free OpenTelemetry events for one agent run.
+
+When OTEL_EXPORTER_OTLP_ENDPOINT is set, each run is one parent span named
+agent.run. Tool spans are children. Allowed attributes are status, duration,
+token counts, step count, and tool name. Prompts and answers are dropped.
+
+Usage:
+    observer = PlatformObserver("my-agent")
+    runner = AgentRunner(model, tools, instruction, observer=observer)
+"""
 
 import logging
 import os
 import threading
+
+
+# ── OTLP observer ─────────────────────────────────────────────────────
 
 
 class PlatformObserver:

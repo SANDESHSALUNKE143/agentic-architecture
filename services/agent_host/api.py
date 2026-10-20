@@ -26,7 +26,7 @@ class AgentBinding:
     close: Callable[[], Awaitable[None]]
 
 
-def create_app(bindings: dict[str, AgentBinding], store, *, max_concurrency=4):
+def create_app(bindings: dict[str, AgentBinding], store, *, max_concurrency=4, credentials=None, health=None):
     """Build the reusable agent API with static credentials and per-agent concurrency caps.
 
     Binding keys must match their agent context. Requests cannot supply their own
@@ -64,12 +64,17 @@ def create_app(bindings: dict[str, AgentBinding], store, *, max_concurrency=4):
         b = bindings.get(agent_id)
         supplied = (authorization or "").removeprefix("Bearer ")
         # No tenant/agent supplied in a request body can replace this binding.
-        if (
-            b is None
-            or not authorization
-            or not authorization.startswith("Bearer ")
-            or not secrets.compare_digest(supplied.encode(), b.access_token.encode())
-        ):
+        static_ok = bool(b) and secrets.compare_digest(supplied.encode(), b.access_token.encode())
+        scoped = credentials.resolve(supplied) if credentials is not None else None
+        scoped_ok = (
+            b is not None
+            and scoped is not None
+            and scoped.tenant_id == b.context.tenant_id
+            and scoped.agent_id == b.context.agent_id
+            and "agent:invoke" in scoped.scopes
+        )
+        bearer = bool(authorization) and authorization.startswith("Bearer ")
+        if b is None or not bearer or not (static_ok or scoped_ok):
             raise HTTPException(401, "invalid credentials or agent")
         return b
 
@@ -97,7 +102,15 @@ def create_app(bindings: dict[str, AgentBinding], store, *, max_concurrency=4):
             raise HTTPException(504, "run deadline exceeded") from None
         except RemoteError:
             raise HTTPException(502, "upstream unavailable or request rejected") from None
-        except (ValueError, ExecutionError):
+        except ExecutionError as exc:
+            if str(exc) in {
+                "request rate exceeded",
+                "daily token quota exceeded",
+                "monthly token quota exceeded",
+            }:
+                raise HTTPException(429, str(exc)) from None
+            raise HTTPException(422, "run rejected by validation or execution limits") from None
+        except ValueError:
             raise HTTPException(422, "run rejected by validation or execution limits") from None
         except Exception:
             raise HTTPException(500, "run failed; inspect scoped telemetry") from None
@@ -110,7 +123,11 @@ def create_app(bindings: dict[str, AgentBinding], store, *, max_concurrency=4):
     @app.get("/health")
     async def health():
         """Probe configured dependencies and return the public readiness state."""
-        return {"status": "ok", "version": "0.3.0"}
+        if health is None:
+            return {"status": "ok", "version": "0.3.0"}
+        body = health.public()
+        body["version"] = "0.3.0"
+        return body
 
     @app.get("/v1/agents/{agent_id}/config")
     async def config(agent_id: str, authorization: str | None = Header(default=None)):
