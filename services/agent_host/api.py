@@ -26,7 +26,9 @@ class AgentBinding:
     close: Callable[[], Awaitable[None]]
 
 
-def create_app(bindings: dict[str, AgentBinding], store, *, max_concurrency=4, credentials=None, health=None):
+def create_app(
+    bindings: dict[str, AgentBinding], store, *, max_concurrency=4, credentials=None, health=None
+):
     """Build the reusable agent API with static credentials and per-agent concurrency caps.
 
     Binding keys must match their agent context. Requests cannot supply their own

@@ -11,7 +11,6 @@ Usage:
 
 from dataclasses import dataclass
 
-
 # ── Identity ──────────────────────────────────────────────────────────
 
 

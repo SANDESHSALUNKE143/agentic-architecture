@@ -41,7 +41,9 @@ class AuditLog:
         """
         fields = " ".join((action, target, status)).lower()
         if not action.strip() or any(word in fields for word in _BLOCKED):
-            raise ValueError("audit events must name an action and must not carry content or secrets")
+            raise ValueError(
+                "audit events must name an action and must not carry content or secrets"
+            )
         event = {
             "tenant_id": ctx.tenant_id,
             "agent_id": ctx.agent_id,

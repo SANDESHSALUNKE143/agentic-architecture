@@ -17,7 +17,6 @@ import uuid
 
 from agentic_sdk.contracts import Document, Hit, validate_vector
 
-
 # ── Scoped collection ─────────────────────────────────────────────────
 
 
