@@ -58,7 +58,9 @@ def create_app():
                 return item
         raise HTTPException(404, "agent not registered")
 
-    def proxy(binding: dict, method: str, path: str, authorization: str, payload: dict | None = None):
+    def proxy(
+        binding: dict, method: str, path: str, authorization: str, payload: dict | None = None
+    ):
         """Forward a JSON call to the agent URL declared for this credential."""
         data = None if payload is None else json.dumps(payload).encode()
         request = urllib.request.Request(
@@ -212,7 +214,9 @@ def create_app():
                     "reachable": reachable(os.environ.get("LANGFUSE_PROBE_URL", "")),
                     "optional": False,
                     "detail": "One trace per agent run. Tool spans are children. Attributes are status, duration, tool name, and token counts. Prompts and answers stay out.",
-                    "href": os.environ.get("LANGFUSE_BROWSER_URL", "http://langfuse.localhost:3003"),
+                    "href": os.environ.get(
+                        "LANGFUSE_BROWSER_URL", "http://langfuse.localhost:3003"
+                    ),
                     "link_label": "Open Langfuse",
                 },
                 {

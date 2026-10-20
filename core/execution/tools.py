@@ -19,7 +19,6 @@ from typing import Awaitable, Callable
 from agentic_sdk.contracts import Context
 from agentic_sdk.contracts.orchestration.types import ExecutionError
 
-
 # ── Tool specification ────────────────────────────────────────────────
 
 

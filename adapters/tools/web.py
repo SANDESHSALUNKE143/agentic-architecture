@@ -16,7 +16,6 @@ import urllib.request
 from agentic_sdk.contracts.orchestration.types import ExecutionError
 from agentic_sdk.core.context.identity import Context
 
-
 # ── Allowlisted fetch ─────────────────────────────────────────────────
 
 

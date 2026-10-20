@@ -13,7 +13,6 @@ Usage:
 from agentic_sdk.contracts.orchestration.types import ExecutionError
 from agentic_sdk.core.context.identity import Context
 
-
 # ── Registered models ─────────────────────────────────────────────────
 
 

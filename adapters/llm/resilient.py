@@ -89,7 +89,7 @@ class ResilientLLM:
 
     def extract_structured(self, prompt: str, required: tuple[str, ...]) -> dict:
         """Complete a prompt and require a JSON object that contains every named field."""
-        instruction = prompt + '\nReturn only a JSON object.'
+        instruction = prompt + "\nReturn only a JSON object."
         result = self.complete(instruction, 512)
         try:
             body = json.loads(result.text)

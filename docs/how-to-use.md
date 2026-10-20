@@ -50,7 +50,9 @@ from agentic_sdk.core.harness.runner import AgentRunner
 class Model:
     async def decide(self, instruction, question, observations, tools, max_output_tokens):
         if not observations:
-            return ModelReply("tool", {"type": "tool", "tool": "read_status", "arguments": {}}, 1, 1)
+            return ModelReply(
+                "tool", {"type": "tool", "tool": "read_status", "arguments": {}}, 1, 1
+            )
         return ModelReply("final", {"type": "final", "answer": "ready"}, 1, 1)
 
 
@@ -59,14 +61,18 @@ async def read_status(ctx, arguments):
 
 
 tools = ToolRegistry()
-tools.add(ToolSpec(
-    "read_status",
-    "Read the status this agent owns.",
-    "status:read",
-    {"type": "object", "properties": {}, "required": []},
-    read_status,
-))
-runner = AgentRunner(Model(), tools, "Answer from the status tool.", required_before_final=frozenset({"read_status"}))
+tools.add(
+    ToolSpec(
+        "read_status",
+        "Read the status this agent owns.",
+        "status:read",
+        {"type": "object", "properties": {}, "required": []},
+        read_status,
+    )
+)
+runner = AgentRunner(
+    Model(), tools, "Answer from the status tool.", required_before_final=frozenset({"read_status"})
+)
 context = Context("tenant", "my-agent", frozenset({"agent:invoke", "status:read"}))
 # result = await runner.run(context, "Is it ready?")
 ```
