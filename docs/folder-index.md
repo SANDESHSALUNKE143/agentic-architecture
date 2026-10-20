@@ -21,6 +21,7 @@ Maintained folders were reviewed for purpose, ownership, contents and documentat
 | [adapters/retrieval](../adapters/retrieval/README.md) | Qdrant collection provisioning, writes and retrieval. |
 | [adapters/sql](../adapters/sql/README.md) | Allowlisted read-only DB-API queries. |
 | [adapters/tools](../adapters/tools/README.md) | Bounded HTTP, explicit MCP-session and n8n webhook integration. |
+| [assets](../assets/README.md) | Front-page diagram of agent, SDK, and operator ownership. |
 | [config](../config/README.md) | Public demo and placeholder configuration; no real endpoints/keys. |
 | [contracts](../contracts/README.md) | Provider-neutral data types and compatibility exports. |
 | [contracts/embeddings](../contracts/embeddings/README.md) | Embedding profile identity and vector validation contracts. |
