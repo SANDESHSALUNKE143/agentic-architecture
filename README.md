@@ -2,7 +2,7 @@
 
 # Agentic Foundation
 
-A reusable, framework-agnostic Python platform for building business agents without copying the execution loop, provider integration, transport, policy checks or telemetry storage into every project. The versioned `agentic-foundation-sdk==0.3.0` is the reusable product. Each agent owns its instructions, domain tools, configuration and evaluations.
+A reusable, framework-agnostic Python platform for building business agents without copying the execution loop, provider integration, transport, policy checks or telemetry storage into every project. The versioned `agentic-foundation-sdk==0.3.0` is the reusable product. Each agent owns its instructions, screens, database, vector store, domain tools, configuration and evaluations. Start with [how to use the SDK](docs/how-to-use.md).
 
 **SDK 0.3.0 full local platform:** [Run the full stack](deployment/full/README.md) and follow the [agent developer guide](docs/developer-guide.md).
 

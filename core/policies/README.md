@@ -24,3 +24,5 @@ Run the relevant SDK tests and the consuming agent tests after a contract change
 Validated request-level limits.
 
 - [limits.py](limits.py): Validated run-level step, byte, token and time limits.
+- [admission.py](admission.py): Request rate, body cap, and tenant token quota.
+- [health.py](health.py): Per-dependency health that can report degraded.

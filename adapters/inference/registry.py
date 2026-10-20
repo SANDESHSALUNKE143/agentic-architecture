@@ -1,7 +1,20 @@
-"""Run only models the operator registered. This adapter does not train models."""
+"""
+Model registry port.
+
+The agent registers callables at startup. predict() requires model:invoke
+and calls only a known model id. This adapter does not train models and
+does not choose a remote inference server.
+
+Usage:
+    models = ModelRegistry({"score_model": score})
+    result = models.predict(context, "score_model", {"name": "north"})
+"""
 
 from agentic_sdk.contracts.orchestration.types import ExecutionError
 from agentic_sdk.core.context.identity import Context
+
+
+# ── Registered models ─────────────────────────────────────────────────
 
 
 class ModelRegistry:

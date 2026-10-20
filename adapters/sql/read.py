@@ -1,4 +1,15 @@
-"""Read-only queries against an operator-supplied DB-API connection."""
+"""
+Read-only SQL port.
+
+The agent opens the database connection and passes it in, with the table
+allowlist. This adapter checks sql:read, the table name, and the row cap,
+then runs a fixed SELECT. It does not accept SQL text or a connection string
+from the model.
+
+Usage:
+    sql = ReadOnlySql(connection, tables=frozenset({"sample_rows"}), paramstyle="pyformat")
+    rows = sql.query(context, "sample_rows", 5)
+"""
 
 import re
 
@@ -6,6 +17,9 @@ from agentic_sdk.contracts.orchestration.types import ExecutionError
 from agentic_sdk.core.context.identity import Context
 
 _NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,62}$")
+
+
+# ── Allowlisted read ──────────────────────────────────────────────────
 
 
 class ReadOnlySql:

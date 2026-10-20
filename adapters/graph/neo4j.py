@@ -1,4 +1,14 @@
-"""One-hop Neo4j expansion. The Cypher text is fixed inside this adapter."""
+"""
+Graph RAG port for one Neo4j hop.
+
+The agent supplies an open session. This adapter owns the Cypher. expand()
+requires graph:read and returns at most max_neighbors plus a few passages.
+The model names an entity. It does not send a query.
+
+Usage:
+    graph = Neo4jGraphRag(session, max_neighbors=8)
+    neighborhood = graph.expand(context, "sample-entity")
+"""
 
 from agentic_sdk.contracts.orchestration.types import ExecutionError
 from agentic_sdk.core.context.identity import Context
@@ -8,6 +18,9 @@ MATCH (n {name: $entity})-[r]->(m)
 RETURN type(r) AS relation, m.name AS target, m.passage AS passage
 LIMIT $limit
 """
+
+
+# ── One-hop expansion ─────────────────────────────────────────────────
 
 
 class Neo4jGraphRag:

@@ -10,3 +10,4 @@ Import `Context` from `agentic_sdk.core.context.identity` or the stable `agentic
 Trusted execution identity and permission guard.
 
 - [identity.py](identity.py): Trusted identity and permission checks shared by every execution path.
+- [credentials.py](credentials.py): Revocable scoped credentials that sit beside the static bearer.

@@ -25,3 +25,5 @@ Async model/tool runner and synchronous RAG example use case.
 
 - [rag.py](rag.py): Small synchronous RAG use case; frameworks may call this from any graph node.
 - [runner.py](runner.py): Bounded asynchronous model/tool execution with content-free lifecycle events.
+- [jobs.py](jobs.py): Leader-locked job registration that runs inline when no queue is configured.
+- [checks.py](checks.py): Workflow checks for required tools and structured fields.

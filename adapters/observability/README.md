@@ -25,3 +25,5 @@ Content-free OTel event export and the smaller RAG telemetry bridge.
 
 - [events.py](events.py): Content-free run telemetry. One run shares a parent span. OTLP export is optional; Langfuse can be a second trace destination.
 - [otel.py](otel.py): Optional traces/metrics bridge; exporter lifecycle belongs to the application.
+- [usage.py](usage.py): Content-free model-call receipts: provider, model, tokens, latency, and cost.
+- [audit.py](audit.py): Admin audit events that name an action and a target, not a prompt or a secret.

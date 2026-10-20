@@ -1,4 +1,15 @@
-"""Bounded asynchronous model/tool execution with content-free lifecycle events."""
+"""
+Agent runner — the shared decide, tool, answer loop.
+
+Every business agent imports this instead of copying a loop. The model
+picks the next action. The runner checks permissions, required evidence,
+step count, token budget, and the deadline. Lifecycle events record status,
+duration, tool name, and token counts. The question and the answer stay out.
+
+Usage:
+    runner = AgentRunner(model, tools, instruction, required_before_final=evidence)
+    result = await runner.run(context, question)
+"""
 
 from __future__ import annotations
 
@@ -19,6 +30,9 @@ from agentic_sdk.core.execution.tools import ToolRegistry
 from agentic_sdk.core.policies.limits import RunLimits
 
 
+# ── Run loop ──────────────────────────────────────────────────────────
+
+
 class AgentRunner:
     """Framework-independent model/tool loop with request-local execution state.
 
@@ -34,11 +48,13 @@ class AgentRunner:
         limits: RunLimits | None = None,
         observer: RunObserver | None = None,
         required_before_final: frozenset[str] = frozenset(),
+        gate=None,
     ):
         self.model, self.tools, self.instruction = model, tools, instruction
         self.limits = limits or RunLimits()
         self.observer = observer or NullObserver()
         self.required_before_final = required_before_final
+        self.gate = gate
 
     async def run(
         self,
@@ -56,6 +72,8 @@ class AgentRunner:
         ctx.require("agent:invoke")
         if not isinstance(question, str) or not question.strip() or len(question.encode()) > 8000:
             raise ValueError("question must contain 1..8000 bytes")
+        if self.gate is not None:
+            self.gate.admit(ctx, question)
         run_id = uuid.uuid4().hex
         started = time.monotonic()
         observations, used, seen = [], [], set()
@@ -142,6 +160,8 @@ class AgentRunner:
                     )
                 raise ExecutionError("maximum steps exceeded")
         finally:
+            if self.gate is not None:
+                self.gate.charge(ctx, input_tokens + output_tokens)
             self.observer.emit(
                 ctx,
                 run_id,
