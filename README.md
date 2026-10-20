@@ -6,7 +6,7 @@ A reusable, framework-agnostic Python platform for building business agents with
 
 **SDK 0.3.0 full local platform:** [Run the full stack](deployment/full/README.md) and follow the [agent developer guide](docs/developer-guide.md).
 
-**Earlier minimal path:** [Build and test AgentN in Docker](deployment/local/README.md). **Explore the code:** [Numbered architecture guide](00-START-HERE.md). **Build another agent:** [Developer standard](developer-standards/gcpl-agent-developer/SKILL.md).
+**Earlier minimal path:** [Build and test AgentN in Docker](deployment/local/README.md). **Explore the code:** [Numbered architecture guide](00-START-HERE.md). **Build another agent:** [Developer standard](developer-standards/agent-developer/SKILL.md).
 
 ## Overall architecture
 

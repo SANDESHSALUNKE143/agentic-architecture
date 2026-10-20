@@ -1,5 +1,5 @@
 ---
-name: gcpl-agent-developer
+name: agent-developer
 description: Build or extend an agent consuming Agentic Foundation, validate its manifest and contracts, or add a shared adapter while preserving platform and consumer boundaries.
 ---
 

@@ -50,20 +50,20 @@ Maintained folders were reviewed for purpose, ownership, contents and documentat
 | [deployment/full/grafana/datasources](../deployment/full/grafana/datasources/README.md) | Stable Grafana datasource names/UIDs. |
 | [deployment/local](../deployment/local/README.md) | Smaller AgentN-only profile; shares port 8010 with full profile. |
 | [developer-standards](../developer-standards/README.md) | Canonical engineering skill and supporting assets. |
-| [developer-standards/gcpl-agent-developer](../developer-standards/gcpl-agent-developer/README.md) | Skill entrypoint and usage boundaries. |
-| [developer-standards/gcpl-agent-developer/agents](../developer-standards/gcpl-agent-developer/agents/README.md) | Skill UI metadata and invocation policy. |
-| [developer-standards/gcpl-agent-developer/assets](../developer-standards/gcpl-agent-developer/assets/README.md) | Illustrative consumer/config layout assets. |
-| [developer-standards/gcpl-agent-developer/assets/agent-template](../developer-standards/gcpl-agent-developer/assets/agent-template/README.md) | Layout illustration; SDK init is the runnable generator. |
-| [developer-standards/gcpl-agent-developer/assets/agent-template/capabilities](../developer-standards/gcpl-agent-developer/assets/agent-template/capabilities/README.md) | Consumer capabilities layout guide; not platform runtime code. |
-| [developer-standards/gcpl-agent-developer/assets/agent-template/deployment](../developer-standards/gcpl-agent-developer/assets/agent-template/deployment/README.md) | Consumer deployment layout guide; not platform runtime code. |
-| [developer-standards/gcpl-agent-developer/assets/agent-template/domain](../developer-standards/gcpl-agent-developer/assets/agent-template/domain/README.md) | Consumer domain layout guide; not platform runtime code. |
-| [developer-standards/gcpl-agent-developer/assets/agent-template/instructions](../developer-standards/gcpl-agent-developer/assets/agent-template/instructions/README.md) | Consumer instructions layout guide; not platform runtime code. |
-| [developer-standards/gcpl-agent-developer/assets/agent-template/tests](../developer-standards/gcpl-agent-developer/assets/agent-template/tests/README.md) | Consumer tests layout guide; not platform runtime code. |
-| [developer-standards/gcpl-agent-developer/assets/agent-template/tests/evaluations](../developer-standards/gcpl-agent-developer/assets/agent-template/tests/evaluations/README.md) | Consumer evaluations layout guide; not platform runtime code. |
-| [developer-standards/gcpl-agent-developer/assets/agent-template/tests/unit](../developer-standards/gcpl-agent-developer/assets/agent-template/tests/unit/README.md) | Consumer unit layout guide; not platform runtime code. |
-| [developer-standards/gcpl-agent-developer/assets/config-templates](../developer-standards/gcpl-agent-developer/assets/config-templates/README.md) | Public local/compatible configuration examples. |
-| [developer-standards/gcpl-agent-developer/references](../developer-standards/gcpl-agent-developer/references/README.md) | Focused architecture, provider, security and operational guidance. |
-| [developer-standards/gcpl-agent-developer/scripts](../developer-standards/gcpl-agent-developer/scripts/README.md) | Explicit-path manifest/config/contract validators. |
+| [developer-standards/agent-developer](../developer-standards/agent-developer/README.md) | Skill entrypoint and usage boundaries. |
+| [developer-standards/agent-developer/agents](../developer-standards/agent-developer/agents/README.md) | Skill UI metadata and invocation policy. |
+| [developer-standards/agent-developer/assets](../developer-standards/agent-developer/assets/README.md) | Illustrative consumer/config layout assets. |
+| [developer-standards/agent-developer/assets/agent-template](../developer-standards/agent-developer/assets/agent-template/README.md) | Layout illustration; SDK init is the runnable generator. |
+| [developer-standards/agent-developer/assets/agent-template/capabilities](../developer-standards/agent-developer/assets/agent-template/capabilities/README.md) | Consumer capabilities layout guide; not platform runtime code. |
+| [developer-standards/agent-developer/assets/agent-template/deployment](../developer-standards/agent-developer/assets/agent-template/deployment/README.md) | Consumer deployment layout guide; not platform runtime code. |
+| [developer-standards/agent-developer/assets/agent-template/domain](../developer-standards/agent-developer/assets/agent-template/domain/README.md) | Consumer domain layout guide; not platform runtime code. |
+| [developer-standards/agent-developer/assets/agent-template/instructions](../developer-standards/agent-developer/assets/agent-template/instructions/README.md) | Consumer instructions layout guide; not platform runtime code. |
+| [developer-standards/agent-developer/assets/agent-template/tests](../developer-standards/agent-developer/assets/agent-template/tests/README.md) | Consumer tests layout guide; not platform runtime code. |
+| [developer-standards/agent-developer/assets/agent-template/tests/evaluations](../developer-standards/agent-developer/assets/agent-template/tests/evaluations/README.md) | Consumer evaluations layout guide; not platform runtime code. |
+| [developer-standards/agent-developer/assets/agent-template/tests/unit](../developer-standards/agent-developer/assets/agent-template/tests/unit/README.md) | Consumer unit layout guide; not platform runtime code. |
+| [developer-standards/agent-developer/assets/config-templates](../developer-standards/agent-developer/assets/config-templates/README.md) | Public local/compatible configuration examples. |
+| [developer-standards/agent-developer/references](../developer-standards/agent-developer/references/README.md) | Focused architecture, provider, security and operational guidance. |
+| [developer-standards/agent-developer/scripts](../developer-standards/agent-developer/scripts/README.md) | Explicit-path manifest/config/contract validators. |
 | [docs](README.md) | Current implementation guides, references and historical baseline. |
 | [docs/adr](adr/README.md) | Numbered architecture decisions with unique IDs. |
 | [evaluation](../evaluation/README.md) | Offline RAG smoke evaluation; separate from real answer-quality certification. |
