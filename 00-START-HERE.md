@@ -12,7 +12,7 @@ agentic-architecture/
   sdk/python/         # 05: executable SDK composition and developer commands
   tests/              # 06: contract, integration, compatibility guides + runnable tests
   deployment/         # 07: deployment sequence
-  developer-standards/# 08: gcpl-agent-developer skill
+  developer-standards/# 08: agent-developer skill
   examples/           # 09: runnable reference paths
   src/agentic_sdk/    # stable compatibility imports
 ```
@@ -42,7 +42,7 @@ The new Agent N consumer lives in its own repository and imports `agentic-founda
 
 ## Developer skill
 
-Use [gcpl-agent-developer](developer-standards/gcpl-agent-developer/SKILL.md) after reading contracts and core. It is engineering guidance and validation tooling, not executable agent policy or a credential store.
+Use [agent-developer](developer-standards/agent-developer/SKILL.md) after reading contracts and core. It is engineering guidance and validation tooling, not executable agent policy or a credential store.
 
 ## Run and develop
 

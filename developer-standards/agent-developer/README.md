@@ -1,4 +1,4 @@
-# Gcpl Agent Developer
+# Agent developer
 
 Engineering skill bundle: start with SKILL.md, select relevant references, then run the validation scripts against explicit repository paths.
 
