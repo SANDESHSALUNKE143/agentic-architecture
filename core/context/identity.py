@@ -1,6 +1,17 @@
-"""Trusted identity and permission checks shared by every execution path."""
+"""
+Call identity — tenant, agent, and the permissions for this one request.
+
+Context is built by the agent or the credential binding. The model cannot
+add a permission. require() fails closed when the grant is missing.
+
+Usage:
+    context = Context("tenant", "my-agent", frozenset({"agent:invoke"}))
+    context.require("agent:invoke")
+"""
 
 from dataclasses import dataclass
+
+# ── Identity ──────────────────────────────────────────────────────────
 
 
 @dataclass(frozen=True)

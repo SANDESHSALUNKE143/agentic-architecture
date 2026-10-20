@@ -17,4 +17,5 @@ Local API composition and shared bounded input models.
 - [contracts.py](contracts.py): Closed, bounded HTTP input models shared by platform routes.
 - [knowledge_service/](knowledge_service/README.md): Ingestion submission, job state, retrieval and worker.
 - [model_gateway/](model_gateway/README.md): Decision forwarding, token reservations and usage queries.
+- [operator_ui/](operator_ui/README.md): Loopback screens for agents, configuration, connectors and runs.
 - [tool_gateway/](tool_gateway/README.md): Fixed AgentN tool allowlist and backend forwarding.

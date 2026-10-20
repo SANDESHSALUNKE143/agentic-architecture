@@ -1,4 +1,15 @@
-"""Explicit tool allowlist, schema validation and authorization before handler invocation."""
+"""
+Tool registry — the allowlist the model is allowed to call.
+
+A tool is a name, a description, a permission, a JSON schema, and a handler.
+The model sees the description and the schema. It does not see the handler,
+credentials, or a server URL. Invocation checks the permission and the schema
+before the handler runs.
+
+Usage:
+    tools = ToolRegistry()
+    tools.add(ToolSpec("read_status", "Read status.", "status:read", schema, handler))
+"""
 
 from __future__ import annotations
 
@@ -7,6 +18,8 @@ from typing import Awaitable, Callable
 
 from agentic_sdk.contracts import Context
 from agentic_sdk.contracts.orchestration.types import ExecutionError
+
+# ── Tool specification ────────────────────────────────────────────────
 
 
 @dataclass(frozen=True)

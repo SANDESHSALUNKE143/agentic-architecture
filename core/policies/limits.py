@@ -1,8 +1,19 @@
-"""Validated run-level step, byte, token and time limits."""
+"""
+Per-run limits for the harness.
+
+These are the bounds that apply when a request-rate limit is not configured:
+step count, output tokens, token budget, timeout, context bytes, and tool
+result bytes. Values outside the allowed ranges are rejected at construction.
+
+Usage:
+    limits = RunLimits(max_steps=8, timeout_seconds=60)
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+# ── Bounds ────────────────────────────────────────────────────────────
 
 
 @dataclass(frozen=True)

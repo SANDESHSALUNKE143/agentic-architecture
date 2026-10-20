@@ -6,8 +6,11 @@ from agentic_sdk.contracts.embeddings.types import (
     EmbeddingProfile,
     validate_vector,
 )
+from agentic_sdk.contracts.graph.types import GraphRag
+from agentic_sdk.contracts.inference.types import Predictor
 from agentic_sdk.contracts.models.types import LLM, Completion
 from agentic_sdk.contracts.retrieval.types import Document, Hit, VectorStore
+from agentic_sdk.contracts.sql.types import SqlRead
 from agentic_sdk.contracts.telemetry.types import Telemetry
 from agentic_sdk.contracts.tools.types import Tool
 from agentic_sdk.core.context.identity import Context
@@ -22,6 +25,9 @@ __all__ = [
     "Document",
     "Hit",
     "VectorStore",
+    "GraphRag",
+    "Predictor",
+    "SqlRead",
     "Telemetry",
     "Tool",
     "ConfigSource",

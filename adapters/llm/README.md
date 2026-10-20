@@ -33,3 +33,4 @@ Generation-provider implementations grouped by API family.
 - [anthropic/](anthropic/README.md): Native Messages API mapping.
 - [azure_openai/](azure_openai/README.md): Azure v1 configuration guide using the shared compatible implementation.
 - [openai_compatible/](openai_compatible/README.md): Approved client construction and chat completion mapping.
+- [resilient.py](resilient.py): Retry, one fallback provider, a circuit breaker, and structured JSON extract.
