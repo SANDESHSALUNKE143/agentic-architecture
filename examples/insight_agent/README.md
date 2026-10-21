@@ -1,23 +1,22 @@
 # Insight agent
 
-Reference agent for the [enterprise guide](../../doc/guide.md). This folder is the agent: `brain.py` is the foundation model. The library owns the harness, the guardrails, and the connectors.
+Reference agent for the [enterprise guide](../../doc/guide.md). Each component is one package. `runtime.py` is the composition root: it is the only file that builds the SDK harness. The library owns the loop, the guardrails, and the connectors.
 
 ## Components
 
-| Component | File | Owns |
-|---|---|---|
-| Foundation model | [brain.py](brain.py) | The scripted reply |
-| Perception | [perception.py](perception.py) | One question string from the HTTP body |
-| Planning | [planning.py](planning.py) | The evidence order |
-| Memory | [memory.py](memory.py) | The instruction and the required evidence |
-| Action | [action.py](action.py) | One harness run |
-| Tools | [tools.py](tools.py) | Metrics, analyses, graph, trend model, site |
-| Environment | [environment.py](environment.py) | Postgres, Qdrant, Neo4j, model, site |
-| Learning | [learning.py](learning.py) | A content-free record of the run |
-| Communication | [communication.py](communication.py) | The payload spoken to the caller |
-| Host | [host/](host/README.md) | Question page, operator API, settings, traces |
+| Package | Role |
+|---|---|
+| [perception](perception/README.md) | One question string from the HTTP body |
+| [cognition](cognition/README.md) | Foundation model, evidence order, and instruction |
+| [action](action/README.md) | One harness run and the five allowlisted tools |
+| [environment](environment/README.md) | Postgres, Qdrant, Neo4j, model, site |
+| [learning](learning/README.md) | A content-free record of the run |
+| [communication](communication/README.md) | The spoken payload and the content-free trace |
+| [host](host/README.md) | Question page, operator API, and settings |
 
-`runtime.py` composes them. The next agent is [sells_agent](../sells_agent/README.md).
+The next agent is [sells_agent](../sells_agent/README.md). It uses the same packages.
+
+LangChain, LangGraph, and n8n are callers of the harness, shown in [frameworks.py](../frameworks.py). This agent does not import them.
 
 ## Run
 
@@ -35,7 +34,6 @@ A question whose text is `skip evidence` is rejected because the final answer sk
 
 ## Folder contents
 
-The Python modules above are the agent. Containers live one level down.
+`runtime.py` wires the packages above. Containers live one level down.
 
-- [host/](host/README.md): Question page, operator API, settings, and traces.
 - [stack/](stack/README.md): Compose file, images, fixtures, the allowlisted site, and the collector.

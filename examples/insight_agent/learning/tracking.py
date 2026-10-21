@@ -5,7 +5,7 @@ One finished or rejected run becomes one MLflow run: agent id, tool names,
 status, and duration. The question and the answer are not parameters.
 A tracking failure is swallowed so the agent answer still returns.
 
-Run: called from insight_agent.server.execute after each question.
+Run: called from insight_agent.learning.note after each question.
 """
 
 import json

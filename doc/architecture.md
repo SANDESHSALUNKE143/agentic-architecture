@@ -22,13 +22,13 @@ flowchart LR
 
 | Component | Reference | Role in this repository |
 |---|---|---|
-| Foundation model | [brain.py](../examples/insight_agent/brain.py) | Chooses the next reply. The reference model is scripted. A provider model replaces this file. |
-| Perception | [perception.py](../examples/insight_agent/perception.py) | Turns one request into a question. |
-| Planning | [planning.py](../examples/insight_agent/planning.py) | Orders the evidence steps. |
-| Memory | [memory.py](../examples/insight_agent/memory.py) | Holds the instruction and the required evidence for this run. |
-| Action | [action.py](../examples/insight_agent/action.py) and [tools.py](../examples/insight_agent/tools.py) | Runs the loop and calls SQL, Qdrant, Neo4j, the model, and the allowlisted site. |
-| Learning | [learning.py](../examples/insight_agent/learning.py) | Records status, tool names, and duration. Weights stay unchanged. |
-| Communication | [communication.py](../examples/insight_agent/communication.py) and [host](../examples/insight_agent/host/README.md) | Speaks the result on the question page and the operator API. |
+| Foundation model | [cognition/brain.py](../examples/insight_agent/cognition/brain.py) | Chooses the next reply. The reference model is scripted. A provider model replaces this file. |
+| Perception | [perception](../examples/insight_agent/perception/README.md) | Turns one request into a question. |
+| Planning | [cognition/planning.py](../examples/insight_agent/cognition/planning.py) | Orders the evidence steps. |
+| Memory | [cognition/memory.py](../examples/insight_agent/cognition/memory.py) | Holds the instruction and the required evidence for this run. |
+| Action | [action](../examples/insight_agent/action/README.md) | Runs the loop and calls SQL, Qdrant, Neo4j, the model, and the allowlisted site. |
+| Learning | [learning](../examples/insight_agent/learning/README.md) | Records status, tool names, and duration. Weights stay unchanged. |
+| Communication | [communication](../examples/insight_agent/communication/README.md) and [host](../examples/insight_agent/host/README.md) | Speaks the result on the question page and the operator API. |
 
 ## Platform
 

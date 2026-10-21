@@ -1,8 +1,9 @@
 """
 Compose the insight agent from the component roadmap and the SDK harness.
 
-Perception, the foundation model, planning, memory, action, learning, and
-communication live beside this file. The reason loop stays in the library.
+Perception, cognition, action, the environment, learning, and
+communication are the packages beside this file. The reason loop stays
+in the library.
 build() opens the environment, registers the tools, and returns the runner
 the product page and the operator API already call.
 
@@ -16,12 +17,12 @@ from agentic_sdk.contracts import Context
 from agentic_sdk.core.harness.runner import AgentRunner
 from agentic_sdk.core.policies.admission import RequestGate
 
-from insight_agent.brain import ScriptedModel
+from insight_agent.action.tools import register
+from insight_agent.cognition.brain import ScriptedModel
+from insight_agent.cognition.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
+from insight_agent.communication.observe import Fanout, TraceObserver
 from insight_agent.environment import open_environment
-from insight_agent.host.observe import Fanout, TraceObserver
 from insight_agent.host.settings import Bindings
-from insight_agent.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
-from insight_agent.tools import register
 
 # ── Composition ───────────────────────────────────────────────────────
 

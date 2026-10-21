@@ -16,7 +16,7 @@ Usage:
 
 from agentic_sdk.contracts.orchestration.types import ModelReply
 
-from insight_agent.planning import next_step, skipped
+from insight_agent.cognition.planning import next_step, skipped
 
 # ── Decision model ────────────────────────────────────────────────────
 

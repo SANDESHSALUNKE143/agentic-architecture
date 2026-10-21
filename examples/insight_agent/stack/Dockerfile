@@ -7,6 +7,12 @@ RUN pip install --no-cache-dir '.[service,providers,platform,telemetry]' \
 WORKDIR /app
 COPY pyproject.toml ./
 COPY *.py ./
+COPY perception ./perception
+COPY cognition ./cognition
+COPY action ./action
+COPY environment ./environment
+COPY learning ./learning
+COPY communication ./communication
 COPY host ./host
 RUN pip install --no-cache-dir --no-deps .
 ENV PYTHONUNBUFFERED=1

@@ -6,7 +6,7 @@ Wrap the SDK runner in a framework node if needed; preserve SDK contracts outsid
 
 ## Current status
 
-Direct framework-independent runtime implemented. LangGraph/LangChain wrappers planned.
+Direct framework-independent runtime implemented. LangChain and LangGraph call that runtime through the wrappers in this folder. n8n is the webhook tool in adapters/tools.
 
 ## Where to work
 
@@ -24,3 +24,5 @@ Run the relevant SDK tests and the consuming agent tests after a contract change
 JSON decision adapter; no required agent framework.
 
 - [json_decision.py](json_decision.py): Decision adapters wrap provider clients without imposing an agent framework.
+- [langchain.py](langchain.py): LangChain tool that runs one governed question.
+- [langgraph.py](langgraph.py): LangGraph node that runs one governed question.

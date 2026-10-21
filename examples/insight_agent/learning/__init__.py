@@ -9,7 +9,7 @@ Usage:
     note(run_id, tools, "ok", duration_ms)
 """
 
-from insight_agent.host.tracking import record
+from insight_agent.learning.tracking import record
 
 # ── Outcome ───────────────────────────────────────────────────────────
 

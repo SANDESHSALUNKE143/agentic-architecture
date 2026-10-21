@@ -29,6 +29,9 @@ python -m pip install -e '/path/to/agentic-architecture[service]'
 | Jobs | `agentic_sdk.core.harness.jobs.JobRunner` | A callable and an interval. Due work runs inline on the leader |
 | Retrieval policy | `GovernedStore` and `RetrievalCache` | The vector store the agent already opened |
 | Workflow check | `agentic_sdk.core.harness.checks.check_workflow` | Required tool names and JSON fields. The check does not grade truth |
+| LangChain | `agentic_sdk.adapters.orchestration.langchain.as_langchain_tool` | The runner and context. Requires the `frameworks` extra |
+| LangGraph | `agentic_sdk.adapters.orchestration.langgraph.compile_langgraph` | The runner and context. Requires the `frameworks` extra |
+| n8n | `agentic_sdk.adapters.tools.integrations.n8n_tool` | A fixed `/webhook/` path, a trusted transport, and mutation approval |
 
 `required_before_final` names the evidence tools that must run before an answer. The model cannot add credentials, URLs, permissions, or mutation approval.
 

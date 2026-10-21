@@ -4,7 +4,7 @@ Memory for the sells agent.
 The notebook. The instruction and the evidence required before an answer.
 
 Usage:
-    from sells_agent.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
+    from sells_agent.cognition.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
 """
 
 # ── Instruction ───────────────────────────────────────────────────────

@@ -16,13 +16,13 @@ Three people use the same standard.
 
 Every agent in this standard has the same seven components. The reason loop that calls them is the library harness. Insight is the reference that follows the list.
 
-1. **Foundation model.** The brain. [insight_agent/brain.py](../examples/insight_agent/brain.py) decides the next reply. A later agent can put a provider model here. The loop stays in [core/harness](../src/core/harness/README.md).
-2. **Perception.** The senses. [insight_agent/perception.py](../examples/insight_agent/perception.py) turns the HTTP body into one question.
-3. **Planning.** The strategist. [insight_agent/planning.py](../examples/insight_agent/planning.py) orders the evidence steps. It does not write the answer.
-4. **Memory.** The notebook. [insight_agent/memory.py](../examples/insight_agent/memory.py) holds the instruction and the evidence required before an answer. Tool results of the current question stay with the run.
-5. **Action.** The hands. [insight_agent/action.py](../examples/insight_agent/action.py) runs the harness. [insight_agent/tools.py](../examples/insight_agent/tools.py) are the only tools it can call, against [insight_agent/environment.py](../examples/insight_agent/environment.py).
-6. **Learning.** The feedback loop. [insight_agent/learning.py](../examples/insight_agent/learning.py) records status, tool names, and duration. It does not store the question or the answer, and it does not change model weights.
-7. **Communication.** The voice. [insight_agent/communication.py](../examples/insight_agent/communication.py) shapes the payload. [insight_agent/host](../examples/insight_agent/host/README.md) carries it on the question page and the operator API.
+1. **Foundation model.** The brain. [cognition/brain.py](../examples/insight_agent/cognition/brain.py) decides the next reply. A later agent can put a provider model here. The loop stays in [core/harness](../src/core/harness/README.md).
+2. **Perception.** The senses. [perception](../examples/insight_agent/perception/README.md) turns the HTTP body into one question.
+3. **Planning.** The strategist. [cognition/planning.py](../examples/insight_agent/cognition/planning.py) orders the evidence steps. It does not write the answer.
+4. **Memory.** The notebook. [cognition/memory.py](../examples/insight_agent/cognition/memory.py) holds the instruction and the evidence required before an answer. Tool results of the current question stay with the run.
+5. **Action.** The hands. [action](../examples/insight_agent/action/README.md) runs the harness. `tools.py` in that package is the only tools it can call, against [environment](../examples/insight_agent/environment/README.md).
+6. **Learning.** The feedback loop. [learning](../examples/insight_agent/learning/README.md) records status, tool names, and duration. It does not store the question or the answer, and it does not change model weights.
+7. **Communication.** The voice. [communication](../examples/insight_agent/communication/README.md) shapes the payload. [host](../examples/insight_agent/host/README.md) carries it on the question page and the operator API.
 
 ```text
 People
@@ -64,11 +64,11 @@ Every agent imports the library from the same files. The library never imports t
 | Agent file | Library call |
 |---|---|
 | `runtime.py` | `AgentRunner`, `RequestGate`, and `Context`. When `OTEL_EXPORTER_OTLP_ENDPOINT` is set, it also attaches `PlatformObserver`. |
-| `brain.py` | `ModelReply`, the reply the harness accepts. |
-| `tools.py` | `ToolRegistry` and `ToolSpec`. The registry checks permission and schema. |
-| `action.py` | `ExecutionError`, mapped to the caller's status. |
-| `environment.py` | The adapters this agent opens. Insight opens SQL, Qdrant, Neo4j, the model registry, and the allowlisted web. Sells keeps its book in memory and imports none of those. |
-| `host/observe.py` | Receives the harness events. It does not call a platform service. |
+| `cognition/brain.py` | `ModelReply`, the reply the harness accepts. |
+| `action/tools.py` | `ToolRegistry` and `ToolSpec`. The registry checks permission and schema. |
+| `action` | `ExecutionError`, mapped to the caller's status. |
+| `environment` | The adapters this agent opens. Insight opens SQL, Qdrant, Neo4j, the model registry, and the allowlisted web. Sells keeps its book in memory and imports none of those. |
+| `communication/observe.py` | Receives the harness events. It does not call a platform service. |
 
 [services/](../src/services/README.md) is the platform HTTP: the operator, the registry, and the gateways. The insight operator image starts `agentic_sdk.services.operator_ui` and calls the agent over HTTP. The agent process does not import that service, the model gateway, or the tool gateway.
 
@@ -76,12 +76,31 @@ Both agents use this layout:
 
 ```text
 examples/<agent>/
-  brain.py  perception.py  planning.py  memory.py
-  action.py  tools.py  environment.py
-  learning.py  communication.py
-  runtime.py          the only place that builds AgentRunner
-  host/observe.py     content-free events
-  stack/              containers, only when the agent needs them
+  runtime.py            composition root. Builds AgentRunner.
+  perception/           senses
+  cognition/            foundation model, planning, memory
+  action/               one run, plus the allowlisted tools
+  environment/          the stores this agent opens
+  learning/             content-free outcome
+  communication/        spoken payload and the content-free trace
+  host/                 HTTP page, only when the agent has one
+  stack/                containers, only when the agent needs them
+```
+
+## LangChain, LangGraph, and n8n
+
+These three call the harness. They are not components inside insight or sells.
+
+| Caller | Where |
+|---|---|
+| LangChain | [langchain.py](../src/adapters/orchestration/langchain.py) turns one question into a tool. The tool calls `AgentRunner`. |
+| LangGraph | [langgraph.py](../src/adapters/orchestration/langgraph.py) is a one-node graph. The node calls `AgentRunner`. |
+| n8n | [n8n_tool](../src/adapters/tools/integrations.py) posts to a fixed `/webhook/` path. The call is a mutation, so trusted code must approve it. |
+
+Run all three from the repository root after `python -m pip install -e '.[frameworks]'`:
+
+```sh
+python examples/frameworks.py
 ```
 
 ## What the agent owns

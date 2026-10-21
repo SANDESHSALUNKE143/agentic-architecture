@@ -19,6 +19,7 @@ runtime = ["jsonschema>=4.23,<5", "httpx>=0.27,<1"]
 service = ["fastapi>=0.115,<1", "uvicorn>=0.32,<1", "jsonschema>=4.23,<5", "httpx>=0.27,<1"]
 providers = ["openai>=1.109,<3", "qdrant-client>=1.15,<2"]
 telemetry = ["opentelemetry-api>=1.37,<2", "opentelemetry-sdk>=1.37,<2", "opentelemetry-exporter-otlp-proto-http>=1.37,<2"]
+frameworks = ["langchain-core>=1.2,<2", "langgraph>=1.0,<2"]
 dev = ["jsonschema>=4.23,<5", "build>=1.2,<2", "ruff==0.17.1"]
 
 [tool.setuptools]

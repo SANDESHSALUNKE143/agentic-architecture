@@ -11,10 +11,10 @@ def _runner(question_tools):
     from agentic_sdk.contracts import Context
     from agentic_sdk.core.execution.tools import ToolRegistry, ToolSpec
     from agentic_sdk.core.harness.runner import AgentRunner
-    from insight_agent.brain import ScriptedModel
-    from insight_agent.host.observe import TraceObserver
+    from insight_agent.cognition.brain import ScriptedModel
+    from insight_agent.cognition.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
+    from insight_agent.communication.observe import TraceObserver
     from insight_agent.host.settings import Bindings
-    from insight_agent.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
 
     tools = ToolRegistry()
     schema = {"type": "object"}

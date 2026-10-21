@@ -7,7 +7,7 @@ in the harness and are passed back into the foundation model. This module
 does not store a chat history.
 
 Usage:
-    from insight_agent.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
+    from insight_agent.cognition.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
 """
 
 # ── Instruction ───────────────────────────────────────────────────────

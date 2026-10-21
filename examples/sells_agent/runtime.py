@@ -1,7 +1,7 @@
 """
 Compose the sells agent from the component roadmap and the SDK harness.
 
-The seven components live beside this file. The reason loop, the request
+The seven components live in the packages beside this file. The reason loop, the request
 gate, and the trusted context stay in the library. build() opens the
 in-memory book, registers the tools, and returns the runner.
 
@@ -15,11 +15,11 @@ from agentic_sdk.contracts import Context
 from agentic_sdk.core.harness.runner import AgentRunner
 from agentic_sdk.core.policies.admission import RequestGate
 
-from sells_agent.brain import ScriptedModel
+from sells_agent.action.tools import register
+from sells_agent.cognition.brain import ScriptedModel
+from sells_agent.cognition.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
+from sells_agent.communication.observe import Fanout, TraceObserver
 from sells_agent.environment import open_environment
-from sells_agent.host.observe import Fanout, TraceObserver
-from sells_agent.memory import INSTRUCTION, REQUIRED_BEFORE_FINAL
-from sells_agent.tools import register
 
 # ── Composition ───────────────────────────────────────────────────────
 

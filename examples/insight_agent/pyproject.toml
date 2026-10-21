@@ -13,10 +13,25 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["insight_agent", "insight_agent.host"]
+packages = [
+  "insight_agent",
+  "insight_agent.perception",
+  "insight_agent.cognition",
+  "insight_agent.action",
+  "insight_agent.environment",
+  "insight_agent.learning",
+  "insight_agent.communication",
+  "insight_agent.host",
+]
 
 [tool.setuptools.package-dir]
 "insight_agent" = "."
+"insight_agent.perception" = "perception"
+"insight_agent.cognition" = "cognition"
+"insight_agent.action" = "action"
+"insight_agent.environment" = "environment"
+"insight_agent.learning" = "learning"
+"insight_agent.communication" = "communication"
 "insight_agent.host" = "host"
 
 [tool.setuptools.package-data]

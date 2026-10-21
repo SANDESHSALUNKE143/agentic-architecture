@@ -10,7 +10,7 @@ Usage:
 
 from agentic_sdk.contracts.orchestration.types import ModelReply
 
-from sells_agent.planning import next_step
+from sells_agent.cognition.planning import next_step
 
 # ── Decision model ────────────────────────────────────────────────────
 

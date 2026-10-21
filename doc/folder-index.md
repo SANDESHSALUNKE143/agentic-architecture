@@ -70,14 +70,25 @@ Maintained folders were reviewed for purpose, ownership, contents and documentat
 | [tests/evaluation](../tests/evaluation/README.md) | Offline RAG smoke evaluation; separate from real answer-quality certification. |
 | [examples](../examples/README.md) | Insight reference agent and the smaller RAG script. |
 | [examples/insight_agent](../examples/insight_agent/README.md) | Reference business agent: foundation model, perception, planning, memory, action, learning, communication. |
-| [examples/insight_agent/host](../examples/insight_agent/host/README.md) | Question page, operator API, settings, and traces. |
+| [examples/insight_agent/perception](../examples/insight_agent/perception/README.md) | Turns one request into a question. |
+| [examples/insight_agent/cognition](../examples/insight_agent/cognition/README.md) | Foundation model, planner, and instruction. |
+| [examples/insight_agent/action](../examples/insight_agent/action/README.md) | One harness run and the allowlisted tools. |
+| [examples/insight_agent/environment](../examples/insight_agent/environment/README.md) | Stores the insight agent opens. |
+| [examples/insight_agent/learning](../examples/insight_agent/learning/README.md) | Content-free outcome of one run. |
+| [examples/insight_agent/communication](../examples/insight_agent/communication/README.md) | Spoken payload and the content-free trace. |
+| [examples/insight_agent/host](../examples/insight_agent/host/README.md) | Question page, operator API, and settings. |
 | [examples/insight_agent/stack](../examples/insight_agent/stack/README.md) | Compose file, images, and sample data for the insight agent. |
 | [examples/insight_agent/stack/fixtures](../examples/insight_agent/stack/fixtures/README.md) | Sample metrics table loaded on first Postgres start. |
 | [examples/insight_agent/stack/observability](../examples/insight_agent/stack/observability/README.md) | Collector config for the insight stack. |
 | [examples/insight_agent/stack/site](../examples/insight_agent/stack/site/README.md) | Allowlisted public page the reference agent may fetch. |
 | [examples/insight_agent/stack/ui](../examples/insight_agent/stack/ui/README.md) | Operator console image for the insight stack. |
 | [examples/sells_agent](../examples/sells_agent/README.md) | Second agent: the same seven components, answering one order question. |
-| [examples/sells_agent/host](../examples/sells_agent/host/README.md) | In-process shell and content-free trace. No HTTP page. |
+| [examples/sells_agent/perception](../examples/sells_agent/perception/README.md) | Turns one request into a question. |
+| [examples/sells_agent/cognition](../examples/sells_agent/cognition/README.md) | Foundation model, planner, and instruction. |
+| [examples/sells_agent/action](../examples/sells_agent/action/README.md) | One harness run and the order tools. |
+| [examples/sells_agent/environment](../examples/sells_agent/environment/README.md) | In-memory order book. |
+| [examples/sells_agent/learning](../examples/sells_agent/learning/README.md) | Content-free outcome of one run. |
+| [examples/sells_agent/communication](../examples/sells_agent/communication/README.md) | Spoken payload and the content-free trace. No HTTP page. |
 | [deployment/schemas](../deployment/schemas/README.md) | v1 RAG and v2 project JSON schemas. |
 | [deployment/scripts](../deployment/scripts/README.md) | Validation, full-stack acceptance and local lifecycle helpers. |
 | [src/sdk](../src/sdk/README.md) | Python consumer-facing configuration/CLI/client package. |

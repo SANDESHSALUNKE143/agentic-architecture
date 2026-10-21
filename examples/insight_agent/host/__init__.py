@@ -1,8 +1,8 @@
 """
 Host for the insight agent.
 
-The question page, the operator API, connection settings, traces, and the
-MLflow record. The seven components stay in the parent package.
+The question page, the operator API, and connection settings. Traces live
+in communication. The MLflow record lives in learning.
 
 Run: started by python -m insight_agent.
 """
