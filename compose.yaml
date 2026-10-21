@@ -18,7 +18,7 @@ services:
     ports: ["127.0.0.1:5432:5432"]
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./deploy/postgres:/docker-entrypoint-initdb.d:ro
+      - ./deployment/earlier/postgres:/docker-entrypoint-initdb.d:ro
     mem_limit: 2g
     cpus: 0.5
     healthcheck:
@@ -43,7 +43,7 @@ services:
     image: otel/opentelemetry-collector-contrib:0.135.0
     profiles: [telemetry]
     command: ["--config=/etc/otelcol/config.yaml"]
-    volumes: ["./deploy/otel/collector.yaml:/etc/otelcol/config.yaml:ro"]
+    volumes: ["./deployment/earlier/otel/collector.yaml:/etc/otelcol/config.yaml:ro"]
     ports: ["127.0.0.1:4318:4318"]
     mem_limit: 512m
     cpus: 0.5

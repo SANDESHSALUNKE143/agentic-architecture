@@ -5,9 +5,9 @@ This is the primary local acceptance path before Ubuntu deployment. Docker Deskt
 From the platform checkout in PowerShell:
 
 ```powershell
-./scripts/local-agentn.ps1 -Action start -AgentNSource 'D:/Projects/AgentN/agent-n-assistant'
-./scripts/local-agentn.ps1 -Action test -AgentNSource 'D:/Projects/AgentN/agent-n-assistant'
-./scripts/local-agentn.ps1 -Action stop -AgentNSource 'D:/Projects/AgentN/agent-n-assistant'
+./deployment/scripts/local-agentn.ps1 -Action start -AgentNSource 'D:/Projects/AgentN/agent-n-assistant'
+./deployment/scripts/local-agentn.ps1 -Action test -AgentNSource 'D:/Projects/AgentN/agent-n-assistant'
+./deployment/scripts/local-agentn.ps1 -Action stop -AgentNSource 'D:/Projects/AgentN/agent-n-assistant'
 ```
 
 Start builds a fresh SDK wheel from this checkout, installs it in the consumer image, starts the API, and tests health, rejected anonymous access, catalog/status execution, and metadata persistence after restart. Run start/test in the same PowerShell session so the generated token remains available. Stop preserves the named data volume. The test intentionally restarts this prototype service; do not run against a shared production service. A lost token can be replaced by rerunning start; it recreates the binding without deleting history.

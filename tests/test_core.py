@@ -81,7 +81,7 @@ class CoreTests(unittest.TestCase):
             r.create("arbitrary.module")
 
     def test_config(self):
-        self.assertEqual(load("config/local.json").agent_id, "demo-agent")
+        self.assertEqual(load("deployment/config/local.json").agent_id, "demo-agent")
 
 
 if __name__ == "__main__":

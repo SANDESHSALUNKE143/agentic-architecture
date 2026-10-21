@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "insight-agent"
+version = "0.1.0"
+description = "Reference agent. Business fixtures stay in this folder."
+requires-python = ">=3.11"
+dependencies = [
+  "agentic-foundation-sdk",
+  "neo4j>=5.26,<6",
+]
+
+[tool.setuptools]
+packages = ["insight_agent", "insight_agent.host"]
+
+[tool.setuptools.package-dir]
+"insight_agent" = "."
+"insight_agent.host" = "host"
+
+[tool.setuptools.package-data]
+"insight_agent.host" = ["product.html"]

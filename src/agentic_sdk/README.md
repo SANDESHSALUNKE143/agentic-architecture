@@ -1,6 +1,6 @@
 # Public SDK compatibility facade
 
-These modules preserve existing agentic_sdk imports. Canonical implementation now lives in core, contracts, adapters, services and sdk/python at the repository root. Do not add a second implementation here. See [source layout](../../docs/source-layout.md).
+These modules preserve existing agentic_sdk imports. Canonical implementation lives in [contracts](../contracts/README.md), [core](../core/README.md), [adapters](../adapters/README.md), [services](../services/README.md), and [sdk/python](../sdk/python/README.md). Do not add a second implementation here. See [source layout](../../doc/source-layout.md).
 
 
 ## Folder contents

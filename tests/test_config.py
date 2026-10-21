@@ -8,7 +8,7 @@ from agentic_sdk.config import load
 
 class ConfigurationTests(unittest.TestCase):
     def test_invalid_config_rejected(self):
-        original = json.loads(Path("config/local.json").read_text())
+        original = json.loads(Path("deployment/config/local.json").read_text())
         cases = [
             dict(original, token_budget=True),
             dict(original, llm_adapter="untrusted.module"),

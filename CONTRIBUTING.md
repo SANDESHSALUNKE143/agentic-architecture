@@ -1,17 +1,17 @@
 # Contributing
 
-Shared contracts and runtime behavior belong in core/contracts/adapters/services/sdk; agent-specific business logic belongs in consumer repositories. See [source layout](docs/source-layout.md) and [folder index](docs/folder-index.md). Preserve public compatibility exports and package mappings when moving files.
+Shared contracts and runtime behavior belong in core/contracts/adapters/services/sdk; agent-specific business logic belongs in consumer repositories. See [source layout](doc/source-layout.md) and [folder index](doc/folder-index.md). Preserve public compatibility exports and package mappings when moving files.
 
 Install an isolated development environment with `python -m pip install -e '.[dev,runtime,service,providers,telemetry]'`, then run:
 
 ```sh
 ruff format --check .
 ruff check .
-python scripts/check_repository.py
+python deployment/scripts/check_repository.py
 python -m unittest discover -s tests -v
 python examples/minimal.py
-python evaluation/run.py
-python scripts/validate_config.py
+python tests/evaluation/run.py
+python deployment/scripts/validate_config.py
 python -m build
 ```
 
@@ -19,4 +19,4 @@ The repository pins Ruff for repeatable formatting. Public classes/functions nee
 
 Tests should prove denied work causes no external operation, scopes remain isolated, profiles match and limits are enforced. Run full-platform acceptance only against the local synthetic stack; it creates test revisions/documents. Do not upload real data or commit credentials. Tests do not grant deployment/publication permission.
 
-Release gates include live integration, dependency/image locking and scanning, backup/restore and capacity validation. See docs/release-gates.md. A passing local check is not evidence that hosted CI or paid providers were exercised.
+Release gates include live integration, dependency/image locking and scanning, backup/restore and capacity validation. See doc/release-gates.md. A passing local check is not evidence that hosted CI or paid providers were exercised.

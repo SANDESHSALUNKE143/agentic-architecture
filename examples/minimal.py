@@ -7,7 +7,7 @@ from agentic_sdk.runtime import Agent, Budget
 
 
 def main():
-    cfg = load("config/local.json")
+    cfg = load("deployment/config/local.json")
     registry = Registry[LLM]()
     registry.register("echo", EchoLLM)
     embedder = HashEmbedder()

@@ -3,10 +3,10 @@
 Run from the platform checkout on Windows with Docker Desktop Linux containers:
 
 ```powershell
-./scripts/full-platform.ps1 start -AgentNSource 'D:/Projects/AgentN/agent-n-assistant'
-./scripts/full-platform.ps1 test
-./scripts/full-platform.ps1 status
-./scripts/full-platform.ps1 stop
+./deployment/scripts/full-platform.ps1 start -AgentNSource 'D:/Projects/AgentN/agent-n-assistant'
+./deployment/scripts/full-platform.ps1 test
+./deployment/scripts/full-platform.ps1 status
+./deployment/scripts/full-platform.ps1 stop
 ```
 
 First startup downloads images and builds the SDK and consumer. Stop any earlier AgentN demo bound to 8010 first. Only the two API ports and Grafana are published, on loopback. Credentials are generated once in ignored `deployment/full/.env`; do not share/commit it. The script reuses that file. Keep it backed up privately: changing POSTGRES_PASSWORD in the file does not rotate an initialized database password. Stop preserves every named volume.

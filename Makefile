@@ -4,9 +4,9 @@ test:
 example:
 	python examples/minimal.py
 eval:
-	python evaluation/run.py
+	python tests/evaluation/run.py
 validate:
-	python scripts/validate_config.py
+	python deployment/scripts/validate_config.py
 	docker compose config --quiet
 build:
 	python -m build
