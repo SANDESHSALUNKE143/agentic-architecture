@@ -33,7 +33,7 @@ These stay in place when you replace the retail fixtures with your systems.
 1. **Perception** — `apps/agent-api` turns the HTTP body into an `AgentRequest`.
 2. **Planning** — `orchestrator/planner` orders the agents and checks hops and delegation. It does not write the answer.
 3. **Foundation model** — `shared/llm` chooses the next step. Mock mode needs no key. Live mode uses `MODEL_API_KEY`.
-4. **Memory** — `shared/memory` holds conversation state and optional long-term notes. Tool results stay on the run.
+4. **Memory** — `shared/memory` holds conversation state, optional notes, and RAG. An agent reads the index only when its contract sets `rag.retrieve`. Capture stores a redacted note only when `rag.capture` is true. Vector and embedding choices include a local index, Qdrant, and AWS.
 5. **Action** — `mcp/tool-gateway` calls only the plugins named in `agent.yaml`.
 6. **Learning** — `shared/evaluation` and traces record status, tool names, and duration. They do not store the raw question or change model weights.
 7. **Communication** — the `AgentResponse` is what the API returns and what the console shows.
@@ -129,11 +129,11 @@ The model, memory, security checks, evaluation record, and trace stay here. A ne
 4. Add one case in `tests/agent-evaluation/cases.json` that lists `expect_tools`.
 5. Restart the API.
 
-Settings can edit instructions, plugins chosen from the registry, memory, and the approval policy. It cannot add a tool URL, grant `order_write` to a read-only agent, or clear approval on a write.
+Settings configures one agent in tabs: the contract, RAG, observability, connectors, and MCP plugins. Connectors store a URL, connection string, username, and password, and a saved password is not shown again. Settings cannot grant `order_write` to a read-only agent or clear approval on a write.
 
 ## Observability
 
-The API process records the agent, the tool name, the status, and the duration. The console shows that trace on the Run screen. The raw question is not stored, and a secret is not stored. The record lives in that process and clears when the process stops. Field names and the feedback call are in [docs/operations.md](docs/operations.md).
+The API process records the agent, the tool name, the status, and the duration when the contract lists `platform_trace`. `evaluation` records the score. OpenTelemetry and a log store are optional tools on the same contract, configured with `OTEL_EXPORTER_OTLP_ENDPOINT` and `OBSERVABILITY_LOG_URL`. This reference keeps the record in the process. Field names and the feedback call are in [docs/operations.md](docs/operations.md).
 
 ## Tools you attach over years
 

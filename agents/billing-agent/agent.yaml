@@ -27,6 +27,16 @@ output_schema:
     - explanation
 approval:
   required_for: []
+rag:
+  retrieve: false
+  capture: false
+  vector: local
+  embedding: local
+model:
+  provider: platform
+observability:
+  - platform_trace
+  - evaluation
 evaluation:
   expect_tools:
     - get_eligible_discounts

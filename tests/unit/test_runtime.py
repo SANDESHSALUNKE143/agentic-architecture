@@ -116,6 +116,105 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(copied["total_tokens"], 12)
         self.assertEqual(copied["cost"], 0.01)
 
+    def test_observability_is_part_of_the_agent_contract(self):
+        catalog = self.platform.contracts["catalog-agent"]
+        self.assertEqual(catalog.observability, ["platform_trace", "evaluation"])
+        with self.assertRaises(ValueError):
+            self.platform.update_contract("catalog-agent", {"observability": ["vendor"]})
+        original = Path(catalog.path).read_text(encoding="utf-8")
+        try:
+            self.platform.connect_observability("otlp", ["catalog-agent"])
+            updated = self.platform.contracts["catalog-agent"]
+            self.assertEqual(updated.observability, ["platform_trace", "evaluation", "otlp"])
+            sinks = {item["id"]: item for item in self.platform.plugins()["observability"]}
+            self.assertFalse(sinks["otlp"]["configured"])
+            self.assertIn("catalog-agent", sinks["otlp"]["connected_agents"])
+            self.assertNotIn("http", sinks["otlp"]["detail"])
+        finally:
+            Path(catalog.path).write_text(original, encoding="utf-8")
+            self.platform.reload()
+            self.assertEqual(self.platform.contracts["catalog-agent"].observability, ["platform_trace", "evaluation"])
+
+    def test_rag_is_chosen_on_the_agent(self):
+        research = self.platform.contracts["research-agent"]
+        catalog = self.platform.contracts["catalog-agent"]
+        self.assertTrue(research.rag["retrieve"])
+        self.assertFalse(research.rag["capture"])
+        self.assertFalse(catalog.rag["retrieve"])
+        self.assertEqual(catalog.rag["vector"], "local")
+        self.assertEqual(catalog.model["provider"], "platform")
+        with self.assertRaises(ValueError):
+            self.platform.update_contract("catalog-agent", {"rag": {**catalog.rag, "vector": "pinecone"}})
+        original = Path(research.path).read_text(encoding="utf-8")
+        try:
+            self.platform.connect_rag("vector", "aws", ["research-agent"])
+            updated = self.platform.contracts["research-agent"]
+            self.assertEqual(updated.rag["vector"], "aws")
+            self.assertEqual(self.platform.contracts["catalog-agent"].rag["vector"], "local")
+            run = self.platform.start(AgentRequest(task="What does the indexed document say about the jacket?", agents=["research-agent"]))
+            self.assertEqual(run["status"], "completed")
+            blob = str(run)
+            self.assertNotIn("AWS_VECTOR_INDEX", blob)
+            self.assertNotIn("http", blob)
+        finally:
+            Path(research.path).write_text(original, encoding="utf-8")
+            self.platform.reload()
+
+    def test_notes_and_ingestion_cadence_round_trip_into_the_agent_file(self):
+        research = self.platform.contracts["research-agent"]
+        original = Path(research.path).read_text(encoding="utf-8")
+        try:
+            updated = self.platform.update_contract(
+                "research-agent",
+                {
+                    "memory": {**research.memory, "notes": ["Jacket sizes live in the index.", "  "]},
+                    "rag": {**research.rag, "capture": True, "cadence": "daily"},
+                },
+            )
+            self.assertEqual(updated.memory["notes"], ["Jacket sizes live in the index."])
+            self.assertEqual(updated.rag["cadence"], "daily")
+            text = Path(research.path).read_text(encoding="utf-8")
+            self.assertIn("Jacket sizes live in the index.", text)
+            self.assertIn("daily", text)
+            cleared = self.platform.update_contract("research-agent", {"rag": {**updated.rag, "capture": False, "cadence": "hourly"}})
+            self.assertEqual(cleared.rag["cadence"], "off")
+        finally:
+            Path(research.path).write_text(original, encoding="utf-8")
+            self.platform.reload()
+
+    def test_connection_url_is_saved_and_password_stays_hidden(self):
+        import os
+        from tempfile import TemporaryDirectory
+
+        previous = os.environ.get("PLATFORM_DATA_DIR")
+        with TemporaryDirectory() as folder:
+            os.environ["PLATFORM_DATA_DIR"] = folder
+            try:
+                saved = self.platform.save_endpoint(
+                    "n8n",
+                    "https://n8n.example.test",
+                    "n8n://board",
+                    "operator",
+                    "local-secret",
+                )
+                self.assertEqual(saved["url"], "https://n8n.example.test")
+                self.assertEqual(saved["username"], "operator")
+                self.assertTrue(saved["password_set"])
+                self.assertNotIn("password", saved)
+                self.assertNotIn("local-secret", str(saved))
+                listed = {item["id"]: item for item in self.platform.endpoints()}
+                self.assertEqual(listed["n8n"]["url"], "https://n8n.example.test")
+                self.assertIn("does not host n8n", listed["n8n"]["summary"])
+                self.assertEqual(listed["grafana"]["title"], "Grafana")
+                kept = self.platform.save_endpoint("n8n", "https://n8n.example.test", "n8n://board", "operator", "")
+                self.assertTrue(kept["password_set"])
+                self.assertNotIn("local-secret", str(kept))
+            finally:
+                if previous is None:
+                    os.environ.pop("PLATFORM_DATA_DIR", None)
+                else:
+                    os.environ["PLATFORM_DATA_DIR"] = previous
+
 
 if __name__ == "__main__":
     unittest.main()

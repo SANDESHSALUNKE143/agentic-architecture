@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import secrets
+from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
@@ -41,6 +42,9 @@ class ContractBody(BaseModel):
     memory: dict | None = None
     approval: dict | None = None
     permissions: dict | None = None
+    observability: list[str] | None = None
+    rag: dict | None = None
+    model: dict | None = None
 
 
 class NoteBody(BaseModel):
@@ -175,6 +179,46 @@ def connect_plugin(name: str, body: PluginBody, authorization: str | None = Head
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+class EndpointBody(BaseModel):
+    url: str = ""
+    connection_string: str = ""
+    username: str = ""
+    password: str = ""
+
+
+@app.get("/settings/connections")
+def connections(authorization: str | None = Header(default=None)):
+    _authorized(authorization)
+    return platform.endpoints()
+
+
+@app.put("/settings/connections/{endpoint_id}")
+def save_connection(endpoint_id: str, body: EndpointBody, authorization: str | None = Header(default=None)):
+    _authorized(authorization)
+    try:
+        return platform.save_endpoint(endpoint_id, body.url, body.connection_string, body.username, body.password)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.put("/settings/rag/{kind}/{choice}")
+def connect_rag(kind: str, choice: str, body: PluginBody, authorization: str | None = Header(default=None)):
+    _authorized(authorization)
+    try:
+        return platform.connect_rag(kind, choice, body.agents)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.put("/settings/observability/{sink_id}")
+def connect_observability(sink_id: str, body: PluginBody, authorization: str | None = Header(default=None)):
+    _authorized(authorization)
+    try:
+        return platform.connect_observability(sink_id, body.agents)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 @app.get("/guide")
 def guide(authorization: str | None = Header(default=None)):
     _authorized(authorization)
@@ -244,6 +288,19 @@ def save_agent_settings(agent_id: str, body: ContractBody, authorization: str | 
     return _contract_view(contract)
 
 
+@app.get("/settings/agents/{agent_id}/file")
+def agent_file(agent_id: str, authorization: str | None = Header(default=None)):
+    _authorized(authorization)
+    contract = platform.contracts.get(agent_id)
+    if contract is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    path = Path(contract.path).resolve()
+    root = (ROOT / "agents").resolve()
+    if root not in path.parents or not path.is_file():
+        raise HTTPException(status_code=404, detail="Agent file not found")
+    return FileResponse(path, media_type="text/yaml", filename=f"{agent_id}.yaml")
+
+
 @app.post("/memory/notes")
 def add_note(body: NoteBody, authorization: str | None = Header(default=None)):
     _authorized(authorization)
@@ -259,5 +316,8 @@ def _contract_view(contract) -> dict:
         "memory": contract.memory,
         "permissions": contract.permissions,
         "approval": contract.approval,
+        "observability": contract.observability,
+        "rag": contract.rag,
+        "model": contract.model,
         "output_schema": contract.output_schema,
     }

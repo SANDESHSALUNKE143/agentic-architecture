@@ -71,12 +71,14 @@ def fetch_url(url: str) -> dict:
 
 
 def invoke_n8n(path: str, approved: bool = False) -> dict:
-    base = os.environ.get("N8N_BASE_URL", "")
+    from shared.security.endpoints import target
+
+    hosted = bool(target("n8n", "N8N_BASE_URL"))
     return {
         "path": path,
-        "base_configured": bool(base),
+        "base_configured": hosted,
         "approved": approved,
         "submitted": False,
         "simulated": True,
-        "explanation": "n8n was not called. The workflow waits for approval.",
+        "explanation": "n8n was not called. This repository does not host n8n. Set its URL in connection configuration. Writes still wait for approval.",
     }

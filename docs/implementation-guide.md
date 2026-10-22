@@ -1,6 +1,6 @@
 # Implementation guide
 
-This repository is the reference an industry team copies when it builds the agentic platform it has announced. The retail specialists are the worked example. The folders, the contract, the gateway, and the approval rule are the standard. Replace the example data. Keep the standard.
+This repository is the reference an industry team copies when it builds the agentic platform it has announced. The retail specialists are the worked example. The folders, the contract, the gateway, and the approval rule are the standard. Replace the example data. Keep the standard. The [architecture review](architecture-review.md) records what this runtime enforces today and what stays on the roadmap.
 
 ## What you adopt
 
@@ -76,7 +76,11 @@ The eight agents are a retail desk: shopping, catalog, inventory, support, order
 
 ## Observability
 
-Every run writes a trace in the API process: the agent, the tool name, the status, and the duration. The console shows that trace while the run is open. The raw question is not stored. A secret is not stored. Model weights are not changed. The record is gone when the API process stops. `TraceLog.export` is the JSON a later log store may read. The field list, the feedback call, and the health check are in [Operations](operations.md).
+Every run writes a trace in the API process when the agent contract lists `platform_trace`: the agent, the tool name, the status, and the duration. `evaluation` records the score. `otlp` and `log_store` are optional backends named by `OTEL_EXPORTER_OTLP_ENDPOINT` and `OBSERVABILITY_LOG_URL`. Setting either variable marks that tool configured. This reference still keeps the record in the process and does not send the raw question. Settings and Plugins choose those tools on the agent contract. The Settings Connectors tab stores the URL, connection string, username, and password. A saved password is not shown again.
+
+## RAG
+
+`rag.retrieve` is whether the agent reads the index. `rag.capture` is whether it stores a redacted note. Vector choices are local, Qdrant, and AWS. Embedding choices are local, an OpenAI-compatible model, and AWS Bedrock. The model provider is platform, OpenAI-compatible, or AWS Bedrock. Research reads the index. The other agents do not. The URL, connection string, username, and password for n8n, Grafana, Qdrant, AWS, the model host, SQL, and Neo4j are entered on the Settings Connectors tab and under Plugins. This repository does not host those systems. A saved password is not shown again.
 
 ## Tools that stay configurable
 
@@ -103,12 +107,13 @@ An industry host keeps those two processes. The API stays on a private address, 
 
 | Console page | Operator uses it to |
 | --- | --- |
-| Run | Send a task, choose automatic routing, a workflow, or specific agents, and read the live trace |
-| Agents | See each contract and start a run with that agent |
-| Plugins | Connect a registered plugin to an allowed agent |
+| Dashboard | See every loaded agent, pending approvals, and runs from this session |
+| Agent chat | Brief one agent and read the answer, with the citation closed until it is opened |
+| Agent library | Open a contract in its chat |
+| Run history | See runs started in this browser session |
 | Approvals | Approve or reject a paused write |
-| Settings | Edit instructions, connected plugins, memory, and the approval amount |
-| Docs | Read this standard, operations, the folder map, the architecture, the catalog, and the tool list |
+| Configuration | Choose one agent, then edit its prompt, knowledge base, ingestion, SQL access, observability, and notes. Generate YAML writes that agent's file |
+| Docs | Read this standard, the architecture review, operations, and the catalog |
 
 ## Definition of done
 

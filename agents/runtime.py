@@ -12,6 +12,8 @@ from shared.contracts import AgentContract, AgentRequest, validate_output
 from shared.llm import live_enabled
 from shared.llm.mock import MockChatModel
 from shared.memory.corpus import accept_citations
+from shared.memory.rag import retrieve as retrieve_rag
+from shared.observability.sinks import export_flags
 from shared.security.redact import strip_untrusted
 
 _TYPE = {"string": str, "number": float, "array": list, "object": dict, "boolean": bool}
@@ -28,12 +30,24 @@ class Runtime:
         started = time.monotonic()
         permissions = dict(contract.permissions)
         permissions.update({key: value for key, value in request.permissions.items() if key in permissions})
-        self.traces.add(request.request_id, "load_instructions", agent_id=contract.name, tools=list(contract.tools))
-        _emit(on_event, {"type": "activity", "agent_id": contract.name, "message": "Loaded the contract"})
+        self._trace(contract, request.request_id, "load_instructions", agent_id=contract.name, tools=list(contract.tools))
+        _emit(on_event, {"type": "activity", "agent_id": contract.name, "message": "The agent loaded its instructions"})
         notes = []
         if contract.memory.get("long_term_memory") == "optional":
             notes = self.memory.find_notes(request.user_id, request.task)
-        self.memory.remember(request.session_id, "user", strip_untrusted(request.task)[:240])
+        if contract.rag.get("retrieve"):
+            _emit(on_event, {"type": "activity", "agent_id": contract.name, "message": "The agent is reading its index"})
+            for hit in retrieve_rag(str(contract.rag.get("vector") or "local"), strip_untrusted(request.task)):
+                notes.append({
+                    "text": strip_untrusted(str(hit.get("snippet") or ""))[:240],
+                    "source_id": hit.get("source_id"),
+                    "location": hit.get("location") or "",
+                })
+        else:
+            _emit(on_event, {"type": "activity", "agent_id": contract.name, "message": "This agent does not read from RAG"})
+        if contract.rag.get("capture"):
+            self.memory.add_note(request.user_id, strip_untrusted(request.task)[:240])
+        self.memory.remember(session_id=request.session_id, role="user", text=strip_untrusted(request.task)[:240])
         calls: list[dict] = []
 
         def _tool(name: str):
@@ -59,7 +73,8 @@ class Runtime:
                     "status": outcome.get("status") or outcome.get("error_code") or "completed",
                     "detail": detail,
                 })
-                self.traces.add(
+                self._trace(
+                    contract,
                     request.request_id,
                     "tool",
                     agent_id=contract.name,
@@ -76,19 +91,35 @@ class Runtime:
         if live_enabled():
             model = _live_model()
         agent = create_agent(model, tools, system_prompt="\n".join(contract.instructions))
-        self.traces.add(request.request_id, "reason", agent_id=contract.name)
-        _emit(on_event, {"type": "activity", "agent_id": contract.name, "message": "Choosing the next step"})
+        self._trace(contract, request.request_id, "reason", agent_id=contract.name)
+        _emit(on_event, {"type": "activity", "agent_id": contract.name, "message": "The agent is choosing its next step"})
         agent.invoke({"messages": [{"role": "user", "content": strip_untrusted(request.task)}]})
         response = self._response(contract, request, calls, notes)
-        self.evaluation.record(
-            request.request_id,
-            contract.name,
-            response["status"],
-            [call.get("name", "") for call in calls],
-            int((time.monotonic() - started) * 1000),
-        )
-        self.traces.add(request.request_id, "persist", agent_id=contract.name, status=response["status"])
+        if "evaluation" in contract.observability:
+            self.evaluation.record(
+                request.request_id,
+                contract.name,
+                response["status"],
+                [call.get("name", "") for call in calls],
+                int((time.monotonic() - started) * 1000),
+            )
+        self._trace(contract, request.request_id, "persist", agent_id=contract.name, status=response["status"])
+        selected = [name for name in ("otlp", "log_store") if name in contract.observability]
+        if selected:
+            self._trace(
+                contract,
+                request.request_id,
+                "export",
+                agent_id=contract.name,
+                sinks=selected,
+                configured=export_flags(selected),
+            )
         return response
+
+    def _trace(self, contract: AgentContract, request_id: str, stage: str, **fields: Any) -> None:
+        if stage != "export" and "platform_trace" not in contract.observability:
+            return
+        self.traces.add(request_id, stage, **fields)
 
     def _response(self, contract, request, calls, notes) -> dict[str, Any]:
         errors = [call["error_code"] for call in calls if call.get("error_code")]
@@ -142,6 +173,9 @@ def _project(schema: dict, calls: list[dict], notes: list[dict]) -> dict:
             bag.setdefault(key, value)
     if notes and "explanation" not in bag:
         bag["explanation"] = notes[0]["text"]
+    for note in notes:
+        if note.get("source_id"):
+            bag.setdefault("sources", []).append({"source_id": note["source_id"], "location": note.get("location") or ""})
     projected = {}
     for key, spec in schema.get("properties", {}).items():
         if key in bag:

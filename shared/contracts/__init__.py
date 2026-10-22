@@ -9,6 +9,9 @@ from typing import Any
 import jsonschema
 import yaml
 
+from shared.memory.rag import normalize_model, normalize_rag
+from shared.observability.sinks import DEFAULT, IDS, ordered
+
 STATUSES = ("completed", "needs_approval", "failed", "not_implemented")
 
 
@@ -45,6 +48,9 @@ class AgentContract:
     output_schema: dict[str, Any]
     approval: dict[str, Any]
     evaluation: dict[str, Any]
+    observability: list[str]
+    rag: dict[str, Any]
+    model: dict[str, Any]
     path: str
 
 
@@ -63,8 +69,19 @@ def load_contract(path) -> AgentContract:
         output_schema=dict(raw["output_schema"]),
         approval=dict(raw.get("approval") or {}),
         evaluation=dict(raw.get("evaluation") or {}),
+        observability=_observability(raw.get("observability"), path),
+        rag=normalize_rag(raw.get("rag"), path),
+        model=normalize_model(raw.get("model"), path),
         path=str(path),
     )
+
+
+def _observability(raw, path) -> list[str]:
+    selected = list(DEFAULT if raw is None else raw)
+    unknown = [item for item in selected if item not in IDS]
+    if unknown:
+        raise ValueError(f"{path} names unknown observability tools: {', '.join(unknown)}")
+    return ordered(selected)
 
 
 def dump_contract(contract: AgentContract, payload: dict[str, Any]) -> None:

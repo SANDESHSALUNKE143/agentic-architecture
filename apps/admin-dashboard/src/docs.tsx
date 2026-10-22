@@ -12,7 +12,7 @@ export function DocsView({ onError }: { onError: (message: string) => void }) {
   useEffect(() => {
     api<Page[]>("/guide")
       .then((rows) => {
-        const order = ["implementation-guide", "operations", "repository", "architecture", "agent-catalog", "tool-contracts"];
+        const order = ["implementation-guide", "architecture-review", "operations", "repository", "architecture", "agent-catalog", "tool-contracts"];
         rows.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
         setPages(rows);
         setCurrent(rows[0]?.id || "");

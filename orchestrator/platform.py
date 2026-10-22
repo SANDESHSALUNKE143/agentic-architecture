@@ -11,7 +11,10 @@ from shared.contracts import AgentContract, AgentRequest, load_contract
 from shared.evaluation import EvaluationLog
 from shared.jobs import JobRunner
 from shared.loader import load_module
+from shared.memory.rag import CADENCE, EMBEDDINGS, MODELS, VECTORS
+from shared.memory.rag import describe as describe_rag
 from shared.memory.service import MemoryService
+from shared.observability.sinks import IDS, describe, ordered
 from shared.observability.trace import TraceLog
 from shared.security.credentials import CredentialStore
 from shared.security.limits import check_task_size
@@ -27,18 +30,31 @@ WRITE_TOOLS = {name for name, spec in _gateway_mod.REGISTRY.items() if spec["wri
 AGENT_DIR = ROOT / "agents"
 
 
+def _memory(memory: dict) -> dict:
+    if "notes" not in memory:
+        return memory
+    raw = memory.get("notes") or []
+    if not isinstance(raw, list):
+        raise ValueError("Notes are a list of details.")
+    notes = [str(item).strip()[:2000] for item in raw if str(item).strip()]
+    memory["notes"] = notes[:40]
+    return memory
+
+
 def _connections(env) -> list[dict]:
+    from shared.security.endpoints import is_configured
+
     rows = [
-        ("sql", "SQL", "SQL_CONNECTION", "Using the local read-only fixture.", "A database connection is configured."),
-        ("web", "Web", "WEB_ALLOWLIST", "Using the local example.test allowlist.", "A host allowlist is configured."),
-        ("n8n", "n8n", "N8N_BASE_URL", "Calls stay simulated until a base URL is set.", "An n8n base URL is configured. Writes still wait for approval."),
-        ("vector", "Vector search", "QDRANT_URL", "Using the local document index.", "Qdrant is configured."),
-        ("graph", "Graph", "NEO4J_URL", "Using the local entity graph.", "Neo4j is configured."),
-        ("model", "Model", "MODEL_API_KEY", "Mock mode. No key is stored here.", "A model key is set. The value is not shown."),
+        ("sql", "SQL", "SQL_CONNECTION", "sql", "Using the local read-only fixture.", "A database connection is configured."),
+        ("web", "Web", "WEB_ALLOWLIST", "", "Using the local example.test allowlist.", "A host allowlist is configured."),
+        ("n8n", "n8n", "N8N_BASE_URL", "n8n", "This repository does not host n8n. Enter its URL in connection configuration.", "An n8n URL is configured. Writes still wait for approval."),
+        ("vector", "Vector search", "QDRANT_URL", "qdrant", "Using the local document index.", "Qdrant is configured."),
+        ("graph", "Graph", "NEO4J_URL", "neo4j", "Using the local entity graph.", "Neo4j is configured."),
+        ("model", "Model", "MODEL_API_KEY", "", "Mock mode. No key is stored here.", "A model key is set. The value is not shown."),
     ]
     connections = []
-    for item_id, title, variable, local_detail, live_detail in rows:
-        configured = bool(env.get(variable))
+    for item_id, title, variable, endpoint_id, local_detail, live_detail in rows:
+        configured = is_configured(endpoint_id, variable, env) if endpoint_id else bool(env.get(variable))
         connections.append({
             "id": item_id,
             "title": title,
@@ -79,6 +95,8 @@ class Platform:
             "max_hops": MAX_HOPS,
             "model_api_key_set": bool(os.environ.get("MODEL_API_KEY")),
             "data_dir": str(data_dir()),
+            "observability": describe(os.environ),
+            "rag": describe_rag(os.environ),
         }
 
     def start(self, request: AgentRequest, on_event=None) -> dict:
@@ -90,7 +108,7 @@ class Platform:
         if problem:
             emit({"type": "error", "message": problem})
             return self._finish(request, [], "failed", problem, "task_rejected")
-        emit({"type": "activity", "message": "Accepted the task"})
+        emit({"type": "activity", "message": "The agent accepted the brief"})
         name, agents = route(request.task, request.workflow, request.agents)
         plan: Plan = build_plan(agents, set(self.contracts))
         if plan.error:
@@ -191,7 +209,97 @@ class Platform:
                 "connected_agents": connected[item["name"]],
                 "eligible_agents": eligible[item["name"]],
             })
-        return {"plugins": plugins, "connections": _connections(os.environ)}
+        return {"plugins": plugins, "connections": _connections(os.environ), "observability": self.observability(), "rag": self.rag_catalog(), "endpoints": self.endpoints()}
+
+    def endpoints(self) -> list[dict]:
+        from shared.security.endpoints import public
+
+        return public()
+
+    def save_endpoint(self, endpoint_id: str, url: str, connection_string: str, username: str, password: str) -> dict:
+        from shared.security.endpoints import update
+
+        return update(endpoint_id, url, connection_string, username, password)
+
+    def observability(self) -> list[dict]:
+        import os
+
+        rows = describe(os.environ)
+        names = sorted(self.contracts)
+        for row in rows:
+            row["connected_agents"] = [
+                contract.name for contract in self.contracts.values() if row["id"] in contract.observability
+            ]
+            row["eligible_agents"] = names
+        return rows
+
+    def rag_catalog(self) -> dict:
+        import os
+
+        catalog = describe_rag(os.environ)
+        field = {"vector": "vector", "embedding": "embedding", "model": "provider"}
+        for kind, rows in catalog.items():
+            for row in rows:
+                row["connected_agents"] = []
+                row["eligible_agents"] = sorted(self.contracts)
+                for contract in self.contracts.values():
+                    current = contract.model.get("provider") if kind == "model" else contract.rag.get(field[kind])
+                    if current == row["id"]:
+                        row["connected_agents"].append(contract.name)
+        return catalog
+
+    def connect_rag(self, kind: str, choice: str, agents: list[str]) -> dict:
+        allowed = {"vector": VECTORS, "embedding": EMBEDDINGS, "model": MODELS}
+        if kind not in allowed or choice not in allowed[kind]:
+            raise ValueError("Unknown RAG setting.")
+        wanted = []
+        for agent_id in agents:
+            if agent_id in wanted:
+                continue
+            if agent_id not in self.contracts:
+                raise ValueError(f"{agent_id} is not an agent.")
+            wanted.append(agent_id)
+        fallback = "platform" if kind == "model" else "local"
+        for contract in list(self.contracts.values()):
+            should = contract.name in wanted
+            if kind == "model":
+                current = contract.model.get("provider")
+                if should and current != choice:
+                    self.update_contract(contract.name, {"model": {"provider": choice}})
+                elif not should and current == choice:
+                    self.update_contract(contract.name, {"model": {"provider": fallback}})
+                continue
+            current = contract.rag.get(kind)
+            if should and current != choice:
+                updated = dict(contract.rag)
+                updated[kind] = choice
+                self.update_contract(contract.name, {"rag": updated})
+            elif not should and current == choice:
+                updated = dict(contract.rag)
+                updated[kind] = fallback
+                self.update_contract(contract.name, {"rag": updated})
+        return self.rag_catalog()
+
+    def connect_observability(self, sink: str, agents: list[str]) -> list[dict]:
+        if sink not in IDS:
+            raise ValueError("Unknown observability tool.")
+        wanted = []
+        for agent_id in agents:
+            if agent_id in wanted:
+                continue
+            if agent_id not in self.contracts:
+                raise ValueError(f"{agent_id} is not an agent.")
+            wanted.append(agent_id)
+        for contract in list(self.contracts.values()):
+            has = sink in contract.observability
+            should = contract.name in wanted
+            if has == should:
+                continue
+            selected = [item for item in contract.observability if item != sink]
+            if should:
+                selected.append(sink)
+            self.update_contract(contract.name, {"observability": selected})
+        return self.observability()
 
     def connect_plugin(self, name: str, agents: list[str]) -> dict:
         if name not in _gateway_mod.REGISTRY:
@@ -224,9 +332,9 @@ class Platform:
 
     def update_contract(self, agent_id: str, updates: dict) -> AgentContract:
         contract = self.contracts[agent_id]
-        unknown = set(updates) - {"instructions", "tools", "memory", "approval"}
+        unknown = set(updates) - {"instructions", "tools", "memory", "approval", "observability", "rag", "model"}
         if unknown:
-            raise ValueError("Only instructions, tools, memory, and approval can be edited.")
+            raise ValueError("Only instructions, tools, memory, approval, observability, RAG, and model can be edited.")
         tools = list(updates.get("tools", contract.tools))
         if any(tool not in self.gateway.names() for tool in tools):
             raise ValueError("Tools must be chosen from the registry.")
@@ -241,11 +349,32 @@ class Platform:
                 raise ValueError("A write tool must keep its approval requirement.")
         if contract.permissions.get("order_write") is False and updates.get("permissions", {}).get("order_write"):
             raise ValueError("A read-only agent cannot be granted order_write.")
+        selected = ordered(list(updates.get("observability", contract.observability)))
+        if any(item not in IDS for item in updates.get("observability", contract.observability)):
+            raise ValueError("Observability tools must be chosen from the catalog.")
+        rag = dict(updates.get("rag", contract.rag))
+        model = dict(updates.get("model", contract.model))
+        if str(rag.get("vector") or "local") not in VECTORS or str(rag.get("embedding") or "local") not in EMBEDDINGS:
+            raise ValueError("RAG vector and embedding must be chosen from the catalog.")
+        cadence = "off" if not rag.get("capture") else str(rag.get("cadence") or "each_run")
+        if cadence not in CADENCE:
+            raise ValueError("Ingestion cadence must be off, each run, hourly, or daily.")
+        if str(model.get("provider") or "platform") not in MODELS:
+            raise ValueError("The model provider must be chosen from the catalog.")
         payload = yaml.safe_load(Path(contract.path).read_text(encoding="utf-8"))
         payload["instructions"] = list(updates.get("instructions", contract.instructions))
         payload["tools"] = tools
-        payload["memory"] = dict(updates.get("memory", contract.memory))
+        payload["memory"] = _memory(dict(updates.get("memory", contract.memory)))
         payload["approval"] = approval
+        payload["observability"] = selected
+        payload["rag"] = {
+            "retrieve": bool(rag.get("retrieve")),
+            "capture": bool(rag.get("capture")),
+            "vector": str(rag.get("vector") or "local"),
+            "embedding": str(rag.get("embedding") or "local"),
+            "cadence": cadence,
+        }
+        payload["model"] = {"provider": str(model.get("provider") or "platform")}
         Path(contract.path).write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
         self.reload()
         return self.contracts[agent_id]

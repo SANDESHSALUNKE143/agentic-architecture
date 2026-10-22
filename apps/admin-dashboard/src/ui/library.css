@@ -1,0 +1,148 @@
+/* Layout library. Existing screens keep their markup. These rules decide width and the mobile shell. */
+
+.thread,
+.welcome,
+.conversation,
+.composer,
+.library-grid,
+.library-intro,
+.history-list,
+.config-layout,
+.dashboard-metrics {
+  max-width: none;
+}
+
+.page-body,
+.chat-column {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  height: auto;
+}
+
+.chat-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 28px 12px;
+}
+
+.composer-wrap {
+  flex: none;
+  position: relative;
+  z-index: 1;
+  background: #fbfcff;
+  padding: 8px 28px 16px;
+}
+
+.thread {
+  width: 100%;
+}
+
+.user-pill {
+  max-width: min(70%, 640px);
+}
+
+.product-table,
+.dashboard-table,
+.config-table {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    overflow: auto;
+    padding: 8px 10px;
+  }
+
+  .brand span,
+  .nav-tag,
+  .nav-sep,
+  .side-agents,
+  .sidebar-user {
+    display: none;
+  }
+
+  .sidebar nav {
+    display: flex;
+    flex-direction: row;
+    grid-template-columns: none;
+    gap: 4px;
+    min-width: 0;
+    overflow: auto;
+  }
+
+  .sidebar nav button {
+    width: auto;
+    white-space: nowrap;
+    min-height: 40px;
+  }
+
+  .topbar {
+    height: auto;
+    min-height: 56px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .topbar h1 {
+    font-size: 16px;
+  }
+
+  .mock-pill {
+    flex: none;
+  }
+
+  .chat-scroll,
+  .composer-wrap,
+  .library-view,
+  .history-view,
+  .config-view,
+  .page-pad {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .prompt-grid,
+  .library-grid,
+  .dashboard-metrics,
+  .config-fields,
+  .config-layout,
+  .agent-config {
+    grid-template-columns: 1fr;
+  }
+
+  .config-tabs {
+    position: static;
+    display: flex;
+    overflow: auto;
+    gap: 4px;
+  }
+
+  .config-tab {
+    width: auto;
+    white-space: nowrap;
+    min-height: 40px;
+  }
+
+  .table-scroll {
+    max-width: 100%;
+  }
+
+  .user-pill {
+    max-width: 88%;
+  }
+
+  .library-card .capability-row,
+  .library-card p {
+    min-height: 0;
+  }
+}

@@ -30,6 +30,16 @@ approval:
   required_for:
     - prepare_order
   amount_gte: 100
+rag:
+  retrieve: false
+  capture: false
+  vector: local
+  embedding: local
+model:
+  provider: platform
+observability:
+  - platform_trace
+  - evaluation
 evaluation:
   expect_tools:
     - prepare_order

@@ -15,6 +15,8 @@ These eight specialists are the reference domain. Copy the contract shape for yo
 
 `long_term_memory: optional` means the agent may read a saved note and must not invent a memory it did not retrieve.
 
+`rag.retrieve` means the agent reads the retrieval index. `rag.capture` means it stores a redacted note. Research reads. The others do not. Vector and embedding choices include AWS. The model provider is platform, OpenAI-compatible, or AWS Bedrock.
+
 Workflows:
 
 - `product-discovery`: shopping, catalog, inventory

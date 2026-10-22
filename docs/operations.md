@@ -2,7 +2,45 @@
 
 Observability, the tool ports, and the host stay for the life of the platform. An agent added years later uses the same trace, the same ports, and the same two processes.
 
+## RAG
+
+Each agent contract has a `rag` block and a `model` block. `retrieve` means the agent reads the index. `capture` means the agent stores a redacted note from the turn. Both start off, except the research agent, which reads the index and does not capture.
+
+| Choice | Values | Variable |
+| --- | --- | --- |
+| Vector | local, Qdrant, AWS | `QDRANT_URL`, `AWS_VECTOR_INDEX` |
+| Embedding | local, OpenAI-compatible, AWS Bedrock | `EMBEDDING_MODEL`, `AWS_EMBEDDING_MODEL` |
+| Model | platform, OpenAI-compatible, AWS Bedrock | model key, `AWS_BEDROCK_MODEL` |
+
+Local is the document index in this process. A set variable marks Qdrant or AWS configured. This build still answers from the local index and does not call AWS. The console does not show a password. Settings and Plugins edit the choice on the agent.
+
+## Connection configuration
+
+This repository does not host n8n, Grafana, Qdrant, or AWS. Plugins has a form for each system: direct URL, connection string, username, and password.
+
+| System | What the URL is |
+| --- | --- |
+| n8n | The n8n you already run. There is no n8n process in this repository. |
+| Grafana | The dashboard address. The password is saved locally and is not returned by the API. |
+| OpenTelemetry | The collector endpoint. |
+| Qdrant | The vector database used when an agent selects Qdrant. |
+| AWS vector | The AWS endpoint. The access key is the username and the secret key is the password. |
+| Embedding model and model host | The direct URL of each model service. |
+| SQL | The connection string. A string typed in the console is shown again. A string that exists only in the environment is not shown. |
+| Neo4j | The graph URL, username, and password. |
+
+The file is `data/connections.json`. That directory is not committed. A blank password on save keeps the password already stored.
+
 ## Observability
+
+Each agent contract names the observability tools it uses. The list is `observability` in `agent.yaml`. The Settings Observability tab and the Plugins page edit that list. The Settings Connectors tab stores the URL, connection string, username, and password. A saved password is not shown again.
+
+| Tool | Variable | This reference |
+| --- | --- | --- |
+| Platform trace | In this process | Records the agent, the tool name, and the status. The raw question is not stored. |
+| Evaluation | In this process | Records status, tool names, and duration. It does not change model weights. |
+| OpenTelemetry | `OTEL_EXPORTER_OTLP_ENDPOINT` | Marks the collector configured. The trace stays in this process. |
+| Log store | `OBSERVABILITY_LOG_URL` | Marks the store configured. The trace stays in this process. |
 
 The record lives in the API process. `shared/observability/trace.py` keeps the trace. `shared/evaluation` keeps the score. The console shows both while a run is open. This repository does not ship events to a vendor product.
 
