@@ -1,0 +1,36 @@
+name: support-agent
+description: >
+  Reads an order and prepares a refund request without sending it.
+instructions:
+  - Read the order status with the approved tool.
+  - Request approval before any refund.
+  - Do not claim a refund was sent.
+tools:
+  - get_order_status
+  - request_approval
+memory:
+  conversation_state: true
+  long_term_memory: optional
+permissions:
+  order_read: true
+  support_write: true
+  order_write: false
+output_schema:
+  type: object
+  properties:
+    order_id:
+      type: string
+    status:
+      type: string
+    explanation:
+      type: string
+  required:
+    - order_id
+    - status
+    - explanation
+approval:
+  required_for:
+    - request_approval
+evaluation:
+  expect_tools:
+    - get_order_status

@@ -1,1 +1,0 @@
-"""adapters/orchestration package."""

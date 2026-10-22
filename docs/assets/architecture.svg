@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 280" role="img" aria-labelledby="title desc">
+  <title id="title">Request path through the seven agent components</title>
+  <desc id="desc">A task moves from the API into planning, the model, memory, the tool gateway, evaluation, and the response.</desc>
+  <rect width="1280" height="280" fill="#f4f1ea"/>
+  <g font-family="Georgia, serif" font-size="14" fill="#1c2430">
+    <g>
+      <rect x="20" y="70" width="150" height="110" rx="12" fill="#1f4b3a"/>
+      <text x="95" y="110" fill="white" text-anchor="middle">Perception</text>
+      <text x="95" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">apps/agent-api</text>
+      <text x="95" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">AgentRequest</text>
+    </g>
+    <g>
+      <rect x="200" y="70" width="150" height="110" rx="12" fill="#245c48"/>
+      <text x="275" y="110" fill="white" text-anchor="middle">Planning</text>
+      <text x="275" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">orchestrator/planner</text>
+      <text x="275" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">hops and delegation</text>
+    </g>
+    <g>
+      <rect x="380" y="70" width="160" height="110" rx="12" fill="#8a5a2a"/>
+      <text x="460" y="110" fill="white" text-anchor="middle">Foundation model</text>
+      <text x="460" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">shared/llm</text>
+      <text x="460" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">mock or MODEL_API_KEY</text>
+    </g>
+    <g>
+      <rect x="570" y="70" width="150" height="110" rx="12" fill="#1f4b3a"/>
+      <text x="645" y="110" fill="white" text-anchor="middle">Memory</text>
+      <text x="645" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">shared/memory</text>
+      <text x="645" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">notes and documents</text>
+    </g>
+    <g>
+      <rect x="750" y="70" width="160" height="110" rx="12" fill="#245c48"/>
+      <text x="830" y="110" fill="white" text-anchor="middle">Action</text>
+      <text x="830" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">mcp/tool-gateway</text>
+      <text x="830" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">allowlisted tools</text>
+    </g>
+    <g>
+      <rect x="940" y="70" width="150" height="110" rx="12" fill="#8a5a2a"/>
+      <text x="1015" y="110" fill="white" text-anchor="middle">Learning</text>
+      <text x="1015" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">shared/evaluation</text>
+      <text x="1015" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">status and duration</text>
+    </g>
+    <g>
+      <rect x="1120" y="70" width="140" height="110" rx="12" fill="#1f4b3a"/>
+      <text x="1190" y="110" fill="white" text-anchor="middle">Communication</text>
+      <text x="1190" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">AgentResponse</text>
+      <text x="1190" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">API and dashboard</text>
+    </g>
+    <g stroke="#1c2430" stroke-width="2" fill="none">
+      <path d="M170 125 H200"/>
+      <path d="M350 125 H380"/>
+      <path d="M540 125 H570"/>
+      <path d="M720 125 H750"/>
+      <path d="M910 125 H940"/>
+      <path d="M1090 125 H1120"/>
+    </g>
+  </g>
+</svg>

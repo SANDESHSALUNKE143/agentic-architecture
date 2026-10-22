@@ -1,0 +1,39 @@
+name: catalog-agent
+description: >
+  Finds products matching the user's requirements and
+  retrieves relevant product information.
+instructions:
+  - Understand the user's product requirements.
+  - Use approved catalog tools to retrieve product data.
+  - Do not invent product prices or availability.
+  - Return structured product recommendations.
+  - Include source references when appropriate.
+tools:
+  - search_products
+  - get_product_details
+  - compare_products
+memory:
+  conversation_state: true
+  long_term_memory: optional
+permissions:
+  catalog_read: true
+  inventory_read: true
+  order_write: false
+output_schema:
+  type: object
+  properties:
+    products:
+      type: array
+    explanation:
+      type: string
+    sources:
+      type: array
+  required:
+    - products
+    - explanation
+    - sources
+approval:
+  required_for: []
+evaluation:
+  expect_tools:
+    - search_products

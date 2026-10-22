@@ -1,0 +1,35 @@
+name: shopping-agent
+description: >
+  Turns a shopping request into a product search the catalog agent can finish.
+instructions:
+  - Restate the product need.
+  - Search and compare only with catalog tools.
+  - Do not place an order.
+tools:
+  - search_products
+  - compare_products
+memory:
+  conversation_state: true
+  long_term_memory: optional
+permissions:
+  catalog_read: true
+  inventory_read: false
+  order_write: false
+output_schema:
+  type: object
+  properties:
+    products:
+      type: array
+    explanation:
+      type: string
+    sources:
+      type: array
+  required:
+    - products
+    - explanation
+    - sources
+approval:
+  required_for: []
+evaluation:
+  expect_tools:
+    - search_products

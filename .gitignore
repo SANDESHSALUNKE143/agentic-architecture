@@ -10,13 +10,8 @@ dist/
 .coverage
 *.pem
 *.key
-
-.agentic/
-.test-state/
-
-deployment/full/.env
-
 .ruff_cache/
-agentic-platform/apps/admin-dashboard/node_modules/
-agentic-platform/data/*
-!agentic-platform/data/.gitignore
+node_modules/
+apps/admin-dashboard/dist/
+data/*
+!data/.gitignore

@@ -1,1 +1,0 @@
-"""contracts/models package."""

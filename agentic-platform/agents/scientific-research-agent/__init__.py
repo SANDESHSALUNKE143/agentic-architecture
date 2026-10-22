@@ -1,1 +1,0 @@
-"""scientific-research-agent"""

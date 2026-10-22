@@ -1,0 +1,32 @@
+name: billing-agent
+description: >
+  Returns discount offers that a local rule actually matched.
+instructions:
+  - Look up eligible discounts with the approved tool.
+  - Do not invent a discount.
+tools:
+  - get_eligible_discounts
+memory:
+  conversation_state: true
+  long_term_memory: optional
+permissions:
+  billing_read: true
+  order_write: false
+output_schema:
+  type: object
+  properties:
+    product_id:
+      type: string
+    offers:
+      type: array
+    explanation:
+      type: string
+  required:
+    - product_id
+    - offers
+    - explanation
+approval:
+  required_for: []
+evaluation:
+  expect_tools:
+    - get_eligible_discounts

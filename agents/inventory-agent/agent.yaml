@@ -1,0 +1,33 @@
+name: inventory-agent
+description: >
+  Reports how many units are in stock for a known product.
+instructions:
+  - Read stock with the approved tool.
+  - Do not change inventory.
+tools:
+  - check_stock
+memory:
+  conversation_state: true
+  long_term_memory: optional
+permissions:
+  inventory_read: true
+  catalog_read: false
+  order_write: false
+output_schema:
+  type: object
+  properties:
+    product_id:
+      type: string
+    available:
+      type: number
+    explanation:
+      type: string
+  required:
+    - product_id
+    - available
+    - explanation
+approval:
+  required_for: []
+evaluation:
+  expect_tools:
+    - check_stock

@@ -1,0 +1,35 @@
+name: order-agent
+description: >
+  Prepares a simulated order and waits for approval at or above the configured amount.
+instructions:
+  - Prepare the order with the approved tool.
+  - Do not submit the order to a merchant.
+  - Wait for approval when the amount meets the policy.
+tools:
+  - prepare_order
+memory:
+  conversation_state: true
+  long_term_memory: optional
+permissions:
+  order_write: true
+  catalog_read: true
+output_schema:
+  type: object
+  properties:
+    product_id:
+      type: string
+    amount:
+      type: number
+    explanation:
+      type: string
+  required:
+    - product_id
+    - amount
+    - explanation
+approval:
+  required_for:
+    - prepare_order
+  amount_gte: 100
+evaluation:
+  expect_tools:
+    - prepare_order

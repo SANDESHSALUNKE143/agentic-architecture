@@ -1,1 +1,0 @@
-"""adapters/llm/anthropic package."""

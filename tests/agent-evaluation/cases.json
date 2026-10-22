@@ -1,0 +1,24 @@
+[
+  {
+    "name": "catalog finds a jacket",
+    "task": "Find a blue trail jacket under $150",
+    "workflow": "product-discovery",
+    "agent_id": "catalog-agent",
+    "expect_tools": ["search_products"]
+  },
+  {
+    "name": "support reads the order before a refund",
+    "task": "Refund order 1001",
+    "workflow": "customer-support",
+    "agent_id": "support-agent",
+    "expect_tools": ["get_order_status", "request_approval"],
+    "expect_status": "needs_approval"
+  },
+  {
+    "name": "analysis reports the sales mean",
+    "task": "Analyze the sales dataset",
+    "workflow": "data-analysis",
+    "agent_id": "data-analysis-agent",
+    "expect_tools": ["analyze_dataset"]
+  }
+]

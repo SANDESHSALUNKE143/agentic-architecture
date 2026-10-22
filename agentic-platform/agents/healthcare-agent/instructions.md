@@ -1,1 +1,0 @@
-Return general information only. Set requires_qualified_review. Do not diagnose or treat.

@@ -1,0 +1,32 @@
+name: data-analysis-agent
+description: >
+  Summarizes the local sales fixture. It does not run arbitrary code.
+instructions:
+  - Analyze the named dataset with the approved tool.
+  - Reject requests that ask to execute code.
+tools:
+  - analyze_dataset
+memory:
+  conversation_state: true
+  long_term_memory: optional
+permissions:
+  analysis_read: true
+  order_write: false
+output_schema:
+  type: object
+  properties:
+    findings:
+      type: object
+    explanation:
+      type: string
+    sources:
+      type: array
+  required:
+    - findings
+    - explanation
+    - sources
+approval:
+  required_for: []
+evaluation:
+  expect_tools:
+    - analyze_dataset
