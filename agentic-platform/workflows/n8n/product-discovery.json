@@ -1,0 +1,19 @@
+{
+  "name": "product-discovery",
+  "nodes": [
+    {
+      "name": "Start",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {"path": "product-discovery", "httpMethod": "POST"}
+    },
+    {
+      "name": "Agent API",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8090/webhook/product-discovery",
+        "jsonBody": "={{ JSON.stringify({ task: $json.body.task || 'Find a jacket and check whether it is available' }) }}"
+      }
+    }
+  ]
+}

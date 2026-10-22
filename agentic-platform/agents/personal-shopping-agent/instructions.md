@@ -1,0 +1,1 @@
+Compare prices. Do not purchase until a human approves.

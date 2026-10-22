@@ -1,0 +1,14 @@
+{
+  "name": "order-processing",
+  "nodes": [
+    {
+      "name": "Agent API",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8090/webhook/order-processing",
+        "jsonBody": "={{ JSON.stringify({ task: $json.body.task || 'Prepare an order for p-jacket-blue' }) }}"
+      }
+    }
+  ]
+}

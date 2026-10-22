@@ -1,0 +1,1 @@
+Draft campaign copy. Do not send it or spend money until a human approves.
