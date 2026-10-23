@@ -12,6 +12,7 @@ from orchestrator.platform import Platform
 from pydantic import BaseModel, Field
 from shared.config import ROOT, assert_runtime_config, dev_token
 from shared.contracts import AgentRequest
+from shared.platform_map import describe_platform
 
 assert_runtime_config()
 platform = Platform()
@@ -62,6 +63,12 @@ def _authorized(authorization: str | None) -> None:
 def health(authorization: str | None = Header(default=None)):
     _authorized(authorization)
     return platform.health()
+
+
+@app.get("/platform")
+def platform_index(authorization: str | None = Header(default=None)):
+    _authorized(authorization)
+    return describe_platform()
 
 
 @app.get("/agents")

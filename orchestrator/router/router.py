@@ -1,11 +1,27 @@
-"""Pick one specialist or one of the three workflows."""
+"""Pick one specialist or one of the three workflows.
+
+The agent order lives in workflows/<name>/workflow.py. This module loads that
+list. The phrases below are the only routing text edited here.
+"""
 
 from __future__ import annotations
 
+from shared.config import ROOT
+from shared.loader import load_module
+
+
+def _agents(name: str) -> list[str]:
+    module = load_module(
+        ROOT / "workflows" / name / "workflow.py",
+        f"workflow_{name.replace('-', '_')}",
+    )
+    return list(module.AGENTS)
+
+
 WORKFLOWS = {
-    "product-discovery": ["shopping-agent", "catalog-agent", "inventory-agent"],
-    "customer-support": ["support-agent", "billing-agent"],
-    "order-processing": ["order-agent", "billing-agent"],
+    "product-discovery": _agents("product-discovery"),
+    "customer-support": _agents("customer-support"),
+    "order-processing": _agents("order-processing"),
 }
 
 RULES = [

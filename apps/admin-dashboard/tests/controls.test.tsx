@@ -1,4 +1,4 @@
-import { Checkbox, Select, TextField } from "@agentic/controls";
+import { Checkbox, GearButton, Select, TextField } from "@agentic/controls";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
@@ -45,5 +45,16 @@ describe("controls", () => {
     const field = screen.getByRole("textbox", { name: "Direct URL" }) as HTMLInputElement;
     await user.type(field, "https://db.example");
     expect(field.value).toBe("https://db.example");
+  });
+
+  it("opens settings from the gear", async () => {
+    const user = userEvent.setup();
+    let opened = "";
+    render(<GearButton label="Settings for Inventory Agent" onClick={() => { opened = "inventory-agent"; }} />);
+    const gear = screen.getByRole("button", { name: "Settings for Inventory Agent" });
+    expect(gear.querySelector("svg")).toBeTruthy();
+    expect(document.querySelector("select")).toBeNull();
+    await user.click(gear);
+    expect(opened).toBe("inventory-agent");
   });
 });

@@ -502,7 +502,9 @@ button.chip:hover { background: #d7e8f7; }
   padding: 17px;
   box-shadow: var(--shadow);
 }
-.library-card .hero-icon { width: 44px; height: 44px; margin-bottom: 12px; }
+.library-card .hero-icon { width: 44px; height: 44px; }
+.library-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.library-card .gear-button { width: 34px; margin-top: 0; padding: 0; }
 .library-card h3 { margin: 0 0 6px; min-height: 22px; font-size: 16px; }
 .library-card p {
   color: var(--muted);
@@ -582,7 +584,10 @@ button.chip:hover { background: #d7e8f7; }
 .chat-column { display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%; }
 .chat-scroll { overflow: auto; min-height: 0; flex: 1; padding: 27px 25px 16px; display: flex; flex-direction: column; }
 .welcome, .conversation, .composer { max-width: 790px; margin-left: auto; margin-right: auto; width: 100%; }
-.agent-hero { display: flex; align-items: center; gap: 15px; margin-bottom: 18px; }
+.agent-hero { display: flex; align-items: center; gap: 15px; margin-bottom: 18px; flex-wrap: wrap; }
+.hero-copy { flex: 1; min-width: 180px; }
+.hero-settings { margin-left: auto; }
+.thread-settings { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 .hero-icon {
   width: 56px; height: 56px; display: grid; place-items: center; border-radius: 17px;
   background: linear-gradient(135deg, #e9f0ff, #f1eaff); border: 1px solid #e0e7fc; font-weight: 700; color: var(--accent);
@@ -649,7 +654,13 @@ button.chip:hover { background: #d7e8f7; }
 .library-view, .history-view, .config-view { overflow: auto; flex: 1; padding: 28px; min-height: 0; }
 .library-intro h2, .config-title h2 { font-size: 25px; letter-spacing: -0.7px; margin: 3px 0 5px; }
 .library-card button, .text-button { border: 1px solid #dbe5fb; background: #f7f9ff; color: #3565d7; border-radius: 9px; padding: 8px 10px; font-weight: 700; width: 100%; }
+.library-card .gear-button, .row-actions .gear-button, .thread-settings .gear-button, .hero-settings { width: 34px; margin-top: 0; padding: 0; }
 .text-button { width: auto; }
+.row-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.agent-row { display: flex; align-items: center; }
+.agent-row .agent-item { flex: 1; min-width: 0; width: auto; }
+.agent-row .gear-button { width: 28px; height: 28px; }
+.sidebar nav .gear-icon { width: 15px; height: 15px; }
 .config-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 17px; align-items: start; max-width: 1080px; }
 .config-tabs { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 8px; position: sticky; top: 0; }
 .config-tab { width: 100%; text-align: left; border: 0; background: transparent; padding: 11px 10px; border-radius: 9px; color: #5d6980; font-weight: 700; }

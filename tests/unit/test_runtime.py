@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from orchestrator.platform import Platform  # noqa: E402
+from orchestrator.router.router import WORKFLOWS  # noqa: E402
 from shared.contracts import AgentRequest, validate_output  # noqa: E402
 from shared.jobs import JobRunner  # noqa: E402
 from shared.llm import usage_from_payload  # noqa: E402
@@ -20,6 +21,16 @@ from shared.security.credentials import CredentialStore  # noqa: E402
 class RuntimeTests(unittest.TestCase):
     def setUp(self):
         self.platform = Platform()
+
+    def test_workflow_files_are_the_route(self):
+        from shared.loader import load_module
+
+        for name, agents in WORKFLOWS.items():
+            module = load_module(
+                ROOT / "workflows" / name / "workflow.py",
+                f"check_{name.replace('-', '_')}",
+            )
+            self.assertEqual(list(module.AGENTS), agents)
 
     def test_jacket_uses_catalog_tools(self):
         run = self.platform.start(AgentRequest(task="Find a blue trail jacket under $150"))

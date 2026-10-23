@@ -1,4 +1,4 @@
-import { TextArea } from "@agentic/controls";
+import { GearButton, TextArea } from "@agentic/controls";
 import { useEffect, useRef, useState } from "react";
 import { activityLine } from "./agent";
 import { api } from "./api";
@@ -50,11 +50,13 @@ export function ChatView({
   agents,
   onFinished,
   onError,
+  onOpenSettings,
 }: {
   agent: string;
   agents: AgentCard[];
   onFinished: (run: SessionRun) => void;
   onError: (message: string) => void;
+  onOpenSettings: (agent: string) => void;
 }) {
   const card = agents.find((item) => item.name === agent);
   const prompts = PROMPTS[agent] || ["What can you do?", "Show the sources you use"];
@@ -129,6 +131,7 @@ export function ChatView({
                 <h2>{prettyName(agent)}</h2>
                 <p>{card?.description || "Give this agent a goal and follow the work in the conversation."}</p>
               </div>
+              <GearButton className="hero-settings" label={`Settings for ${prettyName(agent)}`} onClick={() => onOpenSettings(agent)} />
             </div>
             <div className="capability-row">
               {(card?.tools || []).map((tool) => <span className="chip" key={tool}>{prettyName(tool)}</span>)}
@@ -147,6 +150,9 @@ export function ChatView({
           </div>
         ) : (
           <div className="thread" aria-live="polite">
+            <div className="thread-settings">
+              <GearButton label={`Settings for ${prettyName(agent)}`} onClick={() => onOpenSettings(agent)} />
+            </div>
             {messages.map((message) => (
               <article key={message.id} className={`turn ${message.role}`}>
                 {message.role === "user" ? <div className="user-pill">{message.text}</div> : (
@@ -195,11 +201,13 @@ export function DashboardView({
   agents,
   runs,
   onOpen,
+  onOpenSettings,
   onError,
 }: {
   agents: AgentCard[];
   runs: SessionRun[];
   onOpen: (agent: string) => void;
+  onOpenSettings: (agent: string) => void;
   onError: (message: string) => void;
 }) {
   const [mode, setMode] = useState("mock");
@@ -262,7 +270,12 @@ export function DashboardView({
                   <td>{agent.tools.length}</td>
                   <td>{latest ? latest.status : "No run yet"}</td>
                   <td>{waiting[agent.name] ? `${waiting[agent.name]} waiting` : "Clear"}</td>
-                  <td><button type="button" className="text-button" onClick={() => onOpen(agent.name)}>Open chat</button></td>
+                  <td>
+                    <div className="row-actions">
+                      <button type="button" className="text-button" onClick={() => onOpen(agent.name)}>Open chat</button>
+                      <GearButton label={`Settings for ${prettyName(agent.name)}`} onClick={() => onOpenSettings(agent.name)} />
+                    </div>
+                  </td>
                 </tr>
               );
             })}
@@ -273,7 +286,7 @@ export function DashboardView({
   );
 }
 
-export function LibraryView({ agents, onOpen }: { agents: AgentCard[]; onOpen: (agent: string) => void }) {
+export function LibraryView({ agents, onOpen, onOpenSettings }: { agents: AgentCard[]; onOpen: (agent: string) => void; onOpenSettings: (agent: string) => void }) {
   return (
     <div className="library-view">
       <div className="library-intro">
@@ -284,7 +297,10 @@ export function LibraryView({ agents, onOpen }: { agents: AgentCard[]; onOpen: (
       <div className="library-grid">
         {agents.map((agent) => (
           <article key={agent.name} className="library-card">
-            <div className="hero-icon" aria-hidden="true">{initials(agent.name)}</div>
+            <div className="library-card-head">
+              <div className="hero-icon" aria-hidden="true">{initials(agent.name)}</div>
+              <GearButton label={`Settings for ${prettyName(agent.name)}`} onClick={() => onOpenSettings(agent.name)} />
+            </div>
             <h3>{prettyName(agent.name)}</h3>
             <p>{agent.description}</p>
             <div className="capability-row">
@@ -298,7 +314,7 @@ export function LibraryView({ agents, onOpen }: { agents: AgentCard[]; onOpen: (
   );
 }
 
-export function HistoryView({ runs, onOpen }: { runs: SessionRun[]; onOpen: (agent: string) => void }) {
+export function HistoryView({ runs, onOpen, onOpenSettings }: { runs: SessionRun[]; onOpen: (agent: string) => void; onOpenSettings: (agent: string) => void }) {
   return (
     <div className="history-view">
       <p className="eyebrow">Run history</p>
@@ -312,7 +328,10 @@ export function HistoryView({ runs, onOpen }: { runs: SessionRun[]; onOpen: (age
             <h3>{run.task}</h3>
             <p>{run.answer}</p>
             <p className="muted">{run.status} · {run.id}</p>
-            <button type="button" className="text-button" onClick={() => onOpen(run.agent)}>Open chat</button>
+            <div className="row-actions">
+              <button type="button" className="text-button" onClick={() => onOpen(run.agent)}>Open chat</button>
+              <GearButton label={`Settings for ${prettyName(run.agent)}`} onClick={() => onOpenSettings(run.agent)} />
+            </div>
           </article>
         ))}
       </div>

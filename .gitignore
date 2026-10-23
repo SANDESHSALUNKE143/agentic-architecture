@@ -13,5 +13,6 @@ dist/
 .ruff_cache/
 node_modules/
 apps/admin-dashboard/dist/
+apps/admin-dashboard/.vite/
 data/*
 !data/.gitignore

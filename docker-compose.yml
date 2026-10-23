@@ -1,0 +1,70 @@
+# One server, two images.
+# agentic-api holds the seven steps, security, and observability.
+# agentic-console is the only published port.
+# GET /platform on the console port returns the same map.
+
+name: agentic-architecture
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.api
+    image: agentic-api
+    environment:
+      PLATFORM_BIND_HOST: 0.0.0.0
+      PLATFORM_BIND_PORT: "8090"
+      PLATFORM_ENV: ${PLATFORM_ENV:-development}
+      PLATFORM_DEV_TOKEN: ${PLATFORM_DEV_TOKEN:-local-dev-token-not-for-production}
+      PLATFORM_LLM_MODE: ${PLATFORM_LLM_MODE:-mock}
+      PLATFORM_DATA_DIR: /var/lib/agentic
+    volumes:
+      - agentic-data:/var/lib/agentic
+    expose:
+      - "8090"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import os,urllib.request; token=os.environ.get('PLATFORM_DEV_TOKEN','local-dev-token-not-for-production'); req=urllib.request.Request('http://127.0.0.1:8090/health', headers={'Authorization':'Bearer '+token}); urllib.request.urlopen(req, timeout=3).read()",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    labels:
+      org.agentic.perception: apps/agent-api
+      org.agentic.planning: orchestrator
+      org.agentic.foundation_model: shared/llm
+      org.agentic.memory: shared/memory
+      org.agentic.action: mcp/tool-gateway
+      org.agentic.learning: shared/evaluation
+      org.agentic.communication: shared/contracts
+      org.agentic.security: shared/security
+      org.agentic.observability: shared/observability
+
+  console:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.console
+    image: agentic-console
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${CONSOLE_BIND:-0.0.0.0}:${CONSOLE_PORT:-5173}:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    labels:
+      org.agentic.communication: apps/admin-dashboard
+      org.agentic.published: "true"
+
+volumes:
+  agentic-data:

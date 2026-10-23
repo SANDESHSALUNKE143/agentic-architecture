@@ -1,4 +1,4 @@
-import { TextField } from "@agentic/controls";
+import { GearButton, GearIcon, TextField } from "@agentic/controls";
 import { useEffect, useState } from "react";
 import { api, setToken, token } from "./api";
 import { ConfigCenter } from "./config";
@@ -59,6 +59,11 @@ export function App() {
     setView("chat");
   }
 
+  function openSettings(name: string) {
+    setAgent(name);
+    setView("config");
+  }
+
   return (
     <div className="shell">
       <aside className="sidebar">
@@ -80,7 +85,7 @@ export function App() {
           ))}
           <div className="nav-sep" />
           <div className="nav-tag">Manage</div>
-          <button type="button" aria-current={view === "config" ? "page" : undefined} onClick={() => setView("config")}>Configuration</button>
+          <button type="button" aria-current={view === "config" ? "page" : undefined} onClick={() => setView("config")}><GearIcon /> Configuration</button>
           <button type="button" aria-current={view === "docs" ? "page" : undefined} onClick={() => setView("docs")}>Docs</button>
         </nav>
         <div className="side-agents">
@@ -88,10 +93,13 @@ export function App() {
           <TextField className="agent-search" aria-label="Search agents" placeholder="Search agents" value={query} onChange={setQuery} />
           <div className="agent-list">
             {visible.map((item) => (
-              <button key={item.name} type="button" className="agent-item" aria-current={agent === item.name ? "true" : undefined} onClick={() => { setAgent(item.name); if (view !== "config") setView("chat"); }}>
-                <span className="agent-avatar">{initials(item.name)}</span>
-                <span className="agent-label"><strong>{prettyName(item.name)}</strong><small>{item.tools[0] ? prettyName(item.tools[0]) : "Agent"}</small></span>
-              </button>
+              <div key={item.name} className="agent-row">
+                <button type="button" className="agent-item" aria-current={agent === item.name ? "true" : undefined} onClick={() => { setAgent(item.name); if (view !== "config") setView("chat"); }}>
+                  <span className="agent-avatar">{initials(item.name)}</span>
+                  <span className="agent-label"><strong>{prettyName(item.name)}</strong><small>{item.tools[0] ? prettyName(item.tools[0]) : "Agent"}</small></span>
+                </button>
+                <GearButton tone="dark" label={`Settings for ${prettyName(item.name)}`} onClick={() => openSettings(item.name)} />
+              </div>
             ))}
           </div>
         </div>
@@ -124,13 +132,13 @@ export function App() {
         </header>
         {error ? <p className="banner" role="alert">{error}</p> : null}
         <div className="page-body">
-          {view === "dashboard" ? <DashboardView agents={agents} runs={history} onOpen={openChat} onError={setError} /> : null}
+          {view === "dashboard" ? <DashboardView agents={agents} runs={history} onOpen={openChat} onOpenSettings={openSettings} onError={setError} /> : null}
           {view === "chat" ? (
-            <ChatView agent={agent} agents={agents} onFinished={(run) => setHistory((current) => [run, ...current.filter((item) => item.id !== run.id)])} onError={setError} />
+            <ChatView agent={agent} agents={agents} onFinished={(run) => setHistory((current) => [run, ...current.filter((item) => item.id !== run.id)])} onError={setError} onOpenSettings={openSettings} />
           ) : null}
-          {view === "library" ? <LibraryView agents={agents} onOpen={openChat} /> : null}
-          {view === "history" ? <HistoryView runs={history} onOpen={openChat} /> : null}
-          {view === "approvals" ? <div className="page-pad"><ApprovalsView onError={setError} /></div> : null}
+          {view === "library" ? <LibraryView agents={agents} onOpen={openChat} onOpenSettings={openSettings} /> : null}
+          {view === "history" ? <HistoryView runs={history} onOpen={openChat} onOpenSettings={openSettings} /> : null}
+          {view === "approvals" ? <div className="page-pad"><ApprovalsView onError={setError} onOpenSettings={openSettings} /></div> : null}
           {view === "config" ? <ConfigCenter agent={agent} agents={agents} onSelect={setAgent} onOpenChat={openChat} onError={setError} /> : null}
           {view === "docs" ? <div className="page-pad"><DocsView onError={setError} /></div> : null}
         </div>
@@ -139,7 +147,7 @@ export function App() {
   );
 }
 
-function ApprovalsView({ onError }: { onError: (message: string) => void }) {
+function ApprovalsView({ onError, onOpenSettings }: { onError: (message: string) => void; onOpenSettings: (agent: string) => void }) {
   const [items, setItems] = useState<Approval[] | null>(null);
   const [actor, setActor] = useState("local-operator");
 
@@ -185,7 +193,10 @@ function ApprovalsView({ onError }: { onError: (message: string) => void }) {
               <h2>{label(item.agent_id)}</h2>
               <p className="mono">{item.id}</p>
             </div>
-            <Status value={item.status} />
+            <div className="row-actions">
+              <GearButton label={`Settings for ${label(item.agent_id)}`} onClick={() => onOpenSettings(item.agent_id)} />
+              <Status value={item.status} />
+            </div>
           </header>
           <div className="body">
             <ResultBody result={item.arguments} />

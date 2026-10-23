@@ -67,3 +67,20 @@
 .ui-option[aria-selected="true"] { background: var(--accent-soft, #edf3ff); }
 .ui-mark { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #d5dbe3; flex: none; }
 .ui-option[aria-selected="true"] .ui-mark { border-color: var(--accent, #356df3); background: var(--accent, #356df3); box-shadow: inset 0 0 0 3px white; }
+
+.gear-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 10px;
+  border: 1px solid #dbe5fb;
+  background: #f7f9ff;
+  color: #3565d7;
+}
+.gear-button:hover { background: #edf3ff; }
+.gear-button.dark { background: transparent; border-color: transparent; color: #9eb0c8; }
+.gear-button.dark:hover { background: #243955; color: #fff; }
+.gear-icon { width: 16px; height: 16px; display: block; }

@@ -76,7 +76,57 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(denied.status_code, 422)
         guide = self.client.get("/guide", headers=self.headers)
         self.assertEqual(guide.status_code, 200)
-        self.assertIn("repository", [page["id"] for page in guide.json()])
+        page_ids = [page["id"] for page in guide.json()]
+        self.assertIn("repository", page_ids)
+        self.assertIn("server", page_ids)
+        self.assertIn("workflows", page_ids)
+
+    def test_platform_map_names_the_server(self):
+        denied = self.client.get("/platform")
+        self.assertEqual(denied.status_code, 401)
+        body = self.client.get("/platform", headers=self.headers).json()
+        self.assertEqual(
+            [step["id"] for step in body["steps"]],
+            [
+                "perception",
+                "planning",
+                "foundation_model",
+                "memory",
+                "action",
+                "learning",
+                "communication",
+            ],
+        )
+        self.assertTrue(body["security"])
+        self.assertTrue(body["observability"])
+        business = {item["path"] for item in body["business"]}
+        self.assertIn("agents/<name>/agent.yaml", business)
+        self.assertIn("workflows/<name>/workflow.py", business)
+        self.assertIn("shared/security/delegation.py", business)
+        images = {item["name"]: item for item in body["images"]}
+        self.assertFalse(images["agentic-api"]["published"])
+        self.assertTrue(images["agentic-console"]["published"])
+        self.assertEqual(
+            [item["id"] for item in body["workflows"]],
+            ["product-discovery", "customer-support", "order-processing"],
+        )
+        self.assertEqual(
+            body["workflows"][0]["agents"],
+            ["shopping-agent", "catalog-agent", "inventory-agent"],
+        )
+        self.assertIn("jacket", body["workflows"][0]["phrases"])
+        self.assertEqual(body["n8n"]["tool"], "invoke_n8n")
+        self.assertEqual(body["n8n"]["permission"], "n8n_write")
+        self.assertFalse(body["n8n"]["calls_host"])
+        self.assertTrue(body["n8n"]["approval"])
+        for step in body["steps"]:
+            self.assertTrue((ROOT / step["path"]).exists(), step["path"])
+        for item in body["workflows"]:
+            self.assertTrue((ROOT / item["path"]).exists(), item["path"])
+        for item in body["security"] + body["observability"] + body["unchanged"]:
+            if "<" in item["path"]:
+                continue
+            self.assertTrue((ROOT / item["path"]).exists(), item["path"])
 
 
 if __name__ == "__main__":

@@ -30,11 +30,7 @@ type Run = {
   agents: { agent_id: string; status: string; result: Record<string, unknown>; tool_calls: { name: string; status: string }[] }[];
 };
 
-const SEQUENCES = [
-  { id: "product-discovery", title: "Product discovery", steps: ["shopping-agent", "catalog-agent", "inventory-agent"] },
-  { id: "customer-support", title: "Customer support", steps: ["support-agent", "billing-agent"] },
-  { id: "order-processing", title: "Order processing", steps: ["order-agent", "billing-agent"] },
-];
+type Sequence = { id: string; agents: string[] };
 
 const BRIEFS: Record<string, string> = {
   "catalog-agent": "Find a blue trail jacket under $150",
@@ -101,6 +97,7 @@ export function AgentWorkspace({
   const [section, setSection] = useState<(typeof SECTIONS)[number][0]>("instructions");
   const [saved, setSaved] = useState("");
   const [situationOpen, setSituationOpen] = useState(true);
+  const [sequences, setSequences] = useState<Sequence[]>([]);
   const [snapshot, setSnapshot] = useState<RunSnapshot>({ status: "Ready", step: "Waiting for a brief", tools: [], approval: "Not required", sources: [] });
 
   useEffect(() => {
@@ -117,6 +114,9 @@ export function AgentWorkspace({
         setEndpoints(endpointRows);
       })
       .catch((exc) => onError(readable(exc)));
+    api<{ workflows: Sequence[] }>("/platform")
+      .then((platformMap) => setSequences(platformMap.workflows))
+      .catch(() => setSequences([]));
   }, [onError]);
 
   useEffect(() => {
@@ -195,7 +195,7 @@ export function AgentWorkspace({
                   {section === "observability" ? <Observability contract={contract} platform={platform} endpoints={endpoints} onChange={setContract} onSaved={reloadEndpoints} onError={onError} /> : null}
                   {section === "retrieval" ? <Retrieval contract={contract} platform={platform} endpoints={endpoints} onChange={setContract} onSaved={reloadEndpoints} onError={onError} /> : null}
                   {section === "tools" ? <Tools contract={contract} tools={tools} onChange={setContract} /> : null}
-                  {section === "workflows" ? <Workflows agent={agent} /> : null}
+                  {section === "workflows" ? <Workflows agent={agent} sequences={sequences} /> : null}
                   {saved ? <p className="banner ok">{saved}</p> : null}
                 </div>
                 {section !== "workflows" ? (
@@ -327,18 +327,20 @@ function Tools({ contract, tools, onChange }: { contract: Contract; tools: ToolI
   );
 }
 
-function Workflows({ agent }: { agent: string }) {
-  const mine = SEQUENCES.filter((item) => item.steps.includes(agent));
-  if (!mine.length) return <p className="muted">This agent runs on its own. It is not a step in a workflow. The planner can still choose it from the brief.</p>;
+function Workflows({ agent, sequences }: { agent: string; sequences: Sequence[] }) {
+  const mine = sequences.filter((item) => item.agents.includes(agent));
+  if (!mine.length) {
+    return <p className="muted">This agent runs on its own. The planner can still choose it from the brief. An n8n webhook is the invoke_n8n tool on a contract, and that call waits for approval.</p>;
+  }
   return (
     <>
-      <p className="muted">The planner chooses one of these sequences from the brief. The order is the configuration.</p>
+      <p className="muted">The planner runs one of these sequences in this order. An n8n webhook is the invoke_n8n tool on a contract, and that call waits for approval.</p>
       {mine.map((item) => (
         <article key={item.id} className="collapse">
           <div className="body">
-            <strong>{item.title}</strong>
+            <strong>{label(item.id)}</strong>
             <ol>
-              {item.steps.map((step, index) => <li key={step}>{index + 1}. {label(step)}</li>)}
+              {item.agents.map((step, index) => <li key={step}>{index + 1}. {label(step)}</li>)}
             </ol>
           </div>
         </article>

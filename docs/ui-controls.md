@@ -20,6 +20,7 @@ import { Checkbox, Select, TextField } from "@agentic/controls";
 | Checkbox | A yes or no choice |
 | RadioGroup | A short set of choices, such as the model |
 | Select | A list such as the vector store, the embedding, or how often ingestion runs |
+| GearButton | Opens that agent's configuration. The Configuration navigation item uses the same gear |
 
 The agent picker is a search list built for choosing one agent. Its search box is still a `TextField`.
 

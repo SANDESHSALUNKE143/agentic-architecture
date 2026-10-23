@@ -152,7 +152,9 @@ The console shows whether each variable is set. It does not show the value. SQL,
 
 ## Where it runs
 
-`./start-local.sh` starts both processes on the same machine. The API is `127.0.0.1:8090`. The console is `127.0.0.1:5173` and is the only page a browser opens. The API is not reachable from another machine. This repository has no container file and no cloud account.
+`./start-local.sh` starts both processes on the laptop. The API is `127.0.0.1:8090`. The console is `127.0.0.1:5173` and is the only page a browser opens.
+
+`docker compose up -d --build` is the organization server. It builds `agentic-api` and `agentic-console` on that one machine. Operators open port 5173. The API is not published on the host. `GET /platform` names the seven steps, security, observability, and the files a business team edits. Prove it with `./deploy/smoke.sh`. The placement rules are in [docs/server.md](docs/server.md).
 
 An industry host keeps those two processes. One API process stays on a private address, because approvals, traces, and notes live in that process. Operators open the console, and the console proxies to that API. The model, SQL, n8n, Qdrant, and Neo4j are other hosts you already run. Set one variable when that host is ready. Secrets stay in the API environment. `PLATFORM_ENV=production` refuses the sample token. The placement rules are in [docs/operations.md](docs/operations.md).
 
@@ -162,6 +164,7 @@ An industry host keeps those two processes. One API process stays on a private a
 .venv/bin/python -m unittest tests.unit.test_runtime tests.integration.test_api tests.security.test_security
 .venv/bin/python tests/agent-evaluation/run.py
 .venv/bin/python -m ruff check shared agents orchestrator apps mcp tests
+docker compose up -d --build && ./deploy/smoke.sh
 ```
 
 ## Guide
@@ -169,8 +172,10 @@ An industry host keeps those two processes. One API process stays on a private a
 | Page | Use it when you need |
 | --- | --- |
 | [Implementation guide](docs/implementation-guide.md) | The standard, where a change goes, and the build sequence |
+| [One server](docs/server.md) | The two images, the seven steps, and the files a business team edits |
 | [Operations](docs/operations.md) | The trace, n8n and the other ports, and where the two processes run |
 | [Repository](docs/repository.md) | The folder map in more detail |
 | [Architecture](docs/architecture.md) | The seven components and the folders that own them |
+| [Workflows](docs/workflows.md) | When a sequence is required, how to add one, and where n8n fits |
 | [Agent catalog](docs/agent-catalog.md) | The reference specialists and how to copy one |
 | [Tool contracts](docs/tool-contracts.md) | Each plugin, its permission, and whether it needs approval |

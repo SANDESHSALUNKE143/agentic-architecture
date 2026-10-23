@@ -14,3 +14,9 @@ jobs:
       - run: ruff check .
       - run: python -m unittest tests.unit.test_runtime tests.integration.test_api tests.security.test_security
       - run: python tests/agent-evaluation/run.py
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up -d --build
+      - run: ./deploy/smoke.sh

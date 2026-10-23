@@ -85,19 +85,19 @@ Leave every port on its local stand-in until the real host exists. Turn on one v
 | Process | Where it listens | What it is |
 | --- | --- | --- |
 | API | `127.0.0.1:8090` | `apps/agent-api/main.py`. Another machine cannot open this port. |
-| Console | `127.0.0.1:5173` | `apps/admin-dashboard`. The browser talks only to this port. The console proxies `/health`, `/agent-runs`, `/plugins`, `/approvals`, `/settings`, `/guide`, and `/memory` to the API. |
+| Console | `127.0.0.1:5173` | `apps/admin-dashboard`. The browser talks only to this port. The console proxies `/health`, `/platform`, `/agent-runs`, `/plugins`, `/approvals`, `/settings`, `/guide`, and `/memory` to the API. |
 
 The interpreter is `.venv` in the repository root. The sample token is `PLATFORM_DEV_TOKEN`, default `local-dev-token-not-for-production`, sent as `Authorization: Bearer`. Health is `GET /health`. Interactive API docs are `GET /docs` on the API.
 
 `PLATFORM_DATA_DIR` defaults to the `data/` directory next to the code. That directory is the place for files the process creates. Runs and traces are not written there in this reference. They stay in the API process.
 
-This repository has no container file and no cloud account. The reference host is that one machine and those two loopback ports.
+`docker compose up -d --build` is the same two processes on one server. The console image publishes port 5173. The API image stays on the server network. [One server](server.md) names the seven steps, security, observability, and the files a business team edits. `GET /platform` returns that map. `./deploy/smoke.sh` proves the published port.
 
 ### Industry host
 
 Keep the same two processes when you leave the laptop.
 
-1. Run one API process on a private address inside your network. Do not publish that process as a public site. Approvals, traces, notes, and evaluation live in that process. A second copy would not see a pending approval. Add a shared store before you run more than one API.
+1. Run one API process on a private address inside your network. `docker compose` does this: the `agentic-api` service has no host port. Approvals, traces, notes, and evaluation live in that process. A second copy would not see a pending approval. Add a shared store before you run more than one API.
 2. Run the console where operators open a browser. Point its proxy at the private API. The console build holds no secrets.
 3. Put secrets only in the API environment: `PLATFORM_DEV_TOKEN`, `MODEL_API_KEY`, `N8N_TOKEN`, and `SQL_CONNECTION`.
 4. Set `PLATFORM_ENV=production` only with a private token. The sample token refuses to start.

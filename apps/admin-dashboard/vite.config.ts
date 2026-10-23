@@ -20,6 +20,7 @@ export default defineConfig({
       "/approvals": "http://127.0.0.1:8090",
       "/tools": "http://127.0.0.1:8090",
       "/plugins": "http://127.0.0.1:8090",
+      "/platform": "http://127.0.0.1:8090",
       "/guide": "http://127.0.0.1:8090",
       "/settings": "http://127.0.0.1:8090",
       "/memory": "http://127.0.0.1:8090",

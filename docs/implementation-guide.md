@@ -40,7 +40,7 @@ Ruff checks the Python with the rules in `pyproject.toml`. Line length is 100.
 | New plugin | A function in the matching `mcp/<domain>-tools/tools.py`, then one entry in `mcp/tool-gateway/gateway.py` |
 | Who may call whom | `shared/security/delegation.py` |
 | Which words select a workflow | `orchestrator/router/router.py` |
-| A fixed sequence of agents | `workflows/<name>/workflow.py` and the same list in the router |
+| A fixed sequence of agents | `workflows/<name>/workflow.py`. The router loads that list. Words that select it stay in `orchestrator/router/router.py`. The full path, including n8n, is in [Workflows](workflows.md) |
 | A regression | `tests/unit`, `tests/integration`, `tests/security`, or `tests/agent-evaluation/cases.json` |
 | Operator-facing explanation | `docs/` |
 
@@ -99,7 +99,9 @@ These ports are how the platform grows without a new runtime. The contract keeps
 
 ## Where it is hosted
 
-The reference host is the machine you start with `./start-local.sh`. The API listens on `127.0.0.1:8090`. The console listens on `127.0.0.1:5173` and is the only page a browser opens. The API is not reachable from another machine. There is no container file and no cloud account in this repository.
+The laptop host is the machine you start with `./start-local.sh`. The API listens on `127.0.0.1:8090`. The console listens on `127.0.0.1:5173` and is the only page a browser opens.
+
+The organization server is `docker compose up -d --build` from this repository. Two images run on that machine. The console is published on port 5173. The API stays on the server network. `GET /platform` names the seven steps, security, observability, and the files a business team edits. The placement rules are in [One server](server.md).
 
 An industry host keeps those two processes. The API stays on a private address, as one process, because approvals and traces live in that process. The console is what operators open, and its proxy points at that private API. The model, the database, n8n, Qdrant, and Neo4j are separate hosts you already run. You set one variable when that host is ready. The placement rules are in [Operations](operations.md).
 
@@ -107,11 +109,11 @@ An industry host keeps those two processes. The API stays on a private address, 
 
 | Console page | Operator uses it to |
 | --- | --- |
-| Dashboard | See every loaded agent, pending approvals, and runs from this session |
-| Agent chat | Brief one agent and read the answer, with the citation closed until it is opened |
-| Agent library | Open a contract in its chat |
-| Run history | See runs started in this browser session |
-| Approvals | Approve or reject a paused write |
+| Dashboard | See every loaded agent, pending approvals, and runs from this session. The gear opens that agent's configuration |
+| Agent chat | Brief one agent and read the answer, with the citation closed until it is opened. The gear opens that agent's configuration |
+| Agent library | Open a contract in its chat. The gear on the card opens that agent's configuration |
+| Run history | See runs started in this browser session. The gear opens that agent's configuration |
+| Approvals | Approve or reject a paused write. The gear opens that agent's configuration |
 | Configuration | Choose one agent, then edit its prompt, knowledge base, ingestion, SQL access, observability, and notes. Generate YAML writes that agent's file |
 | Docs | Read this standard, the architecture review, operations, and the catalog |
 

@@ -1,0 +1,25 @@
+FROM python:3.12-slim-bookworm
+
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PLATFORM_BIND_HOST=0.0.0.0 \
+    PLATFORM_BIND_PORT=8090 \
+    PLATFORM_DATA_DIR=/var/lib/agentic
+
+RUN mkdir -p /var/lib/agentic
+
+COPY pyproject.toml README.md ./
+COPY shared shared
+COPY agents agents
+COPY orchestrator orchestrator
+COPY apps/agent-api apps/agent-api
+COPY mcp mcp
+COPY workflows workflows
+COPY docs docs
+
+RUN pip install --no-cache-dir .
+
+EXPOSE 8090
+CMD ["python", "apps/agent-api/main.py"]
