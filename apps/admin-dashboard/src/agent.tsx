@@ -1,3 +1,4 @@
+import { Checkbox, NumberField, Select, TextArea } from "@agentic/controls";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { EndpointForm, type EndpointConfig } from "./plugins";
@@ -219,24 +220,15 @@ export function AgentWorkspace({
 function Instructions({ contract, onChange }: { contract: Contract; onChange: (contract: Contract) => void }) {
   return (
     <>
-      <label className="field">
-        <span>Instructions, one step per line</span>
-        <textarea
-          value={contract.instructions.join("\n")}
-          onChange={(event) => onChange({ ...contract, instructions: event.target.value.split("\n").filter(Boolean) })}
-        />
-      </label>
+      <TextArea label="Instructions, one step per line" value={contract.instructions.join("\n")} onChange={(value) => onChange({ ...contract, instructions: value.split("\n").filter(Boolean) })} />
       <h3>Approval</h3>
       {contract.approval.amount_gte !== undefined ? (
-        <label className="field">
-          <span>Ask for approval when the amount is at least</span>
-          <input type="number" value={contract.approval.amount_gte} onChange={(event) => onChange({ ...contract, approval: { ...contract.approval, amount_gte: Number(event.target.value) } })} />
-        </label>
+        <NumberField label="Ask for approval when the amount is at least" value={contract.approval.amount_gte} onChange={(amount_gte) => onChange({ ...contract, approval: { ...contract.approval, amount_gte } })} />
       ) : <p className="muted">This agent has no amount threshold.</p>}
       {(contract.approval.required_for || []).length ? (
         <div className="check-grid">
           {(contract.approval.required_for || []).map((tool) => (
-            <label key={tool}><input type="checkbox" checked disabled />{label(tool)} stays behind approval</label>
+            <Checkbox key={tool} label={`${label(tool)} stays behind approval`} checked disabled />
           ))}
         </div>
       ) : <p className="muted">No write tools on this contract.</p>}
@@ -249,17 +241,13 @@ function Memory({ contract, endpoints, onChange, onSaved, onError }: { contract:
   const neo4j = endpoints.find((item) => item.id === "neo4j");
   return (
     <>
-      <label className="switch">
-        <input type="checkbox" checked={Boolean(contract.memory.conversation_state)} onChange={(event) => onChange({ ...contract, memory: { ...contract.memory, conversation_state: event.target.checked } })} />
-        Short-term memory keeps this conversation
-      </label>
-      <label className="field">
-        <span>Long-term memory</span>
-        <select value={String(contract.memory.long_term_memory || "optional")} onChange={(event) => onChange({ ...contract, memory: { ...contract.memory, long_term_memory: event.target.value } })}>
-          <option value="optional">May read saved notes</option>
-          <option value="false">Off</option>
-        </select>
-      </label>
+      <Checkbox label="Short-term memory keeps this conversation" checked={Boolean(contract.memory.conversation_state)} onChange={(conversation_state) => onChange({ ...contract, memory: { ...contract.memory, conversation_state } })} />
+      <Select
+        label="Long-term memory"
+        value={String(contract.memory.long_term_memory || "optional")}
+        onChange={(long_term_memory) => onChange({ ...contract, memory: { ...contract.memory, long_term_memory } })}
+        options={[{ value: "optional", label: "May read saved notes" }, { value: "false", label: "Off" }]}
+      />
       {longTerm ? (
         <>
           <p className="muted">Saved notes stay in this API process. The address is this agent's notes host. This build does not open a Neo4j session.</p>
@@ -279,21 +267,14 @@ function Observability({ contract, platform, endpoints, onChange, onSaved, onErr
         const host = endpoints.find((item) => item.id === SINK_HOST[tool.id]);
         return (
           <div key={tool.id} className="stack">
-            <label className="observe-choice">
-              <input
-                type="checkbox"
-                checked={selected}
-                onChange={() => {
-                  const next = selected ? contract.observability.filter((item) => item !== tool.id) : [...contract.observability, tool.id];
-                  onChange({ ...contract, observability: next });
-                }}
-              />
-              <span>
-                <strong>{tool.title}</strong>
-                <span className={`badge ${tool.configured ? "completed" : "pending"}`}>{tool.configured ? "Address saved" : "Mock"}</span>
-                <span className="muted">{tool.summary}</span>
-              </span>
-            </label>
+            <Checkbox
+              label={tool.title}
+              checked={selected}
+              onChange={() => {
+                const next = selected ? contract.observability.filter((item) => item !== tool.id) : [...contract.observability, tool.id];
+                onChange({ ...contract, observability: next });
+              }}
+            />
             {selected && host ? (
               <>
                 <p className="muted">This address is for this agent. Saving it does not start shipping traces.</p>
@@ -312,14 +293,8 @@ function Retrieval({ contract, platform, endpoints, onChange, onSaved, onError }
   return (
     <>
       <p className="muted">A host address appears only when this agent selects that store. A password is not shown again.</p>
-      <label className="switch">
-        <input type="checkbox" checked={Boolean(contract.rag?.retrieve)} onChange={(event) => onChange({ ...contract, rag: { ...contract.rag, retrieve: event.target.checked } })} />
-        Read from the index
-      </label>
-      <label className="switch">
-        <input type="checkbox" checked={Boolean(contract.rag?.capture)} onChange={(event) => onChange({ ...contract, rag: { ...contract.rag, capture: event.target.checked } })} />
-        Capture this turn as a redacted note
-      </label>
+      <Checkbox label="Read from the index" checked={Boolean(contract.rag?.retrieve)} onChange={(retrieve) => onChange({ ...contract, rag: { ...contract.rag, retrieve } })} />
+      <Checkbox label="Capture this turn as a redacted note" checked={Boolean(contract.rag?.capture)} onChange={(capture) => onChange({ ...contract, rag: { ...contract.rag, capture } })} />
       <Choice label="Vector database" value={contract.rag?.vector || "local"} options={platform.rag?.vector || []} onChange={(vector) => onChange({ ...contract, rag: { ...contract.rag, vector } })} />
       <Choice label="Embedding model" value={contract.rag?.embedding || "local"} options={platform.rag?.embedding || []} onChange={(embedding) => onChange({ ...contract, rag: { ...contract.rag, embedding } })} />
       <Choice label="Chat model" value={contract.model?.provider || "platform"} options={platform.rag?.model || []} onChange={(provider) => onChange({ ...contract, model: { provider } })} />
@@ -345,10 +320,7 @@ function Tools({ contract, tools, onChange }: { contract: Contract; tools: ToolI
       <p className="muted">These are the MCP tools this agent may call. A tool is listed only when the contract already has its permission. A write stays behind approval.</p>
       <div className="check-grid">
         {allowed.map((tool) => (
-          <label key={tool.name}>
-            <input type="checkbox" checked={contract.tools.includes(tool.name)} onChange={() => toggle(tool.name)} />
-            {label(tool.name)}
-          </label>
+          <Checkbox key={tool.name} label={label(tool.name)} checked={contract.tools.includes(tool.name)} onChange={() => toggle(tool.name)} />
         ))}
       </div>
     </>
@@ -434,10 +406,7 @@ function AgentRun({ agent, brief, onError, onSnapshot }: { agent: string; brief:
   return (
     <>
       <div className="pane-scroll stack">
-        <label className="field">
-          <span>What should the agent do?</span>
-          <textarea value={task} onChange={(event) => setTask(event.target.value)} />
-        </label>
+        <TextArea label="What should the agent do?" value={task} onChange={setTask} />
         <CollapseFeed items={items} busy={busy} />
         {items.length === 0 ? <p className="muted">The agent whispers one step at a time. The answer appears when it finishes.</p> : null}
       </div>
@@ -549,13 +518,13 @@ export function SituationPanel({
 function Choice({ label: name, value, options, onChange }: { label: string; value: string; options: RagOption[]; onChange: (value: string) => void }) {
   const current = options.find((option) => option.id === value);
   return (
-    <label className="field">
-      <span>{name}</span>
-      <select value={value} onChange={(event) => onChange(event.target.value)}>
-        {options.map((option) => <option key={option.id} value={option.id}>{option.title}</option>)}
-      </select>
-      {current ? <span className="muted">{current.detail}</span> : null}
-    </label>
+    <Select
+      label={name}
+      value={value}
+      hint={current?.detail}
+      onChange={onChange}
+      options={options.map((option) => ({ value: option.id, label: option.title }))}
+    />
   );
 }
 

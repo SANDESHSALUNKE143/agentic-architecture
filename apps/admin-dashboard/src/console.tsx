@@ -1,3 +1,4 @@
+import { TextArea } from "@agentic/controls";
 import { useEffect, useRef, useState } from "react";
 import { activityLine } from "./agent";
 import { api } from "./api";
@@ -180,7 +181,7 @@ export function ChatView({
       </div>
       <div className="composer-wrap">
         <form className="composer" onSubmit={(event) => { event.preventDefault(); send(task); }}>
-          <textarea aria-label="Brief" value={task} placeholder={`Brief ${prettyName(agent)}`} onChange={(event) => setTask(event.target.value)} />
+          <TextArea aria-label="Brief" value={task} placeholder={`Brief ${prettyName(agent)}`} onChange={setTask} />
           <div className="composer-bottom">
             <button className="send-btn" type="submit" disabled={busy || !task.trim()} aria-label={busy ? "Working" : "Send"}>{busy ? "…" : "↑"}</button>
           </div>

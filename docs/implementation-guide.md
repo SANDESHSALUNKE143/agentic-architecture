@@ -13,7 +13,7 @@ This repository is the reference an industry team copies when it builds the agen
 | Secrets only in the environment | `MODEL_API_KEY`, SQL, web, n8n, Qdrant, Neo4j |
 | Evaluation of status, tools, and duration | Your cases in `tests/agent-evaluation/cases.json` |
 
-The reference does not place an order, send a refund, or dispatch work. A write returns a simulated result until your team deliberately connects a real system, and it still waits for approval.
+The reference does not place an order, send a refund, or dispatch work. A write returns a simulated result until your team deliberately connects a real system, and it still waits for approval. Console text boxes, checkboxes, radios, and dropdowns come from `@agentic/controls`. See [Console controls](ui-controls.md).
 
 ## Standard an implementation must meet
 

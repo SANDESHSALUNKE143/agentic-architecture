@@ -1,3 +1,4 @@
+import { Checkbox, TextField } from "@agentic/controls";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 
@@ -173,19 +174,10 @@ export function EndpointForm({
   const fields = (
     <>
       {embedded ? <h3>{endpoint.title}</h3> : <p className="muted">{endpoint.summary}</p>}
-      <label className="field"><span>Direct URL</span><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://" /></label>
-      <label className="field"><span>Connection string</span><input value={connectionString} onChange={(event) => setConnectionString(event.target.value)} /></label>
-      <label className="field"><span>Username</span><input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="off" /></label>
-      <label className="field">
-        <span>Password</span>
-        <input
-          type="password"
-          value={password}
-          placeholder={endpoint.password_set ? "Saved. Enter a new password to replace it." : ""}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="new-password"
-        />
-      </label>
+      <TextField label="Direct URL" value={url} onChange={setUrl} placeholder="https://" />
+      <TextField label="Connection string" value={connectionString} onChange={setConnectionString} />
+      <TextField label="Username" value={username} onChange={setUsername} autoComplete="off" />
+      <TextField label="Password" type="password" value={password} placeholder={endpoint.password_set ? "Saved. Enter a new password to replace it." : ""} onChange={setPassword} autoComplete="new-password" />
       <div className="pane-foot">
         <button className="primary" type="button" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save connection"}</button>
       </div>
@@ -258,10 +250,7 @@ function ConnectPanel({
         {plugin.eligible_agents.length ? (
           <div className="check-grid">
             {plugin.eligible_agents.map((agent) => (
-              <label key={agent}>
-                <input type="checkbox" checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
-                {title(agent)}
-              </label>
+              <Checkbox key={agent} label={title(agent)} checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
             ))}
           </div>
         ) : (
@@ -322,10 +311,7 @@ function ObservePanel({
         <p className="muted">{tool.detail} Saving writes this tool onto each selected agent contract.</p>
         <div className="check-grid">
           {tool.eligible_agents.map((agent) => (
-            <label key={agent}>
-              <input type="checkbox" checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
-              {title(agent)}
-            </label>
+            <Checkbox key={agent} label={title(agent)} checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
           ))}
         </div>
       </div>
@@ -383,10 +369,7 @@ function RagPanel({
         <p className="muted">{choice.detail} Saving sets this choice on the selected agent contracts.</p>
         <div className="check-grid">
           {choice.eligible_agents.map((agent) => (
-            <label key={agent}>
-              <input type="checkbox" checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
-              {title(agent)}
-            </label>
+            <Checkbox key={agent} label={title(agent)} checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
           ))}
         </div>
       </div>

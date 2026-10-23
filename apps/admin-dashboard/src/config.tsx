@@ -1,3 +1,4 @@
+import { Checkbox, NumberField, RadioGroup, Select, TextArea, TextField } from "@agentic/controls";
 import { useEffect, useRef, useState } from "react";
 import { api, token } from "./api";
 import { initials, prettyName } from "./console";
@@ -189,37 +190,27 @@ export function ConfigCenter({
           {active === "prompt" ? (
             <section className="config-card">
               <h3>Prompt</h3>
-              <label className="field">
-                <span>One step per line. This is the prompt stored on the agent file.</span>
-                <textarea value={contract.instructions.join("\n")} onChange={(event) => setContract({ ...contract, instructions: event.target.value.split("\n").filter(Boolean) })} />
-              </label>
+              <TextArea label="One step per line. This is the prompt stored on the agent file." value={contract.instructions.join("\n")} onChange={(value) => setContract({ ...contract, instructions: value.split("\n").filter(Boolean) })} />
             </section>
           ) : null}
 
           {active === "knowledge" ? (
             <section className="config-card">
               <h3>Knowledge base</h3>
-              <label className="switch">
-                <input type="checkbox" checked={contract.rag.retrieve} onChange={(event) => setContract({ ...contract, rag: { ...contract.rag, retrieve: event.target.checked } })} />
-                Read the index
-              </label>
+              <Checkbox label="Read the index" checked={contract.rag.retrieve} onChange={(retrieve) => setContract({ ...contract, rag: { ...contract.rag, retrieve } })} />
               <div className="config-fields">
-                <label className="field">
-                  <span>Where this agent stores vectors</span>
-                  <select value={contract.rag.vector} onChange={(event) => setContract({ ...contract, rag: { ...contract.rag, vector: event.target.value } })}>
-                    <option value="local">Local index</option>
-                    <option value="qdrant">Qdrant</option>
-                    <option value="aws">AWS</option>
-                  </select>
-                </label>
-                <label className="field">
-                  <span>Embedding for this agent</span>
-                  <select value={contract.rag.embedding} onChange={(event) => setContract({ ...contract, rag: { ...contract.rag, embedding: event.target.value } })}>
-                    <option value="local">Local embeddings</option>
-                    <option value="openai">OpenAI-compatible</option>
-                    <option value="aws">AWS</option>
-                  </select>
-                </label>
+                <Select
+                  label="Where this agent stores vectors"
+                  value={contract.rag.vector}
+                  onChange={(vector) => setContract({ ...contract, rag: { ...contract.rag, vector } })}
+                  options={[{ value: "local", label: "Local index" }, { value: "qdrant", label: "Qdrant" }, { value: "aws", label: "AWS" }]}
+                />
+                <Select
+                  label="Embedding for this agent"
+                  value={contract.rag.embedding}
+                  onChange={(embedding) => setContract({ ...contract, rag: { ...contract.rag, embedding } })}
+                  options={[{ value: "local", label: "Local embeddings" }, { value: "openai", label: "OpenAI-compatible" }, { value: "aws", label: "AWS" }]}
+                />
               </div>
               {contract.rag.vector === "local" && contract.rag.embedding === "local" ? <p className="muted">This agent uses the index and embeddings in this process.</p> : null}
               {contract.rag.vector === "qdrant" ? <HostBlock endpoint={host("qdrant")} onSaved={reloadEndpoints} onError={onError} /> : null}
@@ -231,30 +222,25 @@ export function ConfigCenter({
           {active === "ingestion" ? (
             <section className="config-card">
               <h3>Ingestion</h3>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={contract.rag.capture}
-                  onChange={(event) => setContract({
-                    ...contract,
-                    rag: {
-                      ...contract.rag,
-                      capture: event.target.checked,
-                      cadence: event.target.checked ? (contract.rag.cadence && contract.rag.cadence !== "off" ? contract.rag.cadence : "each_run") : "off",
-                    },
-                  })}
-                />
-                Write a redacted note back after a run
-              </label>
+              <Checkbox
+                label="Write a redacted note back after a run"
+                checked={contract.rag.capture}
+                onChange={(capture) => setContract({
+                  ...contract,
+                  rag: {
+                    ...contract.rag,
+                    capture,
+                    cadence: capture ? (contract.rag.cadence && contract.rag.cadence !== "off" ? contract.rag.cadence : "each_run") : "off",
+                  },
+                })}
+              />
               {contract.rag.capture ? (
-                <label className="field">
-                  <span>How often</span>
-                  <select value={contract.rag.cadence || "each_run"} onChange={(event) => setContract({ ...contract, rag: { ...contract.rag, cadence: event.target.value } })}>
-                    <option value="each_run">After each run</option>
-                    <option value="hourly">Hourly</option>
-                    <option value="daily">Daily</option>
-                  </select>
-                </label>
+                <Select
+                  label="How often"
+                  value={contract.rag.cadence || "each_run"}
+                  onChange={(cadence) => setContract({ ...contract, rag: { ...contract.rag, cadence } })}
+                  options={[{ value: "each_run", label: "After each run" }, { value: "hourly", label: "Hourly" }, { value: "daily", label: "Daily" }]}
+                />
               ) : <p>This agent does not write the knowledge base back.</p>}
               <p className="muted">After each run is what this process writes. Hourly and daily are stored on the agent file. There is no separate document pipeline.</p>
             </section>
@@ -263,10 +249,7 @@ export function ConfigCenter({
           {active === "sql" ? (
             <section className="config-card">
               <h3>SQL</h3>
-              <label className="switch">
-                <input type="checkbox" checked={contract.tools.includes("analyze_dataset")} onChange={() => toggleTool("analyze_dataset")} />
-                Read the dataset
-              </label>
+              <Checkbox label="Read the dataset" checked={contract.tools.includes("analyze_dataset")} onChange={() => toggleTool("analyze_dataset")} />
               <p className="muted">Answers in this build come from the local sales fixture. The address below is this agent's database access.</p>
               {host("sql") ? <HostBlock endpoint={host("sql")} onSaved={reloadEndpoints} onError={onError} /> : null}
             </section>
@@ -277,17 +260,15 @@ export function ConfigCenter({
               <h3>Observability</h3>
               <p className="muted">Platform trace and evaluation stay in this process. A remote destination shows its URL, connection string, username, and password after you add it. An address does not mean traces are shipping.</p>
               {["platform_trace", "evaluation"].map((id) => (
-                <label key={id} className="switch">
-                  <input
-                    type="checkbox"
-                    checked={contract.observability.includes(id)}
-                    onChange={(event) => {
-                      const next = event.target.checked ? [...contract.observability, id] : contract.observability.filter((item) => item !== id);
-                      setContract({ ...contract, observability: next });
-                    }}
-                  />
-                  {prettyName(id)} · in this process
-                </label>
+                <Checkbox
+                  key={id}
+                  label={`${prettyName(id)} · in this process`}
+                  checked={contract.observability.includes(id)}
+                  onChange={(checked) => {
+                    const next = checked ? [...contract.observability, id] : contract.observability.filter((item) => item !== id);
+                    setContract({ ...contract, observability: next });
+                  }}
+                />
               ))}
               {contract.observability.filter((id) => RECORD_HOST[id]).map((id) => (
                 <div key={id}>
@@ -297,13 +278,13 @@ export function ConfigCenter({
                 </div>
               ))}
               {availableRecords.length ? (
-                <label className="field">
-                  <span>Add an observability destination</span>
-                  <select value="" onChange={(event) => { if (event.target.value) setContract({ ...contract, observability: [...contract.observability, event.target.value] }); }}>
-                    <option value="">None</option>
-                    {availableRecords.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
-                  </select>
-                </label>
+                <Select
+                  label="Add an observability destination"
+                  value=""
+                  placeholder="None"
+                  onChange={(destination) => { if (destination) setContract({ ...contract, observability: [...contract.observability, destination] }); }}
+                  options={availableRecords.map((item) => ({ value: item.id, label: item.title }))}
+                />
               ) : null}
             </section>
           ) : null}
@@ -311,19 +292,13 @@ export function ConfigCenter({
           {active === "notes" ? (
             <section className="config-card">
               <h3>Notes</h3>
-              <label className="switch">
-                <input type="checkbox" checked={Boolean(contract.memory.conversation_state)} onChange={(event) => setContract({ ...contract, memory: { ...contract.memory, conversation_state: event.target.checked } })} />
-                Keep this conversation
-              </label>
-              <label className="switch">
-                <input type="checkbox" checked={notesOn} onChange={(event) => setContract({ ...contract, memory: { ...contract.memory, long_term_memory: event.target.checked ? "optional" : false } })} />
-                Read saved notes
-              </label>
+              <Checkbox label="Keep this conversation" checked={Boolean(contract.memory.conversation_state)} onChange={(conversation_state) => setContract({ ...contract, memory: { ...contract.memory, conversation_state } })} />
+              <Checkbox label="Read saved notes" checked={notesOn} onChange={(checked) => setContract({ ...contract, memory: { ...contract.memory, long_term_memory: checked ? "optional" : false } })} />
               <p className="muted">Add as many details as this agent file should keep. Each note is one block.</p>
               {details.map((note, index) => (
-                <label key={index} className="field">
+                <label key={index} className="ui-field">
                   <span>Note {index + 1}</span>
-                  <textarea value={note} onChange={(event) => setDetails(details.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} />
+                  <TextArea value={note} onChange={(value) => setDetails(details.map((item, itemIndex) => itemIndex === index ? value : item))} />
                   <button type="button" className="text-button" onClick={() => setDetails(details.filter((_, itemIndex) => itemIndex !== index))}>Remove note {index + 1}</button>
                 </label>
               ))}
@@ -335,14 +310,12 @@ export function ConfigCenter({
             <section className="config-card">
               <h3>Model</h3>
               <p className="muted">The choice belongs to this agent. The model key is reported as set or not set. This form has no key field.</p>
-              <div className="choice-row">
-                {["platform", "openai", "aws"].map((choice) => (
-                  <label key={choice} className="switch">
-                    <input type="radio" name="provider" checked={(contract.model.provider || "platform") === choice} onChange={() => setContract({ ...contract, model: { provider: choice } })} />
-                    <span>{choice === "openai" ? "OpenAI-compatible" : choice === "aws" ? "AWS" : prettyName(choice)}</span>
-                  </label>
-                ))}
-              </div>
+              <RadioGroup
+                name="provider"
+                value={contract.model.provider || "platform"}
+                onChange={(provider) => setContract({ ...contract, model: { provider } })}
+                options={[{ value: "platform", label: "Platform" }, { value: "openai", label: "OpenAI-compatible" }, { value: "aws", label: "AWS" }]}
+              />
               <p>{keySet ? "Model key is set in the process environment." : "Model key is not set. Mock mode answers without one."}</p>
               {contract.model.provider !== "platform" && host("model") ? (
                 <ModelHost endpoint={host("model")!} onSaved={reloadEndpoints} onError={onError} />
@@ -356,10 +329,7 @@ export function ConfigCenter({
               <p className="muted">Only tools this contract is already allowed to call. A write stays behind approval. This page cannot grant a new permission.</p>
               <div className="check-grid">
                 {allowed.map((tool) => (
-                  <label key={tool.name}>
-                    <input type="checkbox" checked={contract.tools.includes(tool.name)} onChange={() => toggleTool(tool.name)} />
-                    {prettyName(tool.name)}
-                  </label>
+                  <Checkbox key={tool.name} label={prettyName(tool.name)} checked={contract.tools.includes(tool.name)} onChange={() => toggleTool(tool.name)} />
                 ))}
               </div>
             </section>
@@ -371,10 +341,7 @@ export function ConfigCenter({
               {waiting.length === 0 && contract.approval.amount_gte === undefined ? <p>This agent has no write. Nothing waits for approval.</p> : null}
               {waiting.map((tool) => <p key={tool}>{prettyName(tool)} stays behind approval.</p>)}
               {contract.approval.amount_gte !== undefined ? (
-                <label className="field">
-                  <span>Wait when the amount is at least</span>
-                  <input type="number" value={contract.approval.amount_gte} onChange={(event) => setContract({ ...contract, approval: { ...contract.approval, amount_gte: Number(event.target.value) } })} />
-                </label>
+                <NumberField label="Wait when the amount is at least" value={contract.approval.amount_gte} onChange={(amount_gte) => setContract({ ...contract, approval: { ...contract.approval, amount_gte } })} />
               ) : null}
             </section>
           ) : null}
@@ -450,7 +417,7 @@ function AgentPicker({
       </button>
       {open ? (
         <div className="agent-picker-menu" role="listbox" aria-labelledby="agent-picker-label">
-          <input className="agent-picker-search" aria-label="Search agents" placeholder="Search agents" value={query} onChange={(event) => setQuery(event.target.value)} autoFocus />
+          <TextField className="agent-picker-search" aria-label="Search agents" placeholder="Search agents" value={query} onChange={setQuery} autoFocus />
           {visible.map((item) => (
             <button key={item.name} type="button" role="option" aria-selected={item.name === agent} className="agent-picker-option" onClick={() => choose(item.name)}>
               <span className="picker-avatar" aria-hidden="true">{initials(item.name)}</span>
@@ -508,8 +475,8 @@ function ModelHost({ endpoint, onSaved, onError }: { endpoint: EndpointConfig; o
   return (
     <div className="stack">
       <p className="muted">Host address for this agent. The model key is not entered here.</p>
-      <label className="field"><span>Host URL</span><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://" /></label>
-      <label className="field"><span>Connection string</span><input value={connectionString} onChange={(event) => setConnectionString(event.target.value)} /></label>
+      <TextField label="Host URL" value={url} onChange={setUrl} placeholder="https://" />
+      <TextField label="Connection string" value={connectionString} onChange={setConnectionString} />
       <button className="primary" type="button" onClick={saveHost} disabled={busyHost}>{busyHost ? "Saving…" : "Save host"}</button>
     </div>
   );

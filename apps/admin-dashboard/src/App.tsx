@@ -1,3 +1,4 @@
+import { TextField } from "@agentic/controls";
 import { useEffect, useState } from "react";
 import { api, setToken, token } from "./api";
 import { ConfigCenter } from "./config";
@@ -84,7 +85,7 @@ export function App() {
         </nav>
         <div className="side-agents">
           <div className="side-head"><span>Your agents</span><span className="count">{agents.length}</span></div>
-          <input className="agent-search" aria-label="Search agents" placeholder="Search agents" value={query} onChange={(event) => setQuery(event.target.value)} />
+          <TextField className="agent-search" aria-label="Search agents" placeholder="Search agents" value={query} onChange={setQuery} />
           <div className="agent-list">
             {visible.map((item) => (
               <button key={item.name} type="button" className="agent-item" aria-current={agent === item.name ? "true" : undefined} onClick={() => { setAgent(item.name); if (view !== "config") setView("chat"); }}>
@@ -103,12 +104,12 @@ export function App() {
         </div>
         <details className="token-drawer">
           <summary>Access token</summary>
-          <input
+          <TextField
             aria-label="Access token"
             value={devToken}
-            onChange={(event) => {
-              setDevToken(event.target.value);
-              setToken(event.target.value);
+            onChange={(value) => {
+              setDevToken(value);
+              setToken(value);
             }}
           />
         </details>
@@ -171,10 +172,7 @@ function ApprovalsView({ onError }: { onError: (message: string) => void }) {
           </div>
         </header>
         <div className="body">
-          <label className="field">
-            <span>The actor cannot approve a request from their own agent.</span>
-            <input value={actor} onChange={(event) => setActor(event.target.value)} />
-          </label>
+            <TextField label="The actor cannot approve a request from their own agent." value={actor} onChange={setActor} />
         </div>
       </section>
       {!items ? <p className="card empty">Loading approvals…</p> : null}
