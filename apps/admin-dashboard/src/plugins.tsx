@@ -1,9 +1,8 @@
-/** Purpose: the plugins page. Tools, hosts, and MCP server settings live here. Used by: the console shell. */
+/** Purpose: the plugins page. Tool connections and host settings live here. Used by: the console shell. */
 import { Select } from "@agentic/controls";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { EndpointForm } from "./plugins/endpoint-form";
-import { McpBoard } from "./plugins/mcp-board";
 import { ConnectPanel, title } from "./plugins/panels";
 import type { Catalog, EndpointConfig } from "./plugins/types";
 
@@ -14,7 +13,7 @@ export function PluginsView({ onError }: { onError: (message: string) => void })
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [active, setActive] = useState<string>("");
   const [group, setGroup] = useState("All");
-  const [section, setSection] = useState<"tools" | "hosts" | "mcp">("tools");
+  const [section, setSection] = useState<"tools" | "hosts">("tools");
   const [hostId, setHostId] = useState("sql");
 
   async function load() {
@@ -38,7 +37,6 @@ export function PluginsView({ onError }: { onError: (message: string) => void })
       <div className="segmented" role="tablist" aria-label="Plugin sections">
         <button type="button" aria-pressed={section === "tools"} onClick={() => setSection("tools")}>Tools</button>
         <button type="button" aria-pressed={section === "hosts"} onClick={() => setSection("hosts")}>Hosts</button>
-        <button type="button" aria-pressed={section === "mcp"} onClick={() => setSection("mcp")}>MCP servers</button>
       </div>
       {section === "tools" ? (
         <div className="list-detail">
@@ -84,7 +82,6 @@ export function PluginsView({ onError }: { onError: (message: string) => void })
           onError={onError}
         />
       ) : null}
-      {section === "mcp" ? <McpBoard servers={catalog.mcp_servers || []} onSaved={load} onError={onError} /> : null}
     </div>
   );
 }

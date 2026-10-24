@@ -1,7 +1,7 @@
 """MCP server routes.
 
 Purpose: onboard, update, check, and remove an MCP server. The token is not returned.
-Used by: apps/agent-api/app.py. The Plugins page calls these routes.
+Used by: apps/agent-api/app.py. The tool connection on Plugins calls these routes.
 """
 
 from __future__ import annotations

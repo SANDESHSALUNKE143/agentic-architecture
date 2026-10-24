@@ -23,7 +23,7 @@ Each plugin is a registered tool. An industry system replaces the local stand-in
 
 `get_product_details` calls the MCP server whose purpose is product. The price is not stored in this repository. `examples/merchant-mcp` is a separate process you can run locally; its `records.json` is the merchant's catalog. Orders, discounts, and support requests follow the same pattern with purposes `orders`, `billing`, and `support`.
 
-Plugins → MCP servers onboards more than one MCP server. Each server has a purpose, a URL, and a token. The token is sent as a bearer header and is not placed in the URL. The client opens an MCP session, keeps that session, and does not follow redirects. A call that the server does not answer fails the run. A saved server for a purpose is the one that tool calls. `MERCHANT_MCP_URL` points every merchant purpose at the local example when no server is saved for that purpose.
+Open a catalog, order, billing, or support tool on Plugins and save its Server URL and token. Every tool with that purpose calls the saved address. The token is sent as a bearer header and is not placed in the URL. The client opens an MCP session, keeps that session, and does not follow redirects. A call that the server does not answer fails the run. `MERCHANT_MCP_URL` points every merchant purpose at the local example when no address is saved for that purpose.
 
 `query_sql`, `fetch_url`, `invoke_n8n`, and `use_mcp_server` stay off an agent until their host is saved. Catalog, order, billing, and support tools stay off until their MCP server answers. The agent Tools tab lists every tool and leaves the checkbox off when that host is missing or the contract does not grant the permission.
 

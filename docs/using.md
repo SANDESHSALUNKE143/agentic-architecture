@@ -14,7 +14,7 @@ On a laptop, from the repository root:
 
 Open <http://127.0.0.1:5173>. The API is <http://127.0.0.1:8090>. The token is `local-dev-token-not-for-production`. Send it as `Authorization: Bearer`.
 
-`start-local.sh` also starts the example merchant MCP server at <http://127.0.0.1:8091/mcp> and sets `MERCHANT_MCP_URL` for the API. That process owns the sample products, orders, and discounts in `examples/merchant-mcp/records.json`. Catalog, order, billing, and support tools call it. To use another system, onboard that server on Plugins → MCP servers with the matching purpose, or set `MERCHANT_MCP_URL` to its address.
+`start-local.sh` also starts the example merchant MCP server at <http://127.0.0.1:8091/mcp> and sets `MERCHANT_MCP_URL` for the API. That process owns the sample products, orders, and discounts in `examples/merchant-mcp/records.json`. Catalog, order, billing, and support tools call it. To use another system, open that tool on Plugins and save its Server URL, or set `MERCHANT_MCP_URL` to its address.
 
 On one server:
 
@@ -36,7 +36,7 @@ Copy names from `.env.example` when you leave the sample token. `PLATFORM_ENV=pr
 | Agent library | Open a contract in its chat |
 | Run history | See runs started in this browser session |
 | Approvals | Approve or reject a paused write. The actor must differ from the agent |
-| Plugins | List every tool, save host connection strings, and save an MCP server address |
+| Plugins | List every tool, save its server URL, and save host connection strings |
 | Configuration | Edit one agent's contract. The gear on any screen opens this page for that agent |
 | Docs | Read this page, the API reference, and the standard |
 

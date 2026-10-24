@@ -3,7 +3,7 @@ import { Checkbox, TextField } from "@agentic/controls";
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { EndpointForm } from "./endpoint-form";
-import type { EndpointConfig, Plugin } from "./types";
+import type { EndpointConfig, McpServer, Plugin } from "./types";
 import { title } from "./title";
 
 export function ConnectPanel({
@@ -23,6 +23,7 @@ export function ConnectPanel({
   const [serverUrl, setServerUrl] = useState(plugin.connection_url);
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
+  const [checkDetail, setCheckDetail] = useState("");
 
   useEffect(() => {
     setChosen(plugin.connected_agents);
@@ -30,25 +31,46 @@ export function ConnectPanel({
     setToken("");
   }, [plugin.name, plugin.connection_url, plugin.connected_agents]);
 
+  useEffect(() => {
+    setCheckDetail("");
+  }, [plugin.name]);
+
   function toggle(agent: string) {
     setChosen((current) => current.includes(agent) ? current.filter((item) => item !== agent) : [...current, agent]);
   }
 
   async function saveAddress() {
-    if (!plugin.mcp_purpose) return;
+    if (!plugin.mcp_purpose) return null;
     const url = serverUrl.trim();
     if (!url) throw new Error("Enter the server URL.");
-    const body = {
+    const body = JSON.stringify({
       title: plugin.mcp_server_title || `${plugin.mcp_purpose} server`,
       purpose: plugin.mcp_purpose,
       url,
       username: "",
       password: token,
-    };
+    });
     if (plugin.mcp_server_id) {
-      await api(`/settings/mcp-servers/${plugin.mcp_server_id}`, { method: "PUT", body: JSON.stringify(body) });
-    } else {
-      await api("/settings/mcp-servers", { method: "POST", body: JSON.stringify(body) });
+      return api<McpServer>(`/settings/mcp-servers/${plugin.mcp_server_id}`, { method: "PUT", body });
+    }
+    return api<McpServer>("/settings/mcp-servers", { method: "POST", body });
+  }
+
+  async function check() {
+    setBusy(true);
+    onError("");
+    setCheckDetail("");
+    try {
+      const saved = await saveAddress();
+      if (!saved) return;
+      const result = await api<McpServer>(`/settings/mcp-servers/${saved.id}/check`, { method: "POST" });
+      if (result.check_status !== "ok") throw new Error(result.check_detail || "The server did not answer.");
+      setCheckDetail(result.check_detail);
+      await onSaved();
+    } catch (exc) {
+      onError(String(exc).replace(/^Error:\s*/, ""));
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -87,6 +109,7 @@ export function ConnectPanel({
             <TextField label="Server URL" value={serverUrl} onChange={setServerUrl} placeholder="https://" autoComplete="off" />
             <TextField label="Token" type="password" value={token} onChange={setToken} placeholder={plugin.mcp_password_set ? "Saved. Enter a new token to replace it." : ""} autoComplete="new-password" />
             <p className="muted">Tools with purpose {plugin.mcp_purpose} call this address. A saved address replaces the process default.</p>
+            {checkDetail ? <p className="muted">{checkDetail}</p> : null}
           </>
         ) : null}
         {!plugin.mcp_purpose && plugin.connection_url ? <p>URL: {plugin.connection_url}</p> : null}
@@ -110,6 +133,9 @@ export function ConnectPanel({
         <button className="primary" type="button" onClick={save} disabled={busy || (!plugin.mcp_purpose && (!plugin.connection_ready || plugin.eligible_agents.length === 0))}>
           {busy ? "Saving…" : "Save connection"}
         </button>
+        {plugin.mcp_purpose ? (
+          <button className="secondary" type="button" onClick={check} disabled={busy}>Check connection</button>
+        ) : null}
       </div>
     </section>
   );
