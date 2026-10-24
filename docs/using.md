@@ -14,6 +14,8 @@ On a laptop, from the repository root:
 
 Open <http://127.0.0.1:5173>. The API is <http://127.0.0.1:8090>. The token is `local-dev-token-not-for-production`. Send it as `Authorization: Bearer`.
 
+`start-local.sh` also starts the example merchant MCP server at <http://127.0.0.1:8091/mcp> and sets `MERCHANT_MCP_URL` for the API. That process owns the sample products, orders, and discounts in `examples/merchant-mcp/records.json`. Catalog, order, billing, and support tools call it. To use another system, onboard that server on Plugins → MCP servers with the matching purpose, or set `MERCHANT_MCP_URL` to its address.
+
 On one server:
 
 ```bash

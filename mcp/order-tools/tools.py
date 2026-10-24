@@ -1,29 +1,24 @@
-"""Order read and a simulated prepare.
+"""Order client.
 
-Purpose: read order 1001 or 1002, and prepare an order that is not submitted. Prepare can wait for approval.
+Purpose: ask the orders MCP server for status and a draft. This file holds no orders.
 Used by: mcp/tool-gateway/registry.py. The order and support contracts name these tools.
 """
 
 from __future__ import annotations
 
-ORDERS = {
-    "1001": {"order_id": "1001", "status": "open", "product_id": "p-jacket-blue"},
-    "1002": {"order_id": "1002", "status": "shipped", "product_id": "p-boots"},
-}
+from shared.config import ROOT
+from shared.loader import load_module
+
+_client = load_module(ROOT / "mcp" / "tool-gateway" / "client.py", "merchant_mcp_client")
 
 
 def get_order_status(order_id: str) -> dict:
-    order = ORDERS.get(str(order_id), {"order_id": str(order_id), "status": "unknown", "product_id": ""})
-    return {"order_id": order["order_id"], "status": order["status"], "explanation": f"Order {order['order_id']} is {order['status']}."}
+    return _client.call_tool("orders", "get_order_status", {"order_id": order_id})
 
 
 def prepare_order(product_id: str, user_id: str, amount: float, approved: bool = False) -> dict:
-    return {
-        "product_id": product_id,
-        "user_id": user_id,
-        "amount": amount,
-        "submitted": False,
-        "simulated": True,
-        "explanation": "Order draft is simulated and was not submitted to a merchant.",
-        "approved": approved,
-    }
+    return _client.call_tool(
+        "orders",
+        "prepare_order",
+        {"product_id": product_id, "user_id": user_id, "amount": amount, "approved": approved},
+    )

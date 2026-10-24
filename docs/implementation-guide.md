@@ -63,7 +63,7 @@ The eight agents are a retail desk: shopping, catalog, inventory, support, order
 
 | Your system | Reference plugin | Local stand-in |
 | --- | --- | --- |
-| Product search | `search_products`, `get_product_details`, `compare_products` | Three products in `mcp/catalog-tools` |
+| Product search | `search_products`, `get_product_details`, `compare_products` | The product MCP server. The local example is `examples/merchant-mcp` |
 | Stock | `check_stock` | Stock on those products |
 | Orders | `get_order_status`, `prepare_order` | Orders 1001 and 1002. Prepare never submits |
 | Discounts | `get_eligible_discounts` | One rule: the local user and the blue jacket |

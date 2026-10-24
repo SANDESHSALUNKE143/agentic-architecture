@@ -21,6 +21,10 @@ app = load_module(ROOT / "apps" / "agent-api" / "app.py", "agent_api_app").app
 HEADERS = {"Authorization": f"Bearer {DEV_TOKEN}"}
 
 
+def setUpModule():
+    load_module(ROOT / "tests" / "merchant_server.py", "merchant_test_server").ensure_merchant_server()
+
+
 class ApiTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)

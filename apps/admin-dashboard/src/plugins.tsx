@@ -54,7 +54,7 @@ export function PluginsView({ onError }: { onError: (message: string) => void })
               {visible.map((plugin) => (
                 <button key={plugin.name} type="button" className="row-button" aria-current={plugin.name === active ? "true" : undefined} onClick={() => setActive(plugin.name)}>
                   <strong>{title(plugin.name)}</strong>
-                  <span className="role">{plugin.connection_ready ? (plugin.endpoint ? "Connected" : "In this process") : "Needs a connection"}</span>
+                  <span className="role">{plugin.connection_ready ? (plugin.endpoint || plugin.connection_url ? "Connected" : "In this process") : "Needs a connection"}</span>
                 </button>
               ))}
             </div>

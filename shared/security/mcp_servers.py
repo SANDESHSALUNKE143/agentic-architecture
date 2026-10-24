@@ -1,7 +1,7 @@
 """MCP servers this process can be pointed at.
 
 Purpose: store more than one MCP server address. Each server has a purpose, a URL, and a token. The token is not returned.
-Used by: the Plugins page and the gateway readiness check for use_mcp_server. The initialize call is mcp_probe.py.
+Used by: the Plugins page, the MCP client, and the gateway readiness check. The initialize call is mcp_probe.py.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 from shared.config import data_dir
 
 PURPOSES = ("product", "orders", "billing", "support", "research", "other")
+MERCHANT_PURPOSES = ("product", "orders", "billing", "support")
 
 
 def _path():
@@ -57,7 +58,62 @@ def _url(value: str) -> str:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise ValueError("The MCP server URL must start with http:// or https://.")
+    if parsed.username or parsed.password:
+        raise ValueError("Put the token in the token field. The URL must not contain credentials.")
     return url
+
+
+def _configured_url(value: str) -> str:
+    try:
+        return _url(value)
+    except ValueError:
+        return ""
+
+
+def credentials(purpose: str) -> tuple[str, str] | None:
+    for item in _read().values():
+        if not isinstance(item, dict) or str(item.get("purpose") or "") != purpose:
+            continue
+        url = _configured_url(str(item.get("url") or ""))
+        if url:
+            return url, str(item.get("password") or "").strip()
+    if purpose in MERCHANT_PURPOSES:
+        url = _configured_url(os.environ.get("MERCHANT_MCP_URL", ""))
+        if url:
+            return url, os.environ.get("MERCHANT_MCP_TOKEN", "").strip()
+    return None
+
+
+def saved_for(purpose: str) -> dict | None:
+    for server_id, item in _read().items():
+        if not isinstance(item, dict) or str(item.get("purpose") or "") != purpose:
+            continue
+        if _configured_url(str(item.get("url") or "")):
+            return next(row for row in public() if row["id"] == server_id)
+    return None
+
+
+def purpose_ready(purpose: str) -> bool:
+    return credentials(purpose) is not None
+
+
+def address(purpose: str) -> str:
+    located = credentials(purpose)
+    return located[0] if located else ""
+
+
+def any_credentials() -> tuple[str, str] | None:
+    for item in _read().values():
+        if not isinstance(item, dict):
+            continue
+        url = _configured_url(str(item.get("url") or ""))
+        if url:
+            return url, str(item.get("password") or "").strip()
+    for url_name, token_name in (("MCP_SERVER_URL", "MCP_SERVER_TOKEN"), ("MERCHANT_MCP_URL", "MERCHANT_MCP_TOKEN")):
+        url = _configured_url(os.environ.get(url_name, ""))
+        if url:
+            return url, os.environ.get(token_name, "").strip()
+    return None
 
 
 def any_configured() -> bool:

@@ -18,6 +18,9 @@ from shared.contracts import AgentRequest  # noqa: E402
 
 
 def main() -> int:
+    from shared.loader import load_module
+
+    load_module(ROOT / "tests" / "merchant_server.py", "merchant_test_server").ensure_merchant_server()
     platform = Platform()
     cases = json.loads((Path(__file__).parent / "cases.json").read_text(encoding="utf-8"))
     failures = []

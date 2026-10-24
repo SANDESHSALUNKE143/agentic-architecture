@@ -14,10 +14,13 @@ export type ToolConnection = {
 };
 
 export function connectionState(tool: ToolConnection, endpoints: EndpointConfig[]) {
+  const host = tool.endpoint ? endpoints.find((item) => item.id === tool.endpoint) : undefined;
+  if (tool.connection_ready === false) {
+    return { ready: false, detail: tool.connection_summary || "Save the connection before this tool can be used." };
+  }
   if (!tool.endpoint) {
     return { ready: true, detail: tool.connection_summary || "Runs in this process. No connection string." };
   }
-  const host = endpoints.find((item) => item.id === tool.endpoint);
   const ready = host ? host.configured : Boolean(tool.connection_ready);
   const title = host?.title || tool.endpoint;
   if (!ready) {

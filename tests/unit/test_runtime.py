@@ -23,6 +23,12 @@ from shared.memory import GraphPort, VectorPort  # noqa: E402
 from shared.security.credentials import CredentialStore  # noqa: E402
 
 
+def setUpModule():
+    from shared.loader import load_module
+
+    load_module(ROOT / "tests" / "merchant_server.py", "merchant_test_server").ensure_merchant_server()
+
+
 class RuntimeTests(unittest.TestCase):
     def setUp(self):
         self.platform = Platform()
@@ -119,6 +125,42 @@ class RuntimeTests(unittest.TestCase):
         details = described["get_product_details"]
         self.assertIn("mcp/catalog-tools/tools.py", details["source"])
         self.assertNotIn("http", details["source"])
+        self.assertIn("examples/merchant-mcp", details["source"])
+        catalog_contract = self.platform.contracts["catalog-agent"]
+        fetched = self.platform.gateway.call(
+            "run-merchant",
+            catalog_contract.permissions,
+            catalog_contract.tools,
+            "get_product_details",
+            {"product_id": "p-jacket-blue"},
+            {},
+            scope="catalog-agent",
+        )
+        self.assertEqual(fetched["status"], "completed")
+        self.assertEqual(fetched["result"]["products"][0]["price"], 129)
+        self.assertNotIn("129", (ROOT / "mcp" / "catalog-tools" / "tools.py").read_text(encoding="utf-8"))
+        previous_url = os.environ.get("MERCHANT_MCP_URL")
+        os.environ["MERCHANT_MCP_URL"] = "http://127.0.0.1:9/mcp"
+        os.environ["MCP_HTTP_TIMEOUT"] = "1"
+        try:
+            down = self.platform.gateway.call(
+                "run-down",
+                catalog_contract.permissions,
+                catalog_contract.tools,
+                "get_product_details",
+                {"product_id": "p-jacket-blue"},
+                {},
+                scope="down",
+            )
+            self.assertEqual(down["status"], "failed")
+            self.assertEqual(down["error_code"], "upstream_unavailable")
+            self.assertNotIn("Bearer", str(down))
+        finally:
+            if previous_url is None:
+                os.environ.pop("MERCHANT_MCP_URL", None)
+            else:
+                os.environ["MERCHANT_MCP_URL"] = previous_url
+            os.environ.pop("MCP_HTTP_TIMEOUT", None)
         with self.assertRaises(ValueError):
             self.platform.update_contract("catalog-agent", {"tools": ["search_products", "query_sql"]})
         os.environ["SQL_CONNECTION"] = "configured-for-test"
@@ -255,6 +297,9 @@ class RuntimeTests(unittest.TestCase):
 
                 onboarded = add("Product server", "product", "https://catalog.example.test/mcp", "client", "mcp-token")
                 self.assertEqual(onboarded["purpose"], "product")
+                from shared.security.mcp_servers import address
+
+                self.assertEqual(address("product"), "https://catalog.example.test/mcp")
                 self.assertTrue(onboarded["password_set"])
                 self.assertNotIn("mcp-token", str(onboarded))
                 self.assertEqual(len(public()), 1)

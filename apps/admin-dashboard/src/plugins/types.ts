@@ -6,6 +6,10 @@ export type Plugin = {
   permission: string;
   write: boolean;
   endpoint: string;
+  mcp_purpose: string;
+  mcp_server_id: string;
+  mcp_server_title: string;
+  mcp_password_set: boolean;
   connection_ready: boolean;
   connection_summary: string;
   connection_url: string;

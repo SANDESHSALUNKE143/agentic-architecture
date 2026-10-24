@@ -79,15 +79,13 @@ def fetch_url(url: str) -> dict:
 
 
 def use_mcp_server(tool_name: str = "") -> dict:
-    from shared.security.endpoints import ready
+    from shared.config import ROOT
+    from shared.loader import load_module
 
-    return {
-        "tool_name": tool_name,
-        "base_configured": ready("mcp"),
-        "submitted": False,
-        "simulated": True,
-        "explanation": "The MCP server was not called. Its address is saved on Plugins. This process does not send the task to that server.",
-    }
+    client = load_module(ROOT / "mcp" / "tool-gateway" / "client.py", "merchant_mcp_client")
+    listed = client.list_tools()
+    listed["tool_name"] = tool_name
+    return listed
 
 
 def invoke_n8n(path: str, approved: bool = False) -> dict:

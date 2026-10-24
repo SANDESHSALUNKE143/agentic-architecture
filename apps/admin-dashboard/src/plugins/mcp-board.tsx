@@ -91,7 +91,7 @@ export function McpBoard({
       <aside className="pane">
         <div className="pane-head"><h2>MCP servers</h2></div>
         <div className="pane-scroll">
-          <p className="muted">This process is the client. Add one server per system: a product server, an orders server, or another MCP server. Sample product prices stay in the local catalog file.</p>
+          <p className="muted">This process is the client. Add one server per system: a product server, an orders server, a billing server, or a support server. Catalog, order, billing, and support tools read that server. They do not keep prices or rules in this repository. The local example is examples/merchant-mcp.</p>
           <button type="button" className="row-button" aria-current={selected === "new" ? "true" : undefined} onClick={() => choose("new")}>
             <strong>Onboard a server</strong>
             <span className="role">New connection</span>

@@ -93,7 +93,7 @@ ENDPOINTS: list[dict[str, str]] = [
         "id": "mcp",
         "title": "MCP server",
         "group": "MCP",
-        "summary": "Address of an MCP server run by another application. A tool that uses it stays off until a URL or connection string is saved. This process stores the address and does not call that server.",
+        "summary": "Address of an MCP server run by another application. use_mcp_server lists that server's tools. Product, order, billing, and support tools call the server onboarded for their purpose.",
         "env_url": "MCP_SERVER_URL",
         "env_secret": "MCP_SERVER_TOKEN",
     },

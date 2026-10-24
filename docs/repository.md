@@ -20,7 +20,7 @@ agentic-architecture/
 │   └── runtime.py         Loads the YAML and runs the LangChain loop
 ├── mcp/                   Plugins. The gateway is the only caller
 │   ├── tool-gateway/      Allowlist, permission, and approval checks
-│   ├── catalog-tools/     Search, details, compare, and stock
+│   ├── catalog-tools/     Client for the product MCP server
 │   ├── order-tools/       Order status and a simulated order
 │   ├── billing-tools/     The local discount rule
 │   └── support-tools/     A refund request that waits for approval
