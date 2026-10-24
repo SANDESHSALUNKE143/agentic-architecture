@@ -93,8 +93,13 @@ def describe_platform() -> dict:
         "security": [
             {
                 "id": "authentication",
-                "path": "apps/agent-api/app.py",
-                "role": "Every route except guide assets requires the bearer token. Production refuses the sample token.",
+                "path": "apps/agent-api/auth.py",
+                "role": "Every route except guide assets requires the bearer token. A wrong token is 401. Production refuses the sample token.",
+            },
+            {
+                "id": "rate_limit",
+                "path": "shared/security/rate_limit.py",
+                "role": "Each client is limited per minute. Extra calls receive 429. An oversized body receives 413.",
             },
             {
                 "id": "delegation",

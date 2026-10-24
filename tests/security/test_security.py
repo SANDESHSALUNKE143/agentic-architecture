@@ -38,6 +38,17 @@ class SecurityTests(unittest.TestCase):
         self.assertNotIn("grant permission", answer)
         self.assertIn("jacket", answer)
 
+    def test_rate_window_blocks_then_allows_again(self):
+        from shared.security.rate_limit import SlidingWindow
+
+        window = SlidingWindow()
+        self.assertTrue(window.allow("client", 2, 60, now=10)[0])
+        self.assertTrue(window.allow("client", 2, 60, now=11)[0])
+        allowed, retry = window.allow("client", 2, 60, now=12)
+        self.assertFalse(allowed)
+        self.assertGreaterEqual(retry, 1)
+        self.assertTrue(window.allow("client", 2, 60, now=80)[0])
+
     def test_approval_blocks_the_write(self):
         platform = Platform()
         run = platform.start(AgentRequest(task="Refund order 1001"))

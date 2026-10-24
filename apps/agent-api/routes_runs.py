@@ -7,12 +7,15 @@ Used by: apps/agent-api/app.py. Chat calls the stream route.
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
 from fastapi import Header, HTTPException
 from fastapi.responses import StreamingResponse
 from shared.contracts import AgentRequest
 from shared.loader import load_module
+
+logger = logging.getLogger("agentic.runs")
 
 _HERE = Path(__file__).resolve().parent
 _bodies = load_module(_HERE / "bodies.py", "agent_api_bodies")
@@ -43,8 +46,9 @@ def mount(app, platform) -> None:
                 try:
                     result = platform.start(request, on_event=emit)
                     emit({"type": "done", "run": result})
-                except Exception as exc:
-                    emit({"type": "error", "message": str(exc)})
+                except Exception:
+                    logger.warning("run stream failed")
+                    emit({"type": "error", "message": "The run failed."})
                 finally:
                     loop.call_soon_threadsafe(queue.put_nowait, None)
 

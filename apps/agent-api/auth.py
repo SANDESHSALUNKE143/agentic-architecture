@@ -14,5 +14,6 @@ from shared.config import dev_token
 
 def authorized(authorization: str | None) -> None:
     expected = f"Bearer {dev_token()}"
-    if not authorization or not secrets.compare_digest(authorization, expected):
+    presented = authorization or ""
+    if len(presented) != len(expected) or not secrets.compare_digest(presented, expected):
         raise HTTPException(status_code=401, detail="Unauthorized")

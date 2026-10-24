@@ -6,6 +6,7 @@ Used by: CI and the local test command. It calls apps/agent-api/app.py in proces
 
 from __future__ import annotations
 
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -137,6 +138,40 @@ class ApiTests(unittest.TestCase):
             if "<" in item["path"]:
                 continue
             self.assertTrue((ROOT / item["path"]).exists(), item["path"])
+
+    def test_auth_rate_limit_and_errors_stay_closed(self):
+        short = self.client.get("/health", headers={"Authorization": "Bearer x"})
+        self.assertEqual(short.status_code, 401)
+        self.assertEqual(short.json()["detail"], "Unauthorized")
+        self.assertNotIn("Traceback", short.text)
+        self.assertEqual(short.headers["x-content-type-options"], "nosniff")
+        self.assertEqual(short.headers["x-frame-options"], "DENY")
+        self.assertEqual(short.headers["cache-control"], "no-store")
+        missing = self.client.get("/health")
+        self.assertEqual(missing.status_code, 401)
+        guide = sys.modules["agent_api_routes_guide"]
+        self.assertIsNone(guide.asset_file("../pyproject.toml"))
+        self.assertTrue(guide.asset_file("architecture.svg").is_file())
+        guard = sys.modules["agent_api_guard"]
+        self.assertTrue(guard._too_large("999999"))
+        self.assertFalse(guard._too_large("10"))
+        previous_limit = os.environ.get("PLATFORM_RATE_LIMIT")
+        os.environ["PLATFORM_RATE_LIMIT"] = "2"
+        guard.limiter.reset()
+        try:
+            self.assertEqual(self.client.get("/health", headers=self.headers).status_code, 200)
+            self.assertEqual(self.client.get("/health", headers=self.headers).status_code, 200)
+            blocked = self.client.get("/health", headers=self.headers)
+            self.assertEqual(blocked.status_code, 429)
+            self.assertEqual(blocked.json()["detail"], "Too many requests.")
+            self.assertIn("Retry-After", blocked.headers)
+            self.assertNotIn("Traceback", blocked.text)
+        finally:
+            if previous_limit is None:
+                os.environ.pop("PLATFORM_RATE_LIMIT", None)
+            else:
+                os.environ["PLATFORM_RATE_LIMIT"] = previous_limit
+            guard.limiter.reset()
 
 
 if __name__ == "__main__":

@@ -9,6 +9,8 @@
 
 Send `Authorization: Bearer <token>` on every route except `GET /guide/assets/{name}`. The sample token is `local-dev-token-not-for-production`. A missing or wrong token is `401`. `PLATFORM_ENV=production` refuses to start while that sample token is still set.
 
+A client that sends more than `PLATFORM_RATE_LIMIT` requests in `PLATFORM_RATE_WINDOW` seconds receives `429` and `Retry-After`. The defaults are 120 requests and 60 seconds. A body larger than `PLATFORM_MAX_BODY` bytes receives `413`. The default is 262144. An unexpected failure is `500` with the detail `The server could not complete the request.` The response does not include a stack trace. Responses send `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `Cache-Control: no-store`.
+
 The console in `apps/admin-dashboard` is the caller. `apps/admin-dashboard/src/api.ts` attaches the token. Chat uses `src/stream.ts`.
 
 A public run has `request_id`, `session_id`, `workflow`, `status`, `error`, `error_code`, `agents`, and `approval_id` when a write is waiting. Each agent entry has `agent_id`, `status`, `result`, `tool_calls`, and `requires_approval`.

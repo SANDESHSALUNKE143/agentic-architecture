@@ -38,5 +38,6 @@ app = FastAPI(
 )
 
 _HERE = Path(__file__).resolve().parent
+load_module(_HERE / "guard.py", "agent_api_guard").install(app)
 for _name in ("routes_catalog", "routes_runs", "routes_approvals", "routes_settings", "routes_mcp", "routes_guide"):
     load_module(_HERE / f"{_name}.py", f"agent_api_{_name}").mount(app, platform)

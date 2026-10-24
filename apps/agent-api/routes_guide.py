@@ -34,8 +34,15 @@ def mount(app, platform) -> None:
 
     @app.get("/guide/assets/{name}", tags=["Guide"], summary="One diagram from docs/assets")
     def guide_asset(name: str):
-        path = (ROOT / "docs" / "assets" / name).resolve()
-        root = (ROOT / "docs" / "assets").resolve()
-        if path.parent != root or not path.is_file():
+        path = asset_file(name)
+        if path is None:
             raise HTTPException(status_code=404, detail="Asset not found")
         return FileResponse(path)
+
+
+def asset_file(name: str):
+    root = (ROOT / "docs" / "assets").resolve()
+    path = (root / name).resolve()
+    if path.parent != root or not path.is_file():
+        return None
+    return path

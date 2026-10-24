@@ -118,7 +118,16 @@ class RuntimeTests(unittest.TestCase):
             scope="analysis",
         )
         self.assertEqual(blocked["error_code"], "connection_required")
-        described = {item["name"]: item for item in self.platform.gateway.describe()}
+        from tempfile import TemporaryDirectory
+
+        previous_data = os.environ.get("PLATFORM_DATA_DIR")
+        with TemporaryDirectory() as folder:
+            os.environ["PLATFORM_DATA_DIR"] = folder
+            described = {item["name"]: item for item in self.platform.gateway.describe()}
+        if previous_data is None:
+            os.environ.pop("PLATFORM_DATA_DIR", None)
+        else:
+            os.environ["PLATFORM_DATA_DIR"] = previous_data
         self.assertTrue(described["search_products"]["connection_ready"])
         self.assertFalse(described["query_sql"]["connection_ready"])
         self.assertFalse(described["use_mcp_server"]["connection_ready"])
@@ -140,8 +149,11 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(fetched["result"]["products"][0]["price"], 129)
         self.assertNotIn("129", (ROOT / "mcp" / "catalog-tools" / "tools.py").read_text(encoding="utf-8"))
         previous_url = os.environ.get("MERCHANT_MCP_URL")
+        previous_data = os.environ.get("PLATFORM_DATA_DIR")
         os.environ["MERCHANT_MCP_URL"] = "http://127.0.0.1:9/mcp"
         os.environ["MCP_HTTP_TIMEOUT"] = "1"
+        isolated = TemporaryDirectory()
+        os.environ["PLATFORM_DATA_DIR"] = isolated.name
         try:
             down = self.platform.gateway.call(
                 "run-down",
@@ -156,10 +168,15 @@ class RuntimeTests(unittest.TestCase):
             self.assertEqual(down["error_code"], "upstream_unavailable")
             self.assertNotIn("Bearer", str(down))
         finally:
+            isolated.cleanup()
             if previous_url is None:
                 os.environ.pop("MERCHANT_MCP_URL", None)
             else:
                 os.environ["MERCHANT_MCP_URL"] = previous_url
+            if previous_data is None:
+                os.environ.pop("PLATFORM_DATA_DIR", None)
+            else:
+                os.environ["PLATFORM_DATA_DIR"] = previous_data
             os.environ.pop("MCP_HTTP_TIMEOUT", None)
         with self.assertRaises(ValueError):
             self.platform.update_contract("catalog-agent", {"tools": ["search_products", "query_sql"]})
