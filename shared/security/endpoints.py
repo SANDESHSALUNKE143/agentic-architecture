@@ -1,8 +1,7 @@
-"""Host configuration for every external system this platform names.
+"""Saved addresses for systems this repository does not host.
 
-This repository does not host n8n, Grafana, Qdrant, or AWS. The operator sets the
-URL, connection string, username, and password. The password is stored in the
-data directory and is never returned by the API.
+Purpose: store a URL, connection string, username, and password for n8n, Grafana, Qdrant, AWS, SQL, and Neo4j. The password is not returned.
+Used by: the settings connection routes and the port checks in the gateway.
 """
 
 from __future__ import annotations
@@ -11,89 +10,7 @@ import json
 import os
 
 from shared.config import data_dir
-
-ENDPOINTS: list[dict[str, str]] = [
-    {
-        "id": "n8n",
-        "title": "n8n",
-        "group": "Automation",
-        "summary": "This repository does not host n8n. Enter the URL of the n8n you run.",
-        "env_url": "N8N_BASE_URL",
-        "env_secret": "N8N_TOKEN",
-    },
-    {
-        "id": "grafana",
-        "title": "Grafana",
-        "group": "Observability",
-        "summary": "The Grafana address where dashboards and traces are opened.",
-        "env_url": "GRAFANA_URL",
-        "env_secret": "GRAFANA_PASSWORD",
-    },
-    {
-        "id": "otlp",
-        "title": "OpenTelemetry",
-        "group": "Observability",
-        "summary": "The collector that receives traces.",
-        "env_url": "OTEL_EXPORTER_OTLP_ENDPOINT",
-        "env_secret": "",
-    },
-    {
-        "id": "log_store",
-        "title": "Log store",
-        "group": "Observability",
-        "summary": "The store that will read the trace export.",
-        "env_url": "OBSERVABILITY_LOG_URL",
-        "env_secret": "",
-    },
-    {
-        "id": "qdrant",
-        "title": "Qdrant",
-        "group": "RAG",
-        "summary": "The vector database URL used when an agent selects Qdrant.",
-        "env_url": "QDRANT_URL",
-        "env_secret": "QDRANT_API_KEY",
-    },
-    {
-        "id": "aws_vector",
-        "title": "AWS vector",
-        "group": "RAG",
-        "summary": "The AWS vector endpoint. Use the access key as the username and the secret key as the password.",
-        "env_url": "AWS_VECTOR_ENDPOINT",
-        "env_secret": "AWS_SECRET_ACCESS_KEY",
-    },
-    {
-        "id": "embedding",
-        "title": "Embedding model",
-        "group": "RAG",
-        "summary": "The direct URL of the embedding model host.",
-        "env_url": "EMBEDDING_BASE_URL",
-        "env_secret": "EMBEDDING_API_KEY",
-    },
-    {
-        "id": "model",
-        "title": "Model host",
-        "group": "RAG",
-        "summary": "The direct URL of the chat model host.",
-        "env_url": "MODEL_BASE_URL",
-        "env_secret": "MODEL_API_KEY",
-    },
-    {
-        "id": "sql",
-        "title": "SQL",
-        "group": "Data",
-        "summary": "The database connection string. A string saved here is shown again. A string set only in the environment is not shown.",
-        "env_url": "",
-        "env_secret": "",
-    },
-    {
-        "id": "neo4j",
-        "title": "Neo4j",
-        "group": "Data",
-        "summary": "The graph database URL, username, and password.",
-        "env_url": "NEO4J_URL",
-        "env_secret": "NEO4J_PASSWORD",
-    },
-]
+from shared.security.endpoint_specs import ENDPOINTS
 
 
 def _path():
@@ -119,6 +36,14 @@ def _write(payload: dict) -> None:
 def saved(endpoint_id: str) -> dict:
     item = _read().get(endpoint_id) or {}
     return item if isinstance(item, dict) else {}
+
+
+def ready(endpoint_id: str) -> bool:
+    spec = next((item for item in ENDPOINTS if item["id"] == endpoint_id), None)
+    if spec is None:
+        return False
+    probe = spec.get("env_name") or spec["env_url"] or spec["env_secret"]
+    return is_configured(spec["id"], probe)
 
 
 def is_configured(endpoint_id: str, env_name: str = "", env: dict | None = None) -> bool:
@@ -155,7 +80,7 @@ def public() -> list[dict]:
             "connection_string": str(item.get("connection_string") or ""),
             "username": str(item.get("username") or ""),
             "password_set": bool(str(item.get("password") or "").strip() or secret_env),
-            "configured": is_configured(spec["id"], spec["env_url"] or spec["env_secret"]),
+            "configured": ready(spec["id"]),
         })
     return rows
 

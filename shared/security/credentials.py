@@ -1,4 +1,8 @@
-"""Scoped credentials. The process token is not stored here."""
+"""In-memory credential slots.
+
+Purpose: hold a scoped value for a run. This is not the connector store, and the process token is not kept here.
+Used by: orchestrator/platform.py. Passwords saved in the console go through shared/security/endpoints.py.
+"""
 
 from __future__ import annotations
 

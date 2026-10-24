@@ -1,7 +1,7 @@
 """What one server runs, and which files a business team edits.
 
-The API image holds every step because approvals, traces, and notes live in
-that process. The console image is the page operators open.
+Purpose: one map for the seven steps, security, observability, the live workflows, and the n8n tool.
+Used by: GET /platform, the console Workflows tab, and the labels on the API image.
 """
 
 from __future__ import annotations

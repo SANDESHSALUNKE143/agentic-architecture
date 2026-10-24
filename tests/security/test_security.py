@@ -1,4 +1,8 @@
-"""Injection text is ignored and a write stays blocked until approval."""
+"""Security checks.
+
+Purpose: injection text is ignored, and a write stays blocked until a different actor approves it.
+Used by: CI and the local test command.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,8 @@
-"""One registry. Tools run only when the agent contract and permission allow them."""
+"""The only plugin caller.
+
+Purpose: run a tool only when the agent contract lists it and the permission is true. Writes in approval.required_for wait.
+Used by: agents/runtime.py and orchestrator/platform.py. The tool list is registry.py.
+"""
 
 from __future__ import annotations
 
@@ -9,29 +13,18 @@ from typing import Any, Callable
 from shared.config import ROOT
 from shared.loader import load_module
 
-_catalog = load_module(ROOT / "mcp" / "catalog-tools" / "tools.py", "catalog_tools")
-_orders = load_module(ROOT / "mcp" / "order-tools" / "tools.py", "order_tools")
-_billing = load_module(ROOT / "mcp" / "billing-tools" / "tools.py", "billing_tools")
-_support = load_module(ROOT / "mcp" / "support-tools" / "tools.py", "support_tools")
-shared_ports = load_module(ROOT / "mcp" / "tool-gateway" / "ports.py", "gateway_ports")
+_registry = load_module(ROOT / "mcp" / "tool-gateway" / "registry.py", "tool_registry")
+REGISTRY = _registry.REGISTRY
 
-Tool = dict[str, Any]
 
-REGISTRY: dict[str, Tool] = {
-    "search_products": {"group": "Catalog", "summary": "Finds products that match the request.", "permission": "catalog_read", "write": False, "fn": _catalog.search_products, "schema": {"query": "string"}},
-    "get_product_details": {"group": "Catalog", "summary": "Reads the price and record for one product.", "permission": "catalog_read", "write": False, "fn": _catalog.get_product_details, "schema": {"product_id": "string"}},
-    "compare_products": {"group": "Catalog", "summary": "Compares listed products by price.", "permission": "catalog_read", "write": False, "fn": _catalog.compare_products, "schema": {"product_ids": "array"}},
-    "check_stock": {"group": "Inventory", "summary": "Reports how many units are in stock.", "permission": "inventory_read", "write": False, "fn": _catalog.check_stock, "schema": {"product_id": "string"}},
-    "get_order_status": {"group": "Orders", "summary": "Reads whether an order is open or shipped.", "permission": "order_read", "write": False, "fn": _orders.get_order_status, "schema": {"order_id": "string"}},
-    "prepare_order": {"group": "Orders", "summary": "Prepares a simulated order. It does not submit a purchase.", "permission": "order_write", "write": True, "fn": _orders.prepare_order, "schema": {"product_id": "string", "user_id": "string", "amount": "number"}},
-    "get_eligible_discounts": {"group": "Billing", "summary": "Returns a discount only when a local rule matches.", "permission": "billing_read", "write": False, "fn": _billing.get_eligible_discounts, "schema": {"user_id": "string", "product_id": "string"}},
-    "request_approval": {"group": "Support", "summary": "Records a refund request and waits for an operator.", "permission": "support_write", "write": True, "fn": _support.request_approval, "schema": {"action": "string", "summary": "string"}},
-    "search_documents": {"group": "Research", "summary": "Answers from the local document index.", "permission": "research_read", "write": False, "fn": shared_ports.search_documents, "schema": {"query": "string"}},
-    "analyze_dataset": {"group": "Analysis", "summary": "Summarizes the local sales fixture.", "permission": "analysis_read", "write": False, "fn": shared_ports.analyze_dataset, "schema": {"dataset_reference": "string"}},
-    "query_sql": {"group": "Connections", "summary": "Runs a read-only SELECT. Writes are rejected.", "permission": "sql_read", "write": False, "fn": shared_ports.query_sql, "schema": {"query": "string"}},
-    "fetch_url": {"group": "Connections", "summary": "Reads a page only when the host is allowlisted.", "permission": "web_read", "write": False, "fn": shared_ports.fetch_url, "schema": {"url": "string"}},
-    "invoke_n8n": {"group": "Connections", "summary": "Simulates an n8n call and waits for approval.", "permission": "n8n_write", "write": True, "fn": shared_ports.invoke_n8n, "schema": {"path": "string"}},
-}
+
+def _endpoint_ready(endpoint: str) -> bool:
+    from shared.security.endpoints import ready
+    from shared.security.mcp_servers import any_configured
+
+    if endpoint == "mcp":
+        return ready(endpoint) or any_configured()
+    return ready(endpoint)
 
 
 def digest(arguments: dict) -> str:
@@ -50,17 +43,37 @@ class ToolGateway:
         return dict(REGISTRY[name]["schema"])
 
     def describe(self) -> list[dict]:
-        return [
-            {
+        from shared.security.endpoints import ENDPOINTS, public
+
+        hosts = {row["id"]: row for row in public()}
+        titles = {spec["id"]: spec["title"] for spec in ENDPOINTS}
+        rows = []
+        for name, spec in REGISTRY.items():
+            endpoint = spec.get("endpoint") or ""
+            host = hosts.get(endpoint) or {}
+            connection_ready = _endpoint_ready(endpoint) if endpoint else True
+            title = titles.get(endpoint, endpoint)
+            if not endpoint:
+                connection_summary = "Runs in this process. No connection string."
+            elif connection_ready:
+                connection_summary = f"{title} is configured."
+            else:
+                connection_summary = f"Save the {title} connection before an agent can use this tool."
+            rows.append({
                 "name": name,
                 "group": spec.get("group", "Other"),
                 "summary": spec.get("summary", ""),
                 "permission": spec["permission"],
                 "write": spec["write"],
                 "schema": spec["schema"],
-            }
-            for name, spec in REGISTRY.items()
-        ]
+                "endpoint": endpoint,
+                "connection_ready": connection_ready,
+                "connection_summary": connection_summary,
+                "connection_url": host.get("url") or "",
+                "connection_string": host.get("connection_string") or "",
+                "source": spec.get("source") or "",
+            })
+        return rows
 
     def call(
         self,
@@ -78,6 +91,15 @@ class ToolGateway:
         spec = REGISTRY[name]
         if not agent_permissions.get(spec["permission"], False):
             return {"ok": False, "error_code": "tool_denied", "result": {}, "name": name}
+        endpoint = spec.get("endpoint") or ""
+        if endpoint and not _endpoint_ready(endpoint):
+                return {
+                    "ok": False,
+                    "status": "failed",
+                    "error_code": "connection_required",
+                    "name": name,
+                    "result": {"error": "connection_required", "explanation": "Save the connection before this tool can be used."},
+                }
         signature = (name, digest(arguments))
         seen = self.seen.setdefault(f"{run_id}:{scope}", set())
         if signature in seen:

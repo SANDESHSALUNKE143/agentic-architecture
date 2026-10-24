@@ -1,4 +1,8 @@
-"""Conversation state and optional notes. Tool results stay on the run."""
+"""Session turns and optional notes.
+
+Purpose: keep conversation state for a session, and store a note only when the caller asks. Tool results stay on the run.
+Used by: agents/runtime.py and POST /memory/notes.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,8 @@
-"""Load a Python file whose folder name contains a hyphen."""
+"""Import a Python file whose folder name contains a hyphen.
+
+Purpose: load gateway, workflow, and engine modules that are not regular packages.
+Used by: the API entrypoint, the router, and orchestrator/platform.py.
+"""
 
 from __future__ import annotations
 

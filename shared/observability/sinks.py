@@ -1,4 +1,8 @@
-"""Observability tools an agent contract may select. Secrets stay in the environment."""
+"""Observability tools a contract may select.
+
+Purpose: platform trace and evaluation record in this process. OpenTelemetry, a log store, and Grafana are marked configured when an address is set.
+Used by: settings and plugins routes, and by the agent YAML loader.
+"""
 
 from __future__ import annotations
 

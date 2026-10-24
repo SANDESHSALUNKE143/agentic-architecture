@@ -1,4 +1,8 @@
-"""Evaluation records status, tool names, and duration. It does not change model weights."""
+"""Scores for a finished run.
+
+Purpose: record status, tool names, and duration. Feedback is stored here. Model weights stay unchanged.
+Used by: the runtime after a response, and POST /agent-runs/{run_id}/feedback.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,8 @@
-"""Request size limits."""
+"""Request size limits.
+
+Purpose: reject a task that is too long before the router runs.
+Used by: orchestrator/platform.py at the start of a run.
+"""
 
 from __future__ import annotations
 

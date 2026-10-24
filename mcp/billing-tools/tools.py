@@ -1,4 +1,8 @@
-"""One local discount rule. The tool does not invent other offers."""
+"""Local discount rule.
+
+Purpose: return a discount only when the local user and product match. It does not invent offers.
+Used by: mcp/tool-gateway/registry.py under get_eligible_discounts. The billing agent contract names that tool.
+"""
 
 from __future__ import annotations
 

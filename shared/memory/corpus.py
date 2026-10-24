@@ -1,4 +1,8 @@
-"""Local documents, keyword retrieval, and a small entity graph."""
+"""Local documents and a small entity graph.
+
+Purpose: keyword search over the fixture corpus. Citations must be ids this module returned.
+Used by: shared/memory/service.py and mcp/tool-gateway/ports.py through search_documents.
+"""
 
 from __future__ import annotations
 

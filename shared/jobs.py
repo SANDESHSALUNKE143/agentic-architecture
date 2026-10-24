@@ -1,4 +1,8 @@
-"""Scheduled checks. They run in this process, not as a second service."""
+"""Named checks inside this process.
+
+Purpose: run a due check without a second service or a queue.
+Used by: orchestrator/platform.py. Tests call JobRunner directly.
+"""
 
 from __future__ import annotations
 

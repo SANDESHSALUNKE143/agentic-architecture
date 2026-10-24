@@ -1,3 +1,7 @@
+/**
+ * Purpose: exercise the shared controls, including the gear and the drawn dropdown.
+ * Used by: npm test in apps/admin-dashboard.
+ */
 import { Checkbox, GearButton, Select, TextField } from "@agentic/controls";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

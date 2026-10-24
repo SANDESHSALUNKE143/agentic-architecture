@@ -1,4 +1,8 @@
-"""Run state, approvals, and cancellation."""
+"""Run state, approvals, and cancellation.
+
+Purpose: keep a run in this process so a different actor can approve it later. A second API process would not see that queue.
+Used by: orchestrator/platform.py and orchestrator/workflow-engine/engine.py.
+"""
 
 from __future__ import annotations
 

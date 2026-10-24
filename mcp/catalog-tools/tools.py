@@ -1,4 +1,8 @@
-"""Product catalog, comparison, and stock. Writes are not offered."""
+"""Catalog and stock fixtures.
+
+Purpose: search, details, compare, and stock for the three local products. These tools do not write.
+Used by: mcp/tool-gateway/registry.py. Catalog, shopping, and inventory contracts name them.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,8 @@
-"""Order status is readable. Preparing an order is simulated and may wait for approval."""
+"""Order read and a simulated prepare.
+
+Purpose: read order 1001 or 1002, and prepare an order that is not submitted. Prepare can wait for approval.
+Used by: mcp/tool-gateway/registry.py. The order and support contracts name these tools.
+"""
 
 from __future__ import annotations
 

@@ -1,3 +1,7 @@
+/**
+ * Purpose: attach the bearer token and call the API with a relative path.
+ * Used by: every console screen. The laptop Vite proxy and the server nginx send that path to the API.
+ */
 const TOKEN_KEY = "agentic-dev-token";
 
 export function token(): string {

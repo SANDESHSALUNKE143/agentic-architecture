@@ -1,4 +1,8 @@
-"""Load instructions, resolve tools, run the LangChain loop, validate, and return one response."""
+"""The only reasoning loop.
+
+Purpose: load one agent.yaml, call only its allowed tools, validate output_schema, and return one response.
+Used by: orchestrator/platform.py. Output projection is agents/output.py. A new agent does not copy this file.
+"""
 
 from __future__ import annotations
 
@@ -7,7 +11,6 @@ from typing import Any
 
 from langchain.agents import create_agent
 from langchain_core.tools import StructuredTool
-from pydantic import BaseModel, Field, create_model
 from shared.contracts import AgentContract, AgentRequest, validate_output
 from shared.llm import live_enabled
 from shared.llm.mock import MockChatModel
@@ -16,7 +19,7 @@ from shared.memory.rag import retrieve as retrieve_rag
 from shared.observability.sinks import export_flags
 from shared.security.redact import strip_untrusted
 
-_TYPE = {"string": str, "number": float, "array": list, "object": dict, "boolean": bool}
+from agents.output import args_model, live_model, project, public_result
 
 
 class Runtime:
@@ -83,13 +86,13 @@ class Runtime:
                 )
                 return outcome
 
-            schema = _args_model(name, self.gateway)
+            schema = args_model(name, self.gateway)
             return StructuredTool.from_function(invoke, name=name, description=name, args_schema=schema)
 
         tools = [_tool(name) for name in contract.tools if name in self.gateway.names()]
         model = MockChatModel()
         if live_enabled():
-            model = _live_model()
+            model = live_model()
         agent = create_agent(model, tools, system_prompt="\n".join(contract.instructions))
         self._trace(contract, request.request_id, "reason", agent_id=contract.name)
         _emit(on_event, {"type": "activity", "agent_id": contract.name, "message": "The agent is choosing its next step"})
@@ -124,10 +127,10 @@ class Runtime:
     def _response(self, contract, request, calls, notes) -> dict[str, Any]:
         errors = [call["error_code"] for call in calls if call.get("error_code")]
         waiting = next((call for call in calls if call.get("status") == "needs_approval"), None)
-        result = _project(contract.output_schema, calls, notes)
+        result = project(contract.output_schema, calls, notes)
         citations = accept_citations(result.get("sources") or [])
         result["sources"] = citations if "sources" in contract.output_schema.get("properties", {}) else result.get("sources", [])
-        problem = validate_output(contract.output_schema, _public_result(contract, result))
+        problem = validate_output(contract.output_schema, public_result(contract, result))
         if waiting:
             status = "needs_approval"
         elif errors or problem:
@@ -138,7 +141,7 @@ class Runtime:
             status = "completed"
         return {
             "status": status,
-            "result": _public_result(contract, result),
+            "result": public_result(contract, result),
             "citations": citations,
             "tool_calls": [{"name": call.get("name"), "status": call.get("status") or call.get("error_code")} for call in calls],
             "errors": errors,
@@ -154,58 +157,3 @@ def _emit(on_event, payload: dict) -> None:
         on_event(payload)
 
 
-def _public_result(contract: AgentContract, result: dict) -> dict:
-    return {key: result.get(key) for key in contract.output_schema.get("properties", {})}
-
-
-def _project(schema: dict, calls: list[dict], notes: list[dict]) -> dict:
-    bag: dict[str, Any] = {}
-    for call in calls:
-        payload = call.get("result") or {}
-        if not isinstance(payload, dict):
-            continue
-        for key, value in payload.items():
-            if key == "sources" and isinstance(value, list):
-                bag.setdefault("sources", []).extend(value)
-            elif value not in (None, ""):
-                bag[key] = value
-        for key, value in (call.get("arguments") or {}).items():
-            bag.setdefault(key, value)
-    if notes and "explanation" not in bag:
-        bag["explanation"] = notes[0]["text"]
-    for note in notes:
-        if note.get("source_id"):
-            bag.setdefault("sources", []).append({"source_id": note["source_id"], "location": note.get("location") or ""})
-    projected = {}
-    for key, spec in schema.get("properties", {}).items():
-        if key in bag:
-            projected[key] = bag[key]
-        elif spec.get("type") == "array":
-            projected[key] = []
-        elif spec.get("type") == "string":
-            projected[key] = bag.get("explanation") or "Completed from tool observations."
-        elif spec.get("type") == "object":
-            projected[key] = {}
-        elif spec.get("type") == "boolean":
-            projected[key] = False
-        elif spec.get("type") == "number":
-            projected[key] = 0
-    if "answer" in schema.get("properties", {}) and not projected.get("answer"):
-        projected["answer"] = projected.get("explanation") or "The indexed sources do not establish an answer."
-    return projected
-
-
-def _args_model(name: str, gateway) -> type[BaseModel]:
-    schema = gateway.schema_for(name)
-    fields = {}
-    for key, kind in schema.items():
-        fields[key] = ( _TYPE.get(kind, str), Field(default=None) )
-    return create_model(f"{name}_args", **fields)
-
-
-def _live_model():
-    import os
-
-    from langchain_openai import ChatOpenAI
-
-    return ChatOpenAI(api_key=os.environ["MODEL_API_KEY"], model=os.environ.get("MODEL_NAME", "gpt-4.1-mini"))

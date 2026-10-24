@@ -1,4 +1,8 @@
-"""RAG choices on an agent contract. Backends stay local until the environment names them."""
+"""RAG and model choices stored on a contract.
+
+Purpose: validate retrieve, capture, vector, embedding, and model provider. Local stays the answer path until a host is set.
+Used by: shared/contracts when a YAML file loads, and by the settings routes.
+"""
 
 from __future__ import annotations
 

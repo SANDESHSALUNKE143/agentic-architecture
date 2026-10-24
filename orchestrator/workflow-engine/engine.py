@@ -1,4 +1,8 @@
-"""Sequence the planned agents with LangGraph and pause when a write needs approval."""
+"""Run the planned agents in order.
+
+Purpose: LangGraph steps through the agent list and pauses when a write needs approval. This is the workflow engine. n8n is not this file.
+Used by: orchestrator/platform.py after the planner accepts the list.
+"""
 
 from __future__ import annotations
 

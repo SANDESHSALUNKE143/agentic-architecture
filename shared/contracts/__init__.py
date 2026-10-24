@@ -1,4 +1,8 @@
-"""One execution interface for every agent."""
+"""AgentRequest, AgentContract, and AgentResponse fields.
+
+Purpose: the execution interface every agent shares. output_schema is checked here.
+Used by: apps/agent-api/app.py, the runtime, and the workflow engine.
+"""
 
 from __future__ import annotations
 

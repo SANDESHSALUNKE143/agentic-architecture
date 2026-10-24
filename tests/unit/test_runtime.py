@@ -1,7 +1,12 @@
-"""Route, tools, schema, and the order approval amount."""
+"""Runtime checks.
+
+Purpose: route, tools, schema, workflow files, and the order approval amount.
+Used by: CI and the local test command. It builds a Platform directly.
+"""
 
 from __future__ import annotations
 
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -97,7 +102,7 @@ class RuntimeTests(unittest.TestCase):
         run = self.platform.start(AgentRequest(task="Find a blue trail jacket under $150", agents=["catalog-agent"]), on_event=events.append)
         self.assertEqual(run["workflow"], "agent-chain")
         self.assertTrue(any(event.get("type") == "tool" and event.get("tool") == "search_products" for event in events))
-        sql = self.platform.gateway.call(
+        blocked = self.platform.gateway.call(
             "run-sql",
             {"sql_read": True},
             ["query_sql"],
@@ -106,17 +111,43 @@ class RuntimeTests(unittest.TestCase):
             {},
             scope="analysis",
         )
-        self.assertEqual(sql["status"], "failed")
-        web = self.platform.gateway.call(
-            "run-web",
-            {"web_read": True},
-            ["fetch_url"],
-            "fetch_url",
-            {"url": "https://evil.example/secret"},
-            {},
-            scope="research",
-        )
-        self.assertEqual(web["result"]["error"], "denied")
+        self.assertEqual(blocked["error_code"], "connection_required")
+        described = {item["name"]: item for item in self.platform.gateway.describe()}
+        self.assertTrue(described["search_products"]["connection_ready"])
+        self.assertFalse(described["query_sql"]["connection_ready"])
+        self.assertFalse(described["use_mcp_server"]["connection_ready"])
+        details = described["get_product_details"]
+        self.assertIn("mcp/catalog-tools/tools.py", details["source"])
+        self.assertNotIn("http", details["source"])
+        with self.assertRaises(ValueError):
+            self.platform.update_contract("catalog-agent", {"tools": ["search_products", "query_sql"]})
+        os.environ["SQL_CONNECTION"] = "configured-for-test"
+        os.environ["WEB_ALLOWLIST"] = "example.test"
+        try:
+            sql = self.platform.gateway.call(
+                "run-sql",
+                {"sql_read": True},
+                ["query_sql"],
+                "query_sql",
+                {"query": "delete from orders"},
+                {},
+                scope="analysis",
+            )
+            self.assertEqual(sql["status"], "failed")
+            self.assertEqual(sql["result"]["error"], "rejected")
+            web = self.platform.gateway.call(
+                "run-web",
+                {"web_read": True},
+                ["fetch_url"],
+                "fetch_url",
+                {"url": "https://evil.example/secret"},
+                {},
+                scope="research",
+            )
+            self.assertEqual(web["result"]["error"], "denied")
+        finally:
+            os.environ.pop("SQL_CONNECTION", None)
+            os.environ.pop("WEB_ALLOWLIST", None)
         self.assertTrue(VectorPort().query("jacket"))
         self.assertEqual(GraphPort().query("jacket"), [])
         self.assertEqual(JobRunner().run_due("workflow-check")["status"], "completed")
@@ -220,6 +251,17 @@ class RuntimeTests(unittest.TestCase):
                 kept = self.platform.save_endpoint("n8n", "https://n8n.example.test", "n8n://board", "operator", "")
                 self.assertTrue(kept["password_set"])
                 self.assertNotIn("local-secret", str(kept))
+                from shared.security.mcp_servers import add, public, remove
+
+                onboarded = add("Product server", "product", "https://catalog.example.test/mcp", "client", "mcp-token")
+                self.assertEqual(onboarded["purpose"], "product")
+                self.assertTrue(onboarded["password_set"])
+                self.assertNotIn("mcp-token", str(onboarded))
+                self.assertEqual(len(public()), 1)
+                with self.assertRaises(ValueError):
+                    add("Broken", "product", "ftp://catalog.example.test", "", "")
+                remove(onboarded["id"])
+                self.assertEqual(public(), [])
             finally:
                 if previous is None:
                     os.environ.pop("PLATFORM_DATA_DIR", None)

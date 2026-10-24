@@ -1,4 +1,8 @@
-"""MCP stdio server. Import the installed mcp package before this repo is on the path."""
+"""Optional stdio process for the same registry.
+
+Purpose: expose the gateway tools over MCP stdio. The API does not require this process. The in-process registry is the caller the agents use.
+Used by: an operator who starts this file directly. Import the installed mcp package before this repo is on the path.
+"""
 
 from __future__ import annotations
 

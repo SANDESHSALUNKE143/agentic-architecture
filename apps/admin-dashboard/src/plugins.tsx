@@ -1,64 +1,21 @@
-import { Checkbox, TextField } from "@agentic/controls";
+/** Purpose: the plugins page. Tools, hosts, and MCP server settings live here. Used by: the console shell. */
+import { Select } from "@agentic/controls";
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import { EndpointForm } from "./plugins/endpoint-form";
+import { McpBoard } from "./plugins/mcp-board";
+import { ConnectPanel, title } from "./plugins/panels";
+import type { Catalog, EndpointConfig } from "./plugins/types";
 
-type Plugin = {
-  name: string;
-  group: string;
-  summary: string;
-  permission: string;
-  write: boolean;
-  connected_agents: string[];
-  eligible_agents: string[];
-};
-
-type Connection = {
-  id: string;
-  title: string;
-  variable: string;
-  configured: boolean;
-  detail: string;
-};
-
-type Catalog = {
-  plugins: Plugin[];
-  connections: Connection[];
-  observability: ObservabilityTool[];
-  rag: { vector: RagChoice[]; embedding: RagChoice[]; model: RagChoice[] };
-  endpoints: EndpointConfig[];
-};
-
-export type EndpointConfig = {
-  id: string;
-  title: string;
-  group: string;
-  summary: string;
-  url: string;
-  connection_string: string;
-  username: string;
-  password_set: boolean;
-  configured: boolean;
-};
-
-type RagChoice = ObservabilityTool & { kind: string };
-
-type ObservabilityTool = {
-  id: string;
-  title: string;
-  summary: string;
-  variable: string;
-  configured: boolean;
-  detail: string;
-  connected_agents: string[];
-  eligible_agents: string[];
-};
+export type { EndpointConfig } from "./plugins/types";
+export { EndpointForm } from "./plugins/endpoint-form";
 
 export function PluginsView({ onError }: { onError: (message: string) => void }) {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [active, setActive] = useState<string>("");
   const [group, setGroup] = useState("All");
-  const [section, setSection] = useState<"tools" | "hosts">("tools");
-  const [hostId, setHostId] = useState("n8n");
+  const [section, setSection] = useState<"tools" | "hosts" | "mcp">("tools");
+  const [hostId, setHostId] = useState("sql");
 
   async function load() {
     setCatalog(await api<Catalog>("/plugins"));
@@ -72,29 +29,32 @@ export function PluginsView({ onError }: { onError: (message: string) => void })
   const groups = ["All", ...new Set(catalog.plugins.map((plugin) => plugin.group))];
   const visible = catalog.plugins.filter((plugin) => group === "All" || plugin.group === group);
   const selected = catalog.plugins.find((plugin) => plugin.name === active) || null;
-  const hosts = (catalog.endpoints || []).filter((item) => item.id === "n8n" || item.id === "sql");
+  const hosts = catalog.endpoints.filter((item) => item.id !== "mcp");
   const host = hosts.find((item) => item.id === hostId) || hosts[0];
+  const hostTools = catalog.plugins.filter((plugin) => plugin.endpoint === host?.id);
 
   return (
-    <div className="fill-col">
+    <div className="fill-col plugin-board">
       <div className="segmented" role="tablist" aria-label="Plugin sections">
         <button type="button" aria-pressed={section === "tools"} onClick={() => setSection("tools")}>Tools</button>
         <button type="button" aria-pressed={section === "hosts"} onClick={() => setSection("hosts")}>Hosts</button>
+        <button type="button" aria-pressed={section === "mcp"} onClick={() => setSection("mcp")}>MCP servers</button>
       </div>
       {section === "tools" ? (
         <div className="list-detail">
           <aside className="pane">
-            <div className="pane-head"><h2>MCP tools</h2></div>
+            <div className="pane-head"><h2>All tools</h2></div>
             <div className="pane-scroll">
-              <div className="segmented" role="tablist" aria-label="Plugin groups">
-                {groups.map((item) => (
-                  <button key={item} type="button" aria-pressed={group === item} onClick={() => setGroup(item)}>{item}</button>
-                ))}
-              </div>
+              <Select
+                label="Group"
+                value={group}
+                onChange={setGroup}
+                options={groups.map((item) => ({ value: item, label: item }))}
+              />
               {visible.map((plugin) => (
                 <button key={plugin.name} type="button" className="row-button" aria-current={plugin.name === active ? "true" : undefined} onClick={() => setActive(plugin.name)}>
                   <strong>{title(plugin.name)}</strong>
-                  <span className="role">{plugin.summary}</span>
+                  <span className="role">{plugin.connection_ready ? (plugin.endpoint ? "Connected" : "In this process") : "Needs a connection"}</span>
                 </button>
               ))}
             </div>
@@ -104,284 +64,77 @@ export function PluginsView({ onError }: { onError: (message: string) => void })
               <div className="pane-scroll">
                 <ConnectPanel
                   plugin={selected}
+                  endpoint={catalog.endpoints.find((item) => item.id === selected.endpoint)}
                   onClose={() => setActive("")}
                   onSaved={load}
                   onError={onError}
                 />
               </div>
-            ) : <p className="empty">Select a tool to choose which agents may call it.</p>}
+            ) : <p className="empty">Select a tool to see its connection and which agents may call it.</p>}
           </section>
         </div>
-      ) : (
-        <div className="list-detail">
-          <aside className="pane">
-            <div className="pane-head"><h2>Hosts</h2></div>
-            <div className="pane-scroll">
-              <p className="muted">n8n and SQL are not part of an agent choice. Observability, retrieval, and memory hosts are configured on the agent.</p>
-              {hosts.map((item) => (
-                <button key={item.id} type="button" className="row-button" aria-current={host?.id === item.id ? "true" : undefined} onClick={() => setHostId(item.id)}>
-                  <strong>{item.title}</strong>
-                  <span className="role">{item.configured ? "Address saved" : "Mock"}</span>
-                </button>
-              ))}
-            </div>
-          </aside>
-          <section className="pane">
-            <div className="pane-scroll">
-              {host ? <EndpointForm key={host.id} embedded endpoint={host} onSaved={load} onError={onError} /> : <p className="empty">No host is listed.</p>}
-            </div>
-          </section>
-        </div>
-      )}
+      ) : null}
+      {section === "hosts" ? (
+        <HostList
+          hosts={hosts}
+          host={host}
+          tools={hostTools}
+          onSelect={setHostId}
+          onSaved={load}
+          onError={onError}
+        />
+      ) : null}
+      {section === "mcp" ? <McpBoard servers={catalog.mcp_servers || []} onSaved={load} onError={onError} /> : null}
     </div>
   );
 }
 
-export function EndpointForm({
-  endpoint,
-  onSaved,
-  onError,
-  embedded = false,
-}: {
-  endpoint: EndpointConfig;
-  onSaved: () => Promise<void>;
-  onError: (message: string) => void;
-  embedded?: boolean;
-}) {
-  const [url, setUrl] = useState(endpoint.url);
-  const [connectionString, setConnectionString] = useState(endpoint.connection_string);
-  const [username, setUsername] = useState(endpoint.username);
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function save() {
-    setBusy(true);
-    onError("");
-    try {
-      await api("/settings/connections/" + endpoint.id, {
-        method: "PUT",
-        body: JSON.stringify({ url, connection_string: connectionString, username, password }),
-      });
-      setPassword("");
-      await onSaved();
-    } catch (exc) {
-      onError(String(exc).replace(/^Error:\s*/, ""));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const fields = (
-    <>
-      {embedded ? <h3>{endpoint.title}</h3> : <p className="muted">{endpoint.summary}</p>}
-      <TextField label="Direct URL" value={url} onChange={setUrl} placeholder="https://" />
-      <TextField label="Connection string" value={connectionString} onChange={setConnectionString} />
-      <TextField label="Username" value={username} onChange={setUsername} autoComplete="off" />
-      <TextField label="Password" type="password" value={password} placeholder={endpoint.password_set ? "Saved. Enter a new password to replace it." : ""} onChange={setPassword} autoComplete="new-password" />
-      <div className="pane-foot">
-        <button className="primary" type="button" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save connection"}</button>
-      </div>
-    </>
-  );
-
-  if (embedded) return <div className="stack">{fields}</div>;
-
-  return (
-    <article className="card plugin-card">
-      <header>
-        <div>
-          <p className="eyebrow">{endpoint.configured ? "Address saved" : "Mock"}</p>
-          <h2>{endpoint.title}</h2>
-        </div>
-      </header>
-      <div className="body stack">
-        {fields}
-      </div>
-    </article>
-  );
-}
-
-function ConnectPanel({
-  plugin,
-  onClose,
+function HostList({
+  hosts,
+  host,
+  tools,
+  onSelect,
   onSaved,
   onError,
 }: {
-  plugin: Plugin;
-  onClose: () => void;
+  hosts: EndpointConfig[];
+  host: EndpointConfig | undefined;
+  tools: { name: string }[];
+  onSelect: (id: string) => void;
   onSaved: () => Promise<void>;
   onError: (message: string) => void;
 }) {
-  const [chosen, setChosen] = useState<string[]>(plugin.connected_agents);
-  const [busy, setBusy] = useState(false);
-
-  function toggle(agent: string) {
-    setChosen((current) => current.includes(agent) ? current.filter((item) => item !== agent) : [...current, agent]);
-  }
-
-  async function save() {
-    setBusy(true);
-    onError("");
-    try {
-      await api("/plugins/" + plugin.name, { method: "PUT", body: JSON.stringify({ agents: chosen }) });
-      await onSaved();
-      onClose();
-    } catch (exc) {
-      onError(String(exc).replace(/^Error:\s*/, ""));
-    } finally {
-      setBusy(false);
-    }
-  }
-
+  const groups = [...new Set(hosts.map((item) => item.group))];
   return (
-    <section className="card connect-panel" aria-label="Connect plugin">
-      <header>
-        <div>
-          <p className="eyebrow">Connect plugin</p>
-          <h2>{title(plugin.name)}</h2>
-        </div>
-        <button className="secondary" type="button" onClick={onClose}>Close</button>
-      </header>
-      <div className="body stack">
-        <p className="muted">
-          Choose the agents that may call this plugin. An agent appears here only when its contract already grants {plugin.permission}.
-          {plugin.write ? " This write stays behind approval." : ""}
-        </p>
-        {plugin.eligible_agents.length ? (
-          <div className="check-grid">
-            {plugin.eligible_agents.map((agent) => (
-              <Checkbox key={agent} label={title(agent)} checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
-            ))}
-          </div>
-        ) : (
-          <p className="muted">No agent has this permission yet. Add it to an agent contract before connecting the plugin.</p>
-        )}
-      </div>
-      <div className="foot">
-        <button className="primary" type="button" onClick={save} disabled={busy || plugin.eligible_agents.length === 0}>
-          {busy ? "Saving…" : "Save connection"}
-        </button>
-      </div>
-    </section>
-  );
-}
-
-function ObservePanel({
-  tool,
-  onClose,
-  onSaved,
-  onError,
-}: {
-  tool: ObservabilityTool;
-  onClose: () => void;
-  onSaved: () => Promise<void>;
-  onError: (message: string) => void;
-}) {
-  const [chosen, setChosen] = useState<string[]>(tool.connected_agents);
-  const [busy, setBusy] = useState(false);
-
-  function toggle(agent: string) {
-    setChosen((current) => current.includes(agent) ? current.filter((item) => item !== agent) : [...current, agent]);
-  }
-
-  async function save() {
-    setBusy(true);
-    onError("");
-    try {
-      await api("/settings/observability/" + tool.id, { method: "PUT", body: JSON.stringify({ agents: chosen }) });
-      await onSaved();
-      onClose();
-    } catch (exc) {
-      onError(String(exc).replace(/^Error:\s*/, ""));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <section className="card connect-panel" aria-label="Observability connection">
-      <header>
-        <div>
-          <p className="eyebrow">Agent configuration</p>
-          <h2>{tool.title}</h2>
-        </div>
-        <button className="secondary" type="button" onClick={onClose}>Close</button>
-      </header>
-      <div className="body stack">
-        <p className="muted">{tool.detail} Saving writes this tool onto each selected agent contract.</p>
-        <div className="check-grid">
-          {tool.eligible_agents.map((agent) => (
-            <Checkbox key={agent} label={title(agent)} checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
+    <div className="list-detail">
+      <aside className="pane">
+        <div className="pane-head"><h2>Hosts</h2></div>
+        <div className="pane-scroll">
+          <p className="muted">Each host stores a URL, a connection string, a username, and a password. A tool that names a host stays off until that host is configured.</p>
+          {groups.map((group) => (
+            <div key={group}>
+              <p className="eyebrow">{group}</p>
+              {hosts.filter((item) => item.group === group).map((item) => (
+                <button key={item.id} type="button" className="row-button" aria-current={host?.id === item.id ? "true" : undefined} onClick={() => onSelect(item.id)}>
+                  <strong>{item.title}</strong>
+                  <span className="role">{item.configured ? "Address saved" : "Not configured"}</span>
+                </button>
+              ))}
+            </div>
           ))}
         </div>
-      </div>
-      <div className="foot">
-        <button className="primary" type="button" onClick={save} disabled={busy}>
-          {busy ? "Saving…" : "Save on agents"}
-        </button>
-      </div>
-    </section>
-  );
-}
-
-function RagPanel({
-  choice,
-  onClose,
-  onSaved,
-  onError,
-}: {
-  choice: RagChoice;
-  onClose: () => void;
-  onSaved: () => Promise<void>;
-  onError: (message: string) => void;
-}) {
-  const [chosen, setChosen] = useState<string[]>(choice.connected_agents);
-  const [busy, setBusy] = useState(false);
-
-  function toggle(agent: string) {
-    setChosen((current) => current.includes(agent) ? current.filter((item) => item !== agent) : [...current, agent]);
-  }
-
-  async function save() {
-    setBusy(true);
-    onError("");
-    try {
-      await api(`/settings/rag/${choice.kind}/${choice.id}`, { method: "PUT", body: JSON.stringify({ agents: chosen }) });
-      await onSaved();
-      onClose();
-    } catch (exc) {
-      onError(String(exc).replace(/^Error:\s*/, ""));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <section className="card connect-panel" aria-label="RAG connection">
-      <header>
-        <div>
-          <p className="eyebrow">Agent configuration</p>
-          <h2>{choice.title}</h2>
+      </aside>
+      <section className="pane">
+        <div className="pane-scroll">
+          {host ? (
+            <>
+              <EndpointForm key={host.id} embedded endpoint={host} onSaved={onSaved} onError={onError} />
+              <p className="muted">{host.summary}</p>
+              {tools.length ? <p className="muted">Tools that use this host: {tools.map((item) => title(item.name)).join(", ")}.</p> : <p className="muted">No tool requires this host. Agents choose it from their own configuration.</p>}
+            </>
+          ) : <p className="empty">No host is listed.</p>}
         </div>
-        <button className="secondary" type="button" onClick={onClose}>Close</button>
-      </header>
-      <div className="body stack">
-        <p className="muted">{choice.detail} Saving sets this choice on the selected agent contracts.</p>
-        <div className="check-grid">
-          {choice.eligible_agents.map((agent) => (
-            <Checkbox key={agent} label={title(agent)} checked={chosen.includes(agent)} onChange={() => toggle(agent)} />
-          ))}
-        </div>
-      </div>
-      <div className="foot">
-        <button className="primary" type="button" onClick={save} disabled={busy}>
-          {busy ? "Saving…" : "Save on agents"}
-        </button>
-      </div>
-    </section>
+      </section>
+    </div>
   );
-}
-
-function title(value: string) {
-  return value.replaceAll("-", " ").replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }

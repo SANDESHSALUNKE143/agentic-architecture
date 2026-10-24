@@ -6,17 +6,28 @@ LangChain runs each specialist from `agent.yaml`. LangGraph sequences the three 
 
 ![Request path through the seven components](docs/assets/architecture.svg)
 
-Read [docs/implementation-guide.md](docs/implementation-guide.md) before changing code. The same page is the first item under Docs in the console.
+Read [docs/using.md](docs/using.md) to run the console and the API. Read [docs/implementation-guide.md](docs/implementation-guide.md) before changing code. Both pages are under Docs in the console. The interactive API page is `/docs`. The written route list is [docs/api.md](docs/api.md).
 
 ## Start the reference
 
 `python` is not required on your shell path. This repository keeps its interpreter in `.venv`.
 
+On a laptop:
+
 ```bash
 ./start-local.sh
 ```
 
-The script starts the API at <http://127.0.0.1:8090> and the console at <http://127.0.0.1:5173>. The local token is `local-dev-token-not-for-production`. Health is `/health`. Interactive API docs are `/docs`.
+The script starts the API at <http://127.0.0.1:8090> and the console at <http://127.0.0.1:5173>. The local token is `local-dev-token-not-for-production`. Health is `/health`. The platform map is `/platform`. Interactive API docs are `/docs`.
+
+On one server:
+
+```bash
+docker compose up -d --build
+./deploy/smoke.sh
+```
+
+That builds `agentic-api` and `agentic-console`. Operators open <http://127.0.0.1:5173>. `CONSOLE_PORT` changes that port. The API stays on the server network. `/health`, `/platform`, and `/docs` are on the console port. Copy names from `.env.example` when you replace the sample token. `PLATFORM_ENV=production` refuses that token until `PLATFORM_DEV_TOKEN` is private.
 
 Prove the path with this task:
 
@@ -24,7 +35,7 @@ Prove the path with this task:
 Find a blue trail jacket under $150
 ```
 
-Read the live trace. Then open `agents/catalog-agent/agent.yaml`. That file is the contract: instructions, plugins, memory, permissions, and `output_schema`.
+The run is the `product-discovery` workflow: shopping, then catalog, then inventory. Read the live trace. Then open `agents/catalog-agent/agent.yaml`. That file is the contract: instructions, plugins, memory, permissions, and `output_schema`.
 
 ## Seven components
 
@@ -37,6 +48,10 @@ These stay in place when you replace the retail fixtures with your systems.
 5. **Action** — `mcp/tool-gateway` calls only the plugins named in `agent.yaml`.
 6. **Learning** — `shared/evaluation` and traces record status, tool names, and duration. They do not store the raw question or change model weights.
 7. **Communication** — the `AgentResponse` is what the API returns and what the console shows.
+
+Security sits beside those steps: the bearer check in `apps/agent-api/auth.py`, handoff rules in `shared/security/delegation.py`, redaction in `shared/security/redact.py`, and the approval wait in `mcp/tool-gateway/gateway.py`. Observability is `shared/observability`. The trace records the agent, the tool name, the status, and the duration. It omits the raw question.
+
+`GET /platform` returns this map: the seven steps, security, observability, the live workflow sequences, the n8n tool, and the files a business team edits. The same step names are labels on the `agentic-api` image. The page is [docs/server.md](docs/server.md).
 
 ## Standard you do not relax
 
@@ -82,15 +97,19 @@ agentic-architecture/
 │   ├── security/          Permissions, delegation, and redaction
 │   ├── evaluation/        Status, tool names, and duration
 │   ├── contracts/         AgentRequest and AgentResponse
-│   └── observability/     The trace
+│   ├── observability/     The trace
+│   └── platform_map.py    The map returned by GET /platform
+├── packages/controls/     Text, choice, and gear controls for the console
 ├── workflows/             Discovery, support, and order sequences
+├── deploy/                API image, console image, and the server smoke test
+├── docker-compose.yml     The two images on one server
 ├── tests/                 Unit, API, security, and evaluation cases
 └── docs/                  The guide an implementer follows
 ```
 
 ### apps
 
-`apps/agent-api` receives the task and returns the response. `apps/admin-dashboard` is the operations console: Run, Agents, Plugins, Approvals, Settings, and Docs.
+`apps/agent-api` receives the task and returns the response. `apps/admin-dashboard` is the operations console: Dashboard, Agent chat, Agent library, Run history, Approvals, Configuration, and Docs. A gear on each agent opens that agent's configuration. Those fields come from `@agentic/controls` in `packages/controls`. See [Console controls](docs/ui-controls.md).
 
 ### orchestrator
 
@@ -110,16 +129,26 @@ The model, memory, security checks, evaluation record, and trace stay here. A ne
 
 ### workflows, tests, and docs
 
-`workflows` names product discovery, customer support, and order processing. `tests` checks routes, plugins, schema, denied calls, injection text, and approval. `docs` is the written standard.
+`workflows/<name>/workflow.py` is the agent order. The router loads that list. `tests` checks routes, plugins, schema, denied calls, injection text, and approval. `docs` is the written standard. `deploy` and `docker-compose.yml` run the same two processes as images.
 
 ## How a run moves
 
-1. The console sends the task, and optionally a workflow or a list of agents.
-2. The router picks who runs. A selected agent overrides the automatic route.
-3. The planner refuses a hop the delegation rules do not allow.
-4. Each agent loads its YAML contract and may call only the plugins connected to it.
-5. A write plugin pauses until another actor approves it.
-6. The response and the trace come back to the console. The trace does not store the raw question.
+1. The console sends the task, and optionally a workflow name or a list of agents.
+2. A list of agents wins. Otherwise a workflow name selects that sequence. Otherwise the task phrases in `orchestrator/router/router.py` select it. With no match, the planner stops the run as `ambiguous_intent`.
+3. The planner refuses a hop the delegation rules do not allow, and refuses a plan longer than six hops.
+4. LangGraph runs the agents in the workflow order. Each agent loads its YAML contract and may call only the plugins connected to it.
+5. A write plugin pauses until another actor approves it. The remaining agents run after that approval.
+6. The response and the trace come back to the console. The trace omits the raw question.
+
+| Workflow | Agents, in order | Selected when the task contains |
+| --- | --- | --- |
+| `product-discovery` | shopping, catalog, inventory | jacket, boot, lamp, stock, shop, product |
+| `customer-support` | support, billing | refund, return, order status, order 1001, order 1002 |
+| `order-processing` | order, billing | place an order, prepare an order, checkout, `buy ` |
+
+`billing`, `research`, and `data-analysis` can run as one specialist. Billing is also a step in support and in order processing. Add a sequence by creating `workflows/<name>/workflow.py`, registering it in the router, and allowing each handoff. The console Workflows tab reads the live list from `GET /platform`. The full path is [docs/workflows.md](docs/workflows.md).
+
+n8n is the write tool `invoke_n8n`, permission `n8n_write`. The workflow file stays the order of agents. The tool waits for approval. `N8N_BASE_URL` records an n8n you already run. The call stays simulated until the body of `invoke_n8n` posts to that URL. No reference agent lists `n8n_write` today.
 
 ## Add your agent
 
@@ -129,7 +158,18 @@ The model, memory, security checks, evaluation record, and trace stay here. A ne
 4. Add one case in `tests/agent-evaluation/cases.json` that lists `expect_tools`.
 5. Restart the API.
 
-Settings configures one agent in tabs: the contract, RAG, observability, connectors, and MCP plugins. Connectors store a URL, connection string, username, and password, and a saved password is not shown again. Settings cannot grant `order_write` to a read-only agent or clear approval on a write.
+The gear opens Configuration for that agent. The tabs are instructions, memory, observability, retrieval, tools, and workflows. Connectors store a URL, connection string, username, and password, and a saved password is not shown again. Settings cannot grant `order_write` to a read-only agent or clear approval on a write.
+
+| Change | File |
+| --- | --- |
+| Instructions, tools, permissions, output schema | `agents/<name>/agent.yaml` |
+| Catalog, order, billing, or support behavior | `mcp/<domain>-tools/tools.py` |
+| Register a plugin | `mcp/tool-gateway/gateway.py` |
+| SQL, web, or n8n stand-in | `mcp/tool-gateway/ports.py` |
+| Who may hand work to whom | `shared/security/delegation.py` |
+| Words that select a workflow | `orchestrator/router/router.py` |
+| Agent order in a workflow | `workflows/<name>/workflow.py` |
+| A case the evaluation run must pass | `tests/agent-evaluation/cases.json` |
 
 ## Observability
 
@@ -154,7 +194,7 @@ The console shows whether each variable is set. It does not show the value. SQL,
 
 `./start-local.sh` starts both processes on the laptop. The API is `127.0.0.1:8090`. The console is `127.0.0.1:5173` and is the only page a browser opens.
 
-`docker compose up -d --build` is the organization server. It builds `agentic-api` and `agentic-console` on that one machine. Operators open port 5173. The API is not published on the host. `GET /platform` names the seven steps, security, observability, and the files a business team edits. Prove it with `./deploy/smoke.sh`. The placement rules are in [docs/server.md](docs/server.md).
+`docker compose up -d --build` is the organization server. It builds `agentic-api` and `agentic-console` on that one machine. Operators open port 5173, or `CONSOLE_PORT` when that port is taken. The API image is private to the server network. `GET /platform` on the console port names the seven steps, security, observability, the workflow sequences, the n8n tool, and the files a business team edits. Prove it with `./deploy/smoke.sh`. The placement rules are in [docs/server.md](docs/server.md).
 
 An industry host keeps those two processes. One API process stays on a private address, because approvals, traces, and notes live in that process. Operators open the console, and the console proxies to that API. The model, SQL, n8n, Qdrant, and Neo4j are other hosts you already run. Set one variable when that host is ready. Secrets stay in the API environment. `PLATFORM_ENV=production` refuses the sample token. The placement rules are in [docs/operations.md](docs/operations.md).
 
@@ -164,13 +204,18 @@ An industry host keeps those two processes. One API process stays on a private a
 .venv/bin/python -m unittest tests.unit.test_runtime tests.integration.test_api tests.security.test_security
 .venv/bin/python tests/agent-evaluation/run.py
 .venv/bin/python -m ruff check shared agents orchestrator apps mcp tests
+npm test --prefix apps/admin-dashboard
 docker compose up -d --build && ./deploy/smoke.sh
 ```
+
+The console test checks the shared controls, including the gear and the dropdown. The smoke script checks the published port: eight agents, all seven steps, security, observability, the business edit paths, and a catalog run that calls `search_products`.
 
 ## Guide
 
 | Page | Use it when you need |
 | --- | --- |
+| [Using this repository](docs/using.md) | How to start, use the console, call the API, and see where a change goes |
+| [API](docs/api.md) | Every route, its body, who calls it, and how to add one |
 | [Implementation guide](docs/implementation-guide.md) | The standard, where a change goes, and the build sequence |
 | [One server](docs/server.md) | The two images, the seven steps, and the files a business team edits |
 | [Operations](docs/operations.md) | The trace, n8n and the other ports, and where the two processes run |
@@ -179,3 +224,4 @@ docker compose up -d --build && ./deploy/smoke.sh
 | [Workflows](docs/workflows.md) | When a sequence is required, how to add one, and where n8n fits |
 | [Agent catalog](docs/agent-catalog.md) | The reference specialists and how to copy one |
 | [Tool contracts](docs/tool-contracts.md) | Each plugin, its permission, and whether it needs approval |
+| [Console controls](docs/ui-controls.md) | The shared fields and the gear that opens an agent's configuration |

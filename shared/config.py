@@ -1,4 +1,8 @@
-"""Process settings. Defaults run the local mock."""
+"""Process settings.
+
+Purpose: token, environment, data directory, model mode, hop limit, and timeouts. Defaults run the local mock.
+Used by: the API at startup, the router, the planner, and the workflow engine.
+"""
 
 from __future__ import annotations
 

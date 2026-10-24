@@ -1,4 +1,8 @@
-"""Documents, the sales fixture, and optional SQL, web, and n8n ports."""
+"""Documents, the sales file, and the SQL, web, and n8n ports.
+
+Purpose: answer from local fixtures. SQL, web, and n8n record that a host is configured and still use the local stand-in.
+Used by: mcp/tool-gateway/registry.py. Replace the body of invoke_n8n here when a real webhook should be posted after approval.
+"""
 
 from __future__ import annotations
 
@@ -59,14 +63,30 @@ def query_sql(query: str) -> dict:
 
 
 def fetch_url(url: str) -> dict:
+    from shared.security.endpoints import saved
+
     host = urlparse(url).hostname or ""
-    allow = {item.strip() for item in os.environ.get("WEB_ALLOWLIST", "example.test").split(",") if item.strip()}
+    saved_list = str(saved("web").get("connection_string") or "").strip()
+    raw = saved_list or os.environ.get("WEB_ALLOWLIST", "example.test")
+    allow = {item.strip() for item in raw.split(",") if item.strip()}
     if host not in allow:
         return {"explanation": "Host is not on the allowlist.", "sources": [], "error": "denied"}
     return {
         "explanation": f"Fetched {host} from the local fixture.",
         "sources": [{"source_id": "web:example", "location": url}],
         "answer": "Example catalog page.",
+    }
+
+
+def use_mcp_server(tool_name: str = "") -> dict:
+    from shared.security.endpoints import ready
+
+    return {
+        "tool_name": tool_name,
+        "base_configured": ready("mcp"),
+        "submitted": False,
+        "simulated": True,
+        "explanation": "The MCP server was not called. Its address is saved on Plugins. This process does not send the task to that server.",
     }
 
 

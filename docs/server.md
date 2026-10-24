@@ -25,7 +25,7 @@ Open <http://127.0.0.1:5173>. `CONSOLE_PORT` changes that port. Health is `/heal
 | 6. Learning | `shared/evaluation` | Status, tool names, and duration |
 | 7. Communication | `shared/contracts` | The `AgentResponse` the console shows |
 
-Security is `shared/security`, the bearer check in `apps/agent-api/app.py`, and the approval check in `mcp/tool-gateway/gateway.py`. Observability is `shared/observability`. The trace records the agent, the tool name, the status, and the duration. It does not store the raw question. OpenTelemetry, a log store, and Grafana are addresses on the contract. This process still keeps the record.
+Security is `shared/security`, the bearer check in `apps/agent-api/auth.py`, and the approval check in `mcp/tool-gateway/gateway.py`. Observability is `shared/observability`. The trace records the agent, the tool name, the status, and the duration. It does not store the raw question. OpenTelemetry, a log store, and Grafana are addresses on the contract. This process still keeps the record.
 
 The console image is `apps/admin-dashboard`. It holds no secrets. Nginx proxies `/health`, `/platform`, `/agent-runs`, `/approvals`, `/plugins`, `/settings`, `/guide`, and `/memory` to the API.
 

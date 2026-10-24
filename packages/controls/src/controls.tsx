@@ -1,3 +1,7 @@
+/**
+ * Purpose: the text, number, checkbox, radio, dropdown, and gear controls.
+ * Used by: every console screen. A screen does not write its own form tag.
+ */
 import { useEffect, useId, useRef, useState } from "react";
 
 export type Option = { value: string; label: string };

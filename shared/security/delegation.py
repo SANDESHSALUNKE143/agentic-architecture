@@ -1,4 +1,8 @@
-"""Which agent may hand work to which other agent."""
+"""Which agent may hand work to which other agent.
+
+Purpose: allow read-only hops, and allow only the listed hops that include a write agent.
+Used by: orchestrator/planner/planner.py before any tool runs. Edit this file when a new handoff is required.
+"""
 
 from __future__ import annotations
 

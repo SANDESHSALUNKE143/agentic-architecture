@@ -1,3 +1,7 @@
+/**
+ * Purpose: open POST /agent-runs/stream and yield each server-sent event.
+ * Used by: Agent chat. The body is RunBody.
+ */
 import { token } from "./api";
 
 export type StreamEvent = {

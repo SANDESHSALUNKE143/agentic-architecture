@@ -1,4 +1,8 @@
-"""Run the evaluation cases against the shared runtime."""
+"""Evaluation runner.
+
+Purpose: start each case in tests/agent-evaluation/cases.json and fail when the expected tool is missing.
+Used by: the test command in the README and by CI.
+"""
 
 from __future__ import annotations
 

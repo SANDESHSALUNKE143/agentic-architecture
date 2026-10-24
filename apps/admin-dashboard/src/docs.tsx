@@ -1,3 +1,7 @@
+/**
+ * Purpose: render the markdown pages returned by GET /guide.
+ * Used by: the Docs item in the console. The pages are the files in docs/.
+ */
 import { useEffect, useState } from "react";
 import { api } from "./api";
 

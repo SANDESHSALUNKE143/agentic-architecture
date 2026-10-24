@@ -1,3 +1,7 @@
+/**
+ * Purpose: the laptop console server. It proxies API paths, including /platform and /docs, to 127.0.0.1:8090.
+ * Used by: npm run dev. The server image uses deploy/nginx.conf for the same paths.
+ */
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 

@@ -1,3 +1,7 @@
+/**
+ * Purpose: fail if a console screen adds a native input, select, or textarea.
+ * Used by: npm test in apps/admin-dashboard.
+ */
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";

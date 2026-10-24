@@ -1,4 +1,8 @@
-"""Drop secrets and instruction-like lines from tool text."""
+"""Strip untrusted instruction text.
+
+Purpose: remove lines that try to override the contract, and drop secret-shaped values, before the model or a citation sees them.
+Used by: the runtime and the document search port.
+"""
 
 from __future__ import annotations
 

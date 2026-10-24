@@ -1,4 +1,8 @@
-"""Optional live adapters. The local corpus is used until a URL is configured."""
+"""Retrieval adapters.
+
+Purpose: the local document index is used until a Qdrant or Neo4j address is configured. Those addresses do not open a session in this build.
+Used by: the runtime when an agent contract sets rag.retrieve.
+"""
 
 from __future__ import annotations
 

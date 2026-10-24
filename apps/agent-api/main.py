@@ -1,4 +1,8 @@
-"""Start the API. The laptop binds to 127.0.0.1. The server image binds to 0.0.0.0."""
+"""Process entry for the API.
+
+Purpose: bind the HTTP app. The laptop uses 127.0.0.1. The server image sets PLATFORM_BIND_HOST=0.0.0.0.
+Used by: ./start-local.sh and deploy/Dockerfile.api.
+"""
 
 from __future__ import annotations
 

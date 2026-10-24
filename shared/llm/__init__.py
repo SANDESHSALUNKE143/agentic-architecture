@@ -1,4 +1,8 @@
-"""Model calls. Mock is the default. Live mode uses MODEL_API_KEY."""
+"""Choose the chat model.
+
+Purpose: mock mode needs no key. Live mode calls an OpenAI-compatible host when MODEL_API_KEY is set.
+Used by: agents/runtime.py.
+"""
 
 from __future__ import annotations
 

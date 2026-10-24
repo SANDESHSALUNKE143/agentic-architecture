@@ -1,4 +1,8 @@
-"""Support can read an order and request a refund. The refund is not executed."""
+"""Refund request.
+
+Purpose: record a refund request. The refund is not sent. The gateway still waits for approval.
+Used by: mcp/tool-gateway/registry.py under request_approval. The support contract names that tool.
+"""
 
 from __future__ import annotations
 

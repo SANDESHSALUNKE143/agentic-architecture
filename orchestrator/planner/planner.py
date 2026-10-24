@@ -1,4 +1,8 @@
-"""Check the allowlist, hop cap, and delegation before any tool runs."""
+"""Check the plan before any tool runs.
+
+Purpose: refuse an empty plan, an unknown agent, a plan longer than the hop limit, and a handoff delegation does not allow.
+Used by: orchestrator/platform.py after the router chooses the agents.
+"""
 
 from __future__ import annotations
 

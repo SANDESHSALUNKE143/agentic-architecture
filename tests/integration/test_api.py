@@ -1,4 +1,8 @@
-"""HTTP API, including settings and approvals."""
+"""HTTP API checks.
+
+Purpose: auth, a run, approval, settings refusal, the platform map, and the guide pages.
+Used by: CI and the local test command. It calls apps/agent-api/app.py in process.
+"""
 
 from __future__ import annotations
 
@@ -80,6 +84,8 @@ class ApiTests(unittest.TestCase):
         self.assertIn("repository", page_ids)
         self.assertIn("server", page_ids)
         self.assertIn("workflows", page_ids)
+        self.assertIn("using", page_ids)
+        self.assertIn("api", page_ids)
 
     def test_platform_map_names_the_server(self):
         denied = self.client.get("/platform")

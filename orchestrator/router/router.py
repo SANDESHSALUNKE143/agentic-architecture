@@ -1,7 +1,7 @@
-"""Pick one specialist or one of the three workflows.
+"""Pick one specialist or one workflow.
 
-The agent order lives in workflows/<name>/workflow.py. This module loads that
-list. The phrases below are the only routing text edited here.
+Purpose: an agents list wins, then a workflow name, then the phrases in RULES. The agent order is loaded from workflows/<name>/workflow.py.
+Used by: orchestrator/platform.py. Edit phrases here. Edit the order in the workflow file.
 """
 
 from __future__ import annotations

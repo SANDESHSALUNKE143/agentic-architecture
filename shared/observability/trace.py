@@ -1,4 +1,8 @@
-"""Redacted traces. The raw task is not stored."""
+"""Operational trace.
+
+Purpose: record the agent, the tool name, the status, and the duration. The raw question and secrets are omitted.
+Used by: agents/runtime.py while a run is in progress. The console shows the trace for the open run.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,8 @@
-"""Deterministic chat model that drives the same LangChain tool loop as a live model."""
+"""Deterministic chat model.
+
+Purpose: call each allowlisted tool once, then build the JSON result. The same loop runs when a live model is configured.
+Used by: shared/llm when PLATFORM_LLM_MODE is mock.
+"""
 
 from __future__ import annotations
 
