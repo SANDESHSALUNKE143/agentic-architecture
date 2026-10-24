@@ -4,61 +4,71 @@ Use this map when you place new code. The standard for what you keep and what yo
 
 ## Folder structure
 
-The repository root is the platform. Each top-level folder has one job. A request starts in `apps`, is planned in `orchestrator`, runs a contract from `agents`, and may call a plugin from `mcp`. Shared behavior lives in `shared`.
+The console is `ui`. The request path is `agentic`, numbered in the order a request moves. `agentic/platform` holds configuration and composition. It is not a request step.
 
 ```text
 agentic-architecture/
-├── apps/                  What people open
-│   ├── agent-api/         HTTP API on port 8090
-│   └── admin-dashboard/   This console on port 5173
-├── orchestrator/          Who runs, and in what order
-│   ├── router/            Picks a workflow or the agents you selected
-│   ├── planner/           Checks hops and whether a handoff is allowed
-│   ├── workflow-engine/   Runs the agents and pauses for approval
-│   └── state-manager/     Stores the run and the approval decision
-├── agents/                One folder and one agent.yaml per specialist
-│   └── runtime.py         Loads the YAML and runs the LangChain loop
-├── mcp/                   Plugins. The gateway is the only caller
-│   ├── tool-gateway/      Allowlist, permission, and approval checks
-│   ├── catalog-tools/     Client for the product MCP server
-│   ├── order-tools/       Order status and a simulated order
-│   ├── billing-tools/     The local discount rule
-│   └── support-tools/     A refund request that waits for approval
-├── shared/                Used by every agent, so a new agent does not rewrite it
-│   ├── llm/               Mock model, or a live model when MODEL_API_KEY is set
-│   ├── memory/            Conversation notes and the document index
-│   ├── security/          Permissions, delegation, and redaction
-│   ├── evaluation/        Status, tool names, and duration
-│   ├── contracts/         AgentRequest and AgentResponse
-│   └── observability/     The trace
-├── workflows/             The three sequences: discovery, support, and orders
-├── tests/                 Unit, API, security, and evaluation cases
-└── docs/                  The pages in this section
+├── ui/
+│   ├── admin-dashboard/
+│   │   └── src/
+│   │       ├── views
+│   │       ├── agent
+│   │       ├── plugins
+│   │       └── config
+│   └── packages/
+│       └── controls/
+│           └── src
+├── agentic/
+│   ├── platform
+│   ├── 01-entry/
+│   │   └── routes
+│   ├── 02-guardrails/
+│   │   ├── auth
+│   │   ├── limits
+│   │   ├── policy
+│   │   └── connections
+│   ├── 03-workflows/
+│   │   ├── router
+│   │   ├── sequences
+│   │   ├── engine
+│   │   └── state
+│   ├── 04-loops/
+│   │   ├── runtime
+│   │   ├── llm
+│   │   ├── memory
+│   │   └── specialists
+│   ├── 05-tools/
+│   │   └── mcp/
+│   │       ├── tool-gateway
+│   │       ├── catalog-tools
+│   │       ├── order-tools
+│   │       ├── billing-tools
+│   │       └── support-tools
+│   ├── 06-jobs/
+│   │   ├── queue
+│   │   └── workers
+│   ├── 07-observability/
+│   │   ├── trace
+│   │   ├── evaluation
+│   │   └── sinks
+│   └── 08-response/
+│       ├── contracts
+│       └── project
+├── examples/
+│   └── merchant-mcp
+├── deploy
+├── docs
+├── tests
+└── data
 ```
 
-### apps
+`ui/admin-dashboard` is the screen you are using. `agentic/01-entry` receives the task. The router in `agentic/03-workflows/router` chooses the agents. The planner in `agentic/02-guardrails/policy` stops a plan that is too long or that hands work to an agent that is not allowed. The engine in `agentic/03-workflows/engine` runs that plan and pauses when a write needs approval. The store in `agentic/03-workflows/state` keeps the run.
 
-`apps/agent-api` receives the task and returns the response. `apps/admin-dashboard` is the screen you are using: Run, Agents, Plugins, Approvals, Settings, and Docs.
+Each specialist is a folder such as `agentic/04-loops/specialists/catalog-agent/` with a single `agent.yaml`. `agentic/04-loops/runtime/runtime.py` loads the file and runs the same LangChain loop for every agent.
 
-### orchestrator
+`agentic/05-tools/mcp/tool-gateway` is the only code that calls a plugin. Catalog, orders, billing, and support are the clients. Stock, documents, and the sales file are registered from `agentic/04-loops/memory`. The example merchant process is `examples/merchant-mcp`.
 
-This folder decides the path before any tool runs. The router chooses the agents. The planner stops a plan that is too long or that hands work to an agent that is not allowed. The workflow engine runs that plan and pauses when a write needs approval. The state manager keeps the run so an operator can approve or reject it later.
-
-### agents
-
-Each specialist is a folder such as `agents/catalog-agent/` with a single `agent.yaml`. That file names the instructions, the plugins, the permissions, and the output shape. `agents/runtime.py` loads the file and runs the same loop for every agent. Adding an agent means copying that YAML, not writing a new runtime.
-
-### mcp
-
-Plugins live here. `mcp/tool-gateway` is the only code that calls one. It refuses a plugin that is not listed on the agent, or that the agent's permission does not allow. The other folders are the plugin packages: catalog, orders, billing, and support. Stock, documents, and the sales file are registered by the gateway from `shared/` so they do not need extra packages.
-
-### shared
-
-Code that every agent needs. The model, memory, security checks, evaluation record, and trace stay here. A new agent does not copy them.
-
-### workflows, tests, and docs
-
-`workflows` names the three fixed sequences: product discovery, customer support, and order processing. `tests` checks routes, tools, schema, denied calls, injection text, and approval. `docs` is what this page renders.
+`agentic/06-jobs` accepts runs onto two workers and writes traces on a separate worker. `tests` checks routes, tools, schema, denied calls, injection text, and approval. `docs` is what this page renders.
 
 ## How a run moves
 

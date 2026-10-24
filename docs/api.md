@@ -1,6 +1,6 @@
 # API
 
-`apps/agent-api/app.py` mounts this API. The JSON bodies are in `apps/agent-api/bodies.py`. FastAPI checks a body before the route runs. The same descriptions appear on the interactive page. Runs, approvals, the catalog, settings, MCP servers, and the guide each live in their own route module.
+`agentic/01-entry/app.py` mounts this API. The JSON bodies are in `agentic/01-entry/bodies.py`. FastAPI checks a body before the route runs. The same descriptions appear on the interactive page. Runs, approvals, the catalog, settings, MCP servers, and the guide each live in their own route module.
 
 | Where you are | Interactive docs | Calls |
 | --- | --- | --- |
@@ -11,7 +11,7 @@ Send `Authorization: Bearer <token>` on every route except `GET /guide/assets/{n
 
 A client that sends more than `PLATFORM_RATE_LIMIT` requests in `PLATFORM_RATE_WINDOW` seconds receives `429` and `Retry-After`. The defaults are 120 requests and 60 seconds. A body larger than `PLATFORM_MAX_BODY` bytes receives `413`. The default is 262144. An unexpected failure is `500` with the detail `The server could not complete the request.` The response does not include a stack trace. Responses send `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `Cache-Control: no-store`.
 
-The console in `apps/admin-dashboard` is the caller. `apps/admin-dashboard/src/api.ts` attaches the token. Chat uses `src/stream.ts`.
+The console in `ui/admin-dashboard` is the caller. `ui/admin-dashboard/src/api.ts` attaches the token. Chat uses `src/stream.ts`.
 
 A public run has `request_id`, `session_id`, `workflow`, `status`, `error`, `error_code`, `agents`, and `approval_id` when a write is waiting. Each agent entry has `agent_id`, `status`, `result`, `tool_calls`, and `requires_approval`.
 
@@ -126,11 +126,11 @@ curl -s -H "Authorization: Bearer local-dev-token-not-for-production" \
 
 ## Add a route
 
-1. Add a class in `apps/agent-api/bodies.py` when the new call has a JSON body. Describe each field. That text is what `/docs` shows.
-2. Add the route in the matching module: `routes_runs.py`, `routes_approvals.py`, `routes_catalog.py`, `routes_settings.py`, `routes_mcp.py`, or `routes_guide.py`. Check the bearer token. Call `platform`, the gateway, or another module in `shared/` or `orchestrator/`. Do not call a plugin from a route.
+1. Add a class in `agentic/01-entry/bodies.py` when the new call has a JSON body. Describe each field. That text is what `/docs` shows.
+2. Add the route in the matching module: `agentic/01-entry/routes/runs.py`, `agentic/01-entry/routes/approvals.py`, `agentic/01-entry/routes/catalog.py`, `agentic/01-entry/routes/settings.py`, `agentic/01-entry/routes/mcp.py`, or `agentic/01-entry/routes/guide.py`. Check the bearer token. Call `platform`, the gateway, or another module under `agentic/`. Do not call a plugin from a route.
 3. Name the console function that will send it, in the route's docstring.
-4. Add the path to the console proxy in `apps/admin-dashboard/vite.config.ts` and in `deploy/nginx.conf`.
+4. Add the path to the console proxy in `ui/admin-dashboard/vite.config.ts` and in `deploy/nginx.conf`.
 5. Add a case in `tests/integration/test_api.py`.
 6. Add a row to this page.
 
-A new agent is `agents/<name>/agent.yaml`. A new workflow is `workflows/<name>/workflow.py`. Neither one is a new body class.
+A new agent is `agentic/04-loops/specialists/<name>/agent.yaml`. A new workflow is `agentic/03-workflows/sequences/<name>/workflow.py`. Neither one is a new body class.

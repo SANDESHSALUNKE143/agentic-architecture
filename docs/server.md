@@ -17,17 +17,17 @@ Open <http://127.0.0.1:5173>. `CONSOLE_PORT` changes that port. Health is `/heal
 
 | Step | Path | Role |
 | --- | --- | --- |
-| 1. Perception | `apps/agent-api` | Turns the HTTP body into an `AgentRequest` |
+| 1. Perception | `agentic/01-entry` | Turns the HTTP body into an `AgentRequest` |
 | 2. Planning | `orchestrator` | Orders the agents and checks hops and delegation |
-| 3. Foundation model | `shared/llm` | Chooses the next step. Mock mode needs no key |
-| 4. Memory | `shared/memory` | Session, notes, and retrieval |
-| 5. Action | `mcp/tool-gateway` | The only plugin caller |
-| 6. Learning | `shared/evaluation` | Status, tool names, and duration |
-| 7. Communication | `shared/contracts` | The `AgentResponse` the console shows |
+| 3. Foundation model | `agentic/04-loops/llm` | Chooses the next step. Mock mode needs no key |
+| 4. Memory | `agentic/04-loops/memory` | Session, notes, and retrieval |
+| 5. Action | `agentic/05-tools/mcp/tool-gateway` | The only plugin caller |
+| 6. Learning | `agentic/07-observability/evaluation` | Status, tool names, and duration |
+| 7. Communication | `agentic/08-response/contracts` | The `AgentResponse` the console shows |
 
-Security is `shared/security`, the bearer check in `apps/agent-api/auth.py`, and the approval check in `mcp/tool-gateway/gateway.py`. Observability is `shared/observability`. The trace records the agent, the tool name, the status, and the duration. It does not store the raw question. OpenTelemetry, a log store, and Grafana are addresses on the contract. This process still keeps the record.
+Security is `agentic/02-guardrails`, the bearer check in `agentic/02-guardrails/auth/auth.py`, and the approval check in `agentic/05-tools/mcp/tool-gateway/gateway.py`. Observability is `agentic/07-observability`. The trace records the agent, the tool name, the status, and the duration. It does not store the raw question. OpenTelemetry, a log store, and Grafana are addresses on the contract. This process still keeps the record.
 
-The console image is `apps/admin-dashboard`. It holds no secrets. Nginx proxies `/health`, `/platform`, `/agent-runs`, `/approvals`, `/plugins`, `/settings`, `/guide`, and `/memory` to the API.
+The console image is `ui/admin-dashboard`. It holds no secrets. Nginx proxies `/health`, `/platform`, `/agent-runs`, `/approvals`, `/plugins`, `/settings`, `/guide`, and `/memory` to the API.
 
 ## Where a business team edits
 
@@ -35,18 +35,18 @@ The retail fixtures are the worked example. Replace the data. Keep the runtime.
 
 | Change | File |
 | --- | --- |
-| Instructions, tools, permissions, output schema | `agents/<name>/agent.yaml` |
-| Catalog, order, billing, or support behavior | `mcp/<domain>-tools/tools.py` |
-| Register a plugin | `mcp/tool-gateway/gateway.py` |
-| SQL, web, or n8n stand-in | `mcp/tool-gateway/ports.py` |
-| Who may hand work to whom | `shared/security/delegation.py` |
-| Words that select a workflow | `orchestrator/router/router.py` |
-| Agent order in a workflow | `workflows/<name>/workflow.py` |
+| Instructions, tools, permissions, output schema | `agentic/04-loops/specialists/<name>/agent.yaml` |
+| Catalog, order, billing, or support behavior | `agentic/05-tools/mcp/<domain>-tools/tools.py` |
+| Register a plugin | `agentic/05-tools/mcp/tool-gateway/gateway.py` |
+| SQL, web, or n8n stand-in | `agentic/05-tools/mcp/tool-gateway/ports.py` |
+| Who may hand work to whom | `agentic/02-guardrails/policy/delegation.py` |
+| Words that select a workflow | `agentic/03-workflows/router/router.py` |
+| Agent order in a workflow | `agentic/03-workflows/sequences/<name>/workflow.py` |
 | Evaluation case | `tests/agent-evaluation/cases.json` |
 
-The router loads the agent order from the workflow file. A new specialist is a YAML file plus a plugin the gateway already knows. `agents/runtime.py` stays the only loop. A write stays in `approval.required_for`.
+The router loads the agent order from the workflow file. A new specialist is a YAML file plus a plugin the gateway already knows. `agentic/04-loops/runtime/runtime.py` stays the only loop. A write stays in `approval.required_for`.
 
-`GET /platform` includes `workflows` and `n8n`. The three sequences run in `orchestrator/workflow-engine`. n8n is the `invoke_n8n` tool, and that call waits for approval. The guide is [Workflows](workflows.md).
+`GET /platform` includes `workflows` and `n8n`. The three sequences run in `agentic/03-workflows/engine`. n8n is the `invoke_n8n` tool, and that call waits for approval. The guide is [Workflows](workflows.md).
 
 ## Production on this server
 
@@ -63,7 +63,7 @@ The router loads the agent order from the workflow file. A new specialist is a Y
 ```bash
 .venv/bin/python -m unittest tests.unit.test_runtime tests.integration.test_api tests.security.test_security
 .venv/bin/python tests/agent-evaluation/run.py
-.venv/bin/python -m ruff check shared agents orchestrator apps mcp tests
+.venv/bin/python -m ruff check agentic tests
 docker compose up -d --build
 ./deploy/smoke.sh
 ```

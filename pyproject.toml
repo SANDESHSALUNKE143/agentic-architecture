@@ -24,11 +24,11 @@ dev = ["ruff==0.17.1"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["shared*", "agents*", "orchestrator*"]
+include = ["agentic*"]
 
 [tool.ruff]
 line-length = 100
-src = ["shared", "agents", "orchestrator", "apps", "mcp", "tests"]
+src = ["agentic", "tests"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]

@@ -6,37 +6,37 @@
     <g>
       <rect x="20" y="70" width="150" height="110" rx="12" fill="#1f4b3a"/>
       <text x="95" y="110" fill="white" text-anchor="middle">Perception</text>
-      <text x="95" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">apps/agent-api</text>
+      <text x="95" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">01-entry</text>
       <text x="95" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">AgentRequest</text>
     </g>
     <g>
       <rect x="200" y="70" width="150" height="110" rx="12" fill="#245c48"/>
       <text x="275" y="110" fill="white" text-anchor="middle">Planning</text>
-      <text x="275" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">orchestrator/planner</text>
+      <text x="275" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">03-workflows</text>
       <text x="275" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">hops and delegation</text>
     </g>
     <g>
       <rect x="380" y="70" width="160" height="110" rx="12" fill="#8a5a2a"/>
       <text x="460" y="110" fill="white" text-anchor="middle">Foundation model</text>
-      <text x="460" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">shared/llm</text>
+      <text x="460" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">04-loops/llm</text>
       <text x="460" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">mock or MODEL_API_KEY</text>
     </g>
     <g>
       <rect x="570" y="70" width="150" height="110" rx="12" fill="#1f4b3a"/>
       <text x="645" y="110" fill="white" text-anchor="middle">Memory</text>
-      <text x="645" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">shared/memory</text>
+      <text x="645" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">04-loops/memory</text>
       <text x="645" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">notes and documents</text>
     </g>
     <g>
       <rect x="750" y="70" width="160" height="110" rx="12" fill="#245c48"/>
       <text x="830" y="110" fill="white" text-anchor="middle">Action</text>
-      <text x="830" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">mcp/tool-gateway</text>
+      <text x="830" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">05-tools/mcp</text>
       <text x="830" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">allowlisted tools</text>
     </g>
     <g>
       <rect x="940" y="70" width="150" height="110" rx="12" fill="#8a5a2a"/>
       <text x="1015" y="110" fill="white" text-anchor="middle">Learning</text>
-      <text x="1015" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">shared/evaluation</text>
+      <text x="1015" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">06-jobs worker</text>
       <text x="1015" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">status and duration</text>
     </g>
     <g>

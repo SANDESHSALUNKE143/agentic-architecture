@@ -16,8 +16,8 @@ for step in perception planning foundation_model memory action learning communic
 done
 printf '%s' "$platform" | grep -q '"security"'
 printf '%s' "$platform" | grep -q '"observability"'
-printf '%s' "$platform" | grep -q 'agents/<name>/agent.yaml'
-printf '%s' "$platform" | grep -q 'workflows/<name>/workflow.py'
+printf '%s' "$platform" | grep -q 'agentic/04-loops/specialists/<name>/agent.yaml'
+printf '%s' "$platform" | grep -q 'agentic/03-workflows/sequences/<name>/workflow.py'
 
 run="$(curl -fsS -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"task":"Find a blue trail jacket under $150","agents":["catalog-agent"]}' \

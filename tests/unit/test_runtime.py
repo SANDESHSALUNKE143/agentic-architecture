@@ -14,17 +14,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from orchestrator.platform import Platform  # noqa: E402
-from orchestrator.router.router import WORKFLOWS  # noqa: E402
-from shared.contracts import AgentRequest, validate_output  # noqa: E402
-from shared.jobs import JobRunner  # noqa: E402
-from shared.llm import usage_from_payload  # noqa: E402
-from shared.memory import GraphPort, VectorPort  # noqa: E402
-from shared.security.credentials import CredentialStore  # noqa: E402
+from agentic.platform.composition import Platform  # noqa: E402
+from guardrails.connections.credentials import CredentialStore  # noqa: E402
+from jobs.queue.checks import JobRunner  # noqa: E402
+from loops.llm import usage_from_payload  # noqa: E402
+from loops.memory import GraphPort, VectorPort  # noqa: E402
+from response.contracts import AgentRequest, validate_output  # noqa: E402
+from workflows.router.router import WORKFLOWS  # noqa: E402
 
 
 def setUpModule():
-    from shared.loader import load_module
+    from agentic.platform.loader import load_module
 
     load_module(ROOT / "tests" / "merchant_server.py", "merchant_test_server").ensure_merchant_server()
 
@@ -34,11 +34,11 @@ class RuntimeTests(unittest.TestCase):
         self.platform = Platform()
 
     def test_workflow_files_are_the_route(self):
-        from shared.loader import load_module
+        from agentic.platform.loader import load_module
 
         for name, agents in WORKFLOWS.items():
             module = load_module(
-                ROOT / "workflows" / name / "workflow.py",
+                ROOT / "agentic" / "03-workflows" / "sequences" / name / "workflow.py",
                 f"check_{name.replace('-', '_')}",
             )
             self.assertEqual(list(module.AGENTS), agents)
@@ -147,7 +147,7 @@ class RuntimeTests(unittest.TestCase):
         )
         self.assertEqual(fetched["status"], "completed")
         self.assertEqual(fetched["result"]["products"][0]["price"], 129)
-        self.assertNotIn("129", (ROOT / "mcp" / "catalog-tools" / "tools.py").read_text(encoding="utf-8"))
+        self.assertNotIn("129", (ROOT / "agentic" / "05-tools" / "mcp" / "catalog-tools" / "tools.py").read_text(encoding="utf-8"))
         previous_url = os.environ.get("MERCHANT_MCP_URL")
         previous_data = os.environ.get("PLATFORM_DATA_DIR")
         os.environ["MERCHANT_MCP_URL"] = "http://127.0.0.1:9/mcp"
@@ -310,11 +310,11 @@ class RuntimeTests(unittest.TestCase):
                 kept = self.platform.save_endpoint("n8n", "https://n8n.example.test", "n8n://board", "operator", "")
                 self.assertTrue(kept["password_set"])
                 self.assertNotIn("local-secret", str(kept))
-                from shared.security.mcp_servers import add, public, remove
+                from guardrails.connections.mcp_servers import add, public, remove
 
                 onboarded = add("Product server", "product", "https://catalog.example.test/mcp", "client", "mcp-token")
                 self.assertEqual(onboarded["purpose"], "product")
-                from shared.security.mcp_servers import address
+                from guardrails.connections.mcp_servers import address
 
                 self.assertEqual(address("product"), "https://catalog.example.test/mcp")
                 self.assertTrue(onboarded["password_set"])

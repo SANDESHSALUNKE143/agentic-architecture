@@ -11,15 +11,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN mkdir -p /var/lib/agentic
 
 COPY pyproject.toml README.md ./
-COPY shared shared
-COPY agents agents
-COPY orchestrator orchestrator
-COPY apps/agent-api apps/agent-api
-COPY mcp mcp
-COPY workflows workflows
+COPY agentic agentic
 COPY docs docs
 
 RUN pip install --no-cache-dir .
 
 EXPOSE 8090
-CMD ["python", "apps/agent-api/main.py"]
+CMD ["python", "agentic/01-entry/main.py"]

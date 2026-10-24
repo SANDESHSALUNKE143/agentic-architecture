@@ -13,12 +13,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from orchestrator.platform import Platform  # noqa: E402
-from shared.contracts import AgentRequest  # noqa: E402
+from agentic.platform.composition import Platform  # noqa: E402
+from response.contracts import AgentRequest  # noqa: E402
 
 
 def main() -> int:
-    from shared.loader import load_module
+    from agentic.platform.loader import load_module
 
     load_module(ROOT / "tests" / "merchant_server.py", "merchant_test_server").ensure_merchant_server()
     platform = Platform()

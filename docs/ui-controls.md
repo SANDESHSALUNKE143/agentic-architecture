@@ -1,6 +1,6 @@
 # Console controls
 
-Every text box, checkbox, radio, and dropdown in the console comes from the `@agentic/controls` package at `packages/controls`. A screen does not write its own `<input>`, `<textarea>`, or `<select>`.
+Every text box, checkbox, radio, and dropdown in the console comes from the `@agentic/controls` package at `ui/packages/controls`. A screen does not write its own `<input>`, `<textarea>`, or `<select>`.
 
 The package draws the dropdown menu. The browser's gray menu is not used. A checkbox keeps its label beside the box. Text, password, number, and long text share one field layout.
 
@@ -26,4 +26,4 @@ The agent picker is a search list built for choosing one agent. Its search box i
 
 ## Check
 
-`npm test` in `apps/admin-dashboard` opens the dropdown, toggles a checkbox, types in a text field, and fails if a screen adds a native form tag.
+`npm test` in `ui/admin-dashboard` opens the dropdown, toggles a checkbox, types in a text field, and fails if a screen adds a native form tag.

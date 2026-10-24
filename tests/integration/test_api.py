@@ -1,7 +1,7 @@
 """HTTP API checks.
 
 Purpose: auth, a run, approval, settings refusal, the platform map, and the guide pages.
-Used by: CI and the local test command. It calls apps/agent-api/app.py in process.
+Used by: CI and the local test command. It calls agentic/01-entry/app.py in process.
 """
 
 from __future__ import annotations
@@ -14,11 +14,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from agentic.platform.config import DEV_TOKEN  # noqa: E402
+from agentic.platform.loader import load_module  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
-from shared.config import DEV_TOKEN  # noqa: E402
-from shared.loader import load_module  # noqa: E402
 
-app = load_module(ROOT / "apps" / "agent-api" / "app.py", "agent_api_app").app
+app = load_module(ROOT / "agentic" / "01-entry" / "app.py", "agent_api_app").app
 HEADERS = {"Authorization": f"Bearer {DEV_TOKEN}"}
 
 
@@ -111,9 +111,9 @@ class ApiTests(unittest.TestCase):
         self.assertTrue(body["security"])
         self.assertTrue(body["observability"])
         business = {item["path"] for item in body["business"]}
-        self.assertIn("agents/<name>/agent.yaml", business)
-        self.assertIn("workflows/<name>/workflow.py", business)
-        self.assertIn("shared/security/delegation.py", business)
+        self.assertIn("agentic/04-loops/specialists/<name>/agent.yaml", business)
+        self.assertIn("agentic/03-workflows/sequences/<name>/workflow.py", business)
+        self.assertIn("agentic/02-guardrails/policy/delegation.py", business)
         images = {item["name"]: item for item in body["images"]}
         self.assertFalse(images["agentic-api"]["published"])
         self.assertTrue(images["agentic-console"]["published"])

@@ -4,7 +4,7 @@ This review is based on the code in this repository. [agentic_operations_configu
 
 ## Current state
 
-The platform is one API process and one React console. Agents are YAML contracts. [agents/runtime.py](../agents/runtime.py) is the only loop. [mcp/tool-gateway/gateway.py](../mcp/tool-gateway/gateway.py) is the only tool gate. Writes are simulated and still wait for approval. Mock mode is the default. A live model call happens only when the process is in live mode and a model key is set.
+The platform is one API process and one React console. Agents are YAML contracts. [agentic/04-loops/runtime/runtime.py](../agentic/04-loops/runtime/runtime.py) is the only loop. [agentic/05-tools/mcp/tool-gateway/gateway.py](../agentic/05-tools/mcp/tool-gateway/gateway.py) is the only tool gate. Writes are simulated and still wait for approval. Mock mode is the default. A live model call happens only when the process is in live mode and a model key is set.
 
 The console can edit an agent contract and can store a host URL, connection string, username, and password. The password is written to `data/connections.json` and is not returned. SQL, n8n, Qdrant, AWS, Grafana, and OpenTelemetry are marked configured when an address or environment variable is set. This build still uses the local index, the local fixture, and the platform model. It does not call those hosts. The gateway is an in-process registry. It is not a remote MCP server.
 
@@ -26,7 +26,7 @@ Conversation state, saved notes, and retrieval are three different stores. Conve
 
 ### P2 — Enterprise controls that are not in this runtime
 
-Agent versioning, draft and publish states, token budgets, provider routing, role-based access, tenant isolation, and a durable secret manager are not implemented. [shared/security/credentials.py](../shared/security/credentials.py) keeps values in memory and is not the connection store. These stay on the roadmap.
+Agent versioning, draft and publish states, token budgets, provider routing, role-based access, tenant isolation, and a durable secret manager are not implemented. [agentic/02-guardrails/credentials.py](../agentic/02-guardrails/credentials.py) keeps values in memory and is not the connection store. These stay on the roadmap.
 
 ### P3 — Vendors named only in the prototype
 

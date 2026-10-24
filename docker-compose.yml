@@ -36,15 +36,16 @@ services:
       retries: 20
       start_period: 15s
     labels:
-      org.agentic.perception: apps/agent-api
-      org.agentic.planning: orchestrator
-      org.agentic.foundation_model: shared/llm
-      org.agentic.memory: shared/memory
-      org.agentic.action: mcp/tool-gateway
-      org.agentic.learning: shared/evaluation
-      org.agentic.communication: shared/contracts
-      org.agentic.security: shared/security
-      org.agentic.observability: shared/observability
+      org.agentic.perception: agentic/01-entry
+      org.agentic.planning: agentic/03-workflows
+      org.agentic.foundation_model: agentic/04-loops/llm
+      org.agentic.memory: agentic/04-loops/memory
+      org.agentic.action: agentic/05-tools/mcp/tool-gateway
+      org.agentic.learning: agentic/07-observability
+      org.agentic.communication: agentic/08-response
+      org.agentic.security: agentic/02-guardrails
+      org.agentic.observability: agentic/07-observability
+      org.agentic.jobs: agentic/06-jobs
 
   console:
     build:
@@ -63,7 +64,7 @@ services:
       timeout: 5s
       retries: 10
     labels:
-      org.agentic.communication: apps/admin-dashboard
+      org.agentic.communication: ui/admin-dashboard
       org.agentic.published: "true"
 
 volumes:

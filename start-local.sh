@@ -28,16 +28,16 @@ if port_open 8090 || port_open 5173 || port_open 8091; then
   exit 1
 fi
 
-if [[ ! -d "$ROOT/apps/admin-dashboard/node_modules" ]]; then
-  npm install --prefix "$ROOT/apps/admin-dashboard"
+if [[ ! -d "$ROOT/ui/admin-dashboard/node_modules" ]]; then
+  npm install --prefix "$ROOT/ui/admin-dashboard"
 fi
 
 "$PYTHON" "$ROOT/examples/merchant-mcp/server.py" &
 MERCHANT_PID=$!
 export MERCHANT_MCP_URL="${MERCHANT_MCP_URL:-http://127.0.0.1:8091/mcp}"
-"$PYTHON" "$ROOT/apps/agent-api/main.py" &
+"$PYTHON" "$ROOT/agentic/01-entry/main.py" &
 API_PID=$!
-npm run dev --prefix "$ROOT/apps/admin-dashboard" &
+npm run dev --prefix "$ROOT/ui/admin-dashboard" &
 UI_PID=$!
 
 for _ in $(seq 1 50); do

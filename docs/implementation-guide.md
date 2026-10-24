@@ -7,8 +7,8 @@ This repository is the reference an industry team copies when it builds the agen
 | Keep | Replace with your industry |
 | --- | --- |
 | One `agent.yaml` per specialist | The names, instructions, and output fields |
-| `agents/runtime.py` | Nothing. Every agent uses this loop |
-| `mcp/tool-gateway` | Your plugins, registered the same way |
+| `agentic/04-loops/runtime/runtime.py` | Nothing. Every agent uses this loop |
+| `agentic/05-tools/mcp/tool-gateway` | Your plugins, registered the same way |
 | Approval before a write | The amount or action that must wait |
 | Secrets only in the environment | `MODEL_API_KEY`, SQL, web, n8n, Qdrant, Neo4j |
 | Evaluation of status, tools, and duration | Your cases in `tests/agent-evaluation/cases.json` |
@@ -18,7 +18,7 @@ The reference does not place an order, send a refund, or dispatch work. A write 
 ## Standard an implementation must meet
 
 1. **Contract before code.** Responsibility, tools, permissions, and the output schema are in `agent.yaml` before a reasoning loop is written. LangChain does not own that file.
-2. **One runtime.** Authentication, logging, errors, and run state stay in `shared/` and `orchestrator/`. A new agent does not copy them.
+2. **One runtime.** Authentication, logging, errors, and run state stay in `agentic/02-guardrails`, `agentic/03-workflows`, and `agentic/07-observability`. A new agent does not copy them.
 3. **One gateway.** A plugin runs only when the contract lists it and the permission is true. The model cannot widen that list.
 4. **Writes wait.** `approval.required_for` names every write plugin. The console cannot clear that requirement. The order example reads `amount_gte` from the order contract. The default is 100.
 5. **Permissions stay on the contract.** The console can connect a plugin only to an agent that already has the permission. It cannot grant `order_write` to a read-only agent, and it cannot add a tool URL.
@@ -36,11 +36,11 @@ Ruff checks the Python with the rules in `pyproject.toml`. Line length is 100.
 
 | Change | Place it here |
 | --- | --- |
-| New specialist | `agents/<name>/agent.yaml` |
-| New plugin | A function in the matching `mcp/<domain>-tools/tools.py`, then one entry in `mcp/tool-gateway/gateway.py` |
-| Who may call whom | `shared/security/delegation.py` |
-| Which words select a workflow | `orchestrator/router/router.py` |
-| A fixed sequence of agents | `workflows/<name>/workflow.py`. The router loads that list. Words that select it stay in `orchestrator/router/router.py`. The full path, including n8n, is in [Workflows](workflows.md) |
+| New specialist | `agentic/04-loops/specialists/<name>/agent.yaml` |
+| New plugin | A function in the matching `agentic/05-tools/mcp/<domain>-tools/tools.py`, then one entry in `agentic/05-tools/mcp/tool-gateway/gateway.py` |
+| Who may call whom | `agentic/02-guardrails/policy/delegation.py` |
+| Which words select a workflow | `agentic/03-workflows/router/router.py` |
+| A fixed sequence of agents | `agentic/03-workflows/sequences/<name>/workflow.py`. The router loads that list. Words that select it stay in `agentic/03-workflows/router/router.py`. The full path, including n8n, is in [Workflows](workflows.md) |
 | A regression | `tests/unit`, `tests/integration`, `tests/security`, or `tests/agent-evaluation/cases.json` |
 | Operator-facing explanation | `docs/` |
 
@@ -49,7 +49,7 @@ Do not put a second tool loop in an agent folder. Do not call a plugin from the 
 ## Build sequence
 
 1. Run `./start-local.sh` and complete the jacket task. Read the trace.
-2. Read `agents/catalog-agent/agent.yaml` until the contract fields are familiar.
+2. Read `agentic/04-loops/specialists/catalog-agent/agent.yaml` until the contract fields are familiar.
 3. Name your specialists and the permissions they need. Copy the catalog contract and change only those fields.
 4. Register each industry plugin in the gateway with a permission and `write: true` or `write: false`.
 5. Connect the plugin in the console only to agents that already have that permission.
@@ -68,8 +68,8 @@ The eight agents are a retail desk: shopping, catalog, inventory, support, order
 | Orders | `get_order_status`, `prepare_order` | Orders 1001 and 1002. Prepare never submits |
 | Discounts | `get_eligible_discounts` | One rule: the local user and the blue jacket |
 | Case work | `request_approval` | A refund request that waits |
-| Documents | `search_documents` | `shared/memory` corpus |
-| Reporting | `analyze_dataset` | `shared/fixtures/sales.csv` |
+| Documents | `search_documents` | `agentic/04-loops/memory` corpus |
+| Reporting | `analyze_dataset` | `agentic/04-loops/memory/fixtures/sales.csv` |
 | Warehouse SQL | `query_sql` | A local `SELECT` until `SQL_CONNECTION` is set |
 | Allowed sites | `fetch_url` | `example.test` until `WEB_ALLOWLIST` is set |
 | Existing automation | `invoke_n8n` | Simulated. `N8N_BASE_URL` only marks the port configured. The call still waits for approval |

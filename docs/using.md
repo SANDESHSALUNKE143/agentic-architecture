@@ -2,7 +2,7 @@
 
 This is the reference an industry team runs and then copies. The retail agents are the worked example. The contract, the gateway, and the approval rule stay. Start here. The [implementation guide](implementation-guide.md) is the page to read before you change code. The [API](api.md) lists every route.
 
-Each source file opens with its purpose and who calls it. `apps/agent-api/app.py` mounts the routes. The JSON bodies live in `apps/agent-api/bodies.py`. Run flow is `orchestrator/runs.py`. Contract saves are `orchestrator/contract_edit.py`. Plugin listing is `orchestrator/catalog.py`.
+Each source file opens with its purpose and who calls it. `agentic/01-entry/app.py` mounts the routes. The JSON bodies live in `agentic/01-entry/bodies.py`. Run flow is `agentic/03-workflows/runs.py`. Contract saves are `agentic/platform/contract_edit.py`. Plugin listing is `agentic/platform/catalog.py`.
 
 ## Start it
 
@@ -40,7 +40,7 @@ Copy names from `.env.example` when you leave the sample token. `PLATFORM_ENV=pr
 | Configuration | Edit one agent's contract. The gear on any screen opens this page for that agent |
 | Docs | Read this page, the API reference, and the standard |
 
-The gear is `GearButton` from `packages/controls`. Text boxes, checkboxes, radios, and dropdowns come from that same package.
+The gear is `GearButton` from `ui/packages/controls`. Text boxes, checkboxes, radios, and dropdowns come from that same package.
 
 On an agent's Configuration page, the Workflows tab shows the sequences that include that agent. The list comes from `GET /platform`.
 
@@ -77,31 +77,31 @@ curl -s -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   http://127.0.0.1:8090/agent-runs
 ```
 
-Open <http://127.0.0.1:8090/docs> on the laptop, or <http://127.0.0.1:5173/docs> on the server. That page is generated from the bodies in `apps/agent-api/bodies.py` and the routes beside `app.py`. Authorize with the bearer token, then try a route. The written list, including errors, is [docs/api.md](api.md).
+Open <http://127.0.0.1:8090/docs> on the laptop, or <http://127.0.0.1:5173/docs> on the server. That page is generated from the bodies in `agentic/01-entry/bodies.py` and the routes beside `app.py`. Authorize with the bearer token, then try a route. The written list, including errors, is [docs/api.md](api.md).
 
 ## Change the example
 
 | You want to | Open |
 | --- | --- |
-| Change what an agent may say and which tools it has | `agents/<name>/agent.yaml`, or the gear in the console |
-| Change a catalog, order, billing, or support result | `mcp/<domain>-tools/tools.py` |
-| Add a plugin | Register it in `mcp/tool-gateway/gateway.py`, then name it on a contract that already has the permission |
-| Change who may hand work to whom | `shared/security/delegation.py` |
-| Change which words select a workflow | `orchestrator/router/router.py` |
-| Change the agent order | `workflows/<name>/workflow.py` |
-| Attach n8n later | `invoke_n8n` in `mcp/tool-gateway/ports.py`, after the contract has `n8n_write` and approval |
+| Change what an agent may say and which tools it has | `agentic/04-loops/specialists/<name>/agent.yaml`, or the gear in the console |
+| Change a catalog, order, billing, or support result | `agentic/05-tools/mcp/<domain>-tools/tools.py` |
+| Add a plugin | Register it in `agentic/05-tools/mcp/tool-gateway/gateway.py`, then name it on a contract that already has the permission |
+| Change who may hand work to whom | `agentic/02-guardrails/policy/delegation.py` |
+| Change which words select a workflow | `agentic/03-workflows/router/router.py` |
+| Change the agent order | `agentic/03-workflows/sequences/<name>/workflow.py` |
+| Attach n8n later | `invoke_n8n` in `agentic/05-tools/mcp/tool-gateway/ports.py`, after the contract has `n8n_write` and approval |
 
 Restart the API after a file change. A save from the console reloads that one contract without a restart.
 
-`agents/runtime.py` stays the only loop. The gateway stays the only plugin caller. A write stays in `approval.required_for`.
+`agentic/04-loops/runtime/runtime.py` stays the only loop. The gateway stays the only plugin caller. A write stays in `approval.required_for`.
 
 ## Check it
 
 ```bash
 .venv/bin/python -m unittest tests.unit.test_runtime tests.integration.test_api tests.security.test_security
 .venv/bin/python tests/agent-evaluation/run.py
-.venv/bin/python -m ruff check shared agents orchestrator apps mcp tests
-npm test --prefix apps/admin-dashboard
+.venv/bin/python -m ruff check agentic tests
+npm test --prefix ui/admin-dashboard
 docker compose up -d --build && ./deploy/smoke.sh
 ```
 

@@ -42,7 +42,7 @@ Each agent contract names the observability tools it uses. The list is `observab
 | OpenTelemetry | `OTEL_EXPORTER_OTLP_ENDPOINT` | Marks the collector configured. The trace stays in this process. |
 | Log store | `OBSERVABILITY_LOG_URL` | Marks the store configured. The trace stays in this process. |
 
-The record lives in the API process. `shared/observability/trace.py` keeps the trace. `shared/evaluation` keeps the score. The console shows both while a run is open. This repository does not ship events to a vendor product.
+The record lives in the API process. `agentic/07-observability/trace/trace.py` keeps the trace. `agentic/07-observability/evaluation` keeps the score. The console shows both while a run is open. This repository does not ship events to a vendor product.
 
 | Stage | What is stored |
 | --- | --- |
@@ -55,7 +55,7 @@ The evaluation row stores the run id, agent id, status, tool names, and duration
 
 The raw question is not stored. A secret value is not stored. Model weights are not changed. When the API process stops, the trace, the evaluation rows, the runs, the approvals, and the notes are gone. `TraceLog.export` returns the JSON for one run. A later log store reads that shape and still omits the raw question.
 
-`shared/jobs.py` runs a named check inside this same process. It is not a second service and it is not a queue.
+`agentic/06-jobs/queue/checks.py` runs a named check inside this same process. It is not a second service and it is not a queue.
 
 ## Tools you configure over years
 
@@ -64,15 +64,15 @@ The contract names the plugin. The environment names the system behind it. Chang
 | Port | Variables | This reference, when the variable is set | What you replace later |
 | --- | --- | --- | --- |
 | Model | `PLATFORM_LLM_MODE=live`, `MODEL_API_KEY`, `MODEL_BASE_URL`, `MODEL_NAME` | Calls an OpenAI-compatible `/chat/completions` endpoint. Copies `model`, `total_tokens`, and `cost` when the provider sends them. | Point `MODEL_BASE_URL` at your model host. Leave mock mode until that host exists. |
-| SQL | `SQL_CONNECTION` | Marks the port configured. `query_sql` still returns the local read-only row. A statement that is not a `SELECT` is rejected. | The body of `query_sql` in `mcp/tool-gateway/ports.py`. Keep the `SELECT` limit. |
+| SQL | `SQL_CONNECTION` | Marks the port configured. `query_sql` still returns the local read-only row. A statement that is not a `SELECT` is rejected. | The body of `query_sql` in `agentic/05-tools/mcp/tool-gateway/ports.py`. Keep the `SELECT` limit. |
 | Web | `WEB_ALLOWLIST` | The host must be on the list, or the call is denied. The page body is still the local fixture. The default list is `example.test`. | The body of `fetch_url`. Keep the allowlist. |
 | n8n | `N8N_BASE_URL`, `N8N_TOKEN` | Marks the port configured. `invoke_n8n` does not call n8n. `submitted` stays false and `simulated` stays true. The write still waits for approval. The token stays in the API environment. | The body of `invoke_n8n`, after approval, using `N8N_TOKEN` from the environment. |
-| Vector search | `QDRANT_URL` | Marks the port configured and returns a short configured message. With no URL, search uses the local document index. | `VectorPort.query` in `shared/memory`. |
-| Graph | `NEO4J_URL` | Marks the port configured and returns a short configured message. It does not open a Neo4j session. With no URL, `GraphPort` returns nothing. Memory retrieval still uses the local entity graph in `shared/memory/corpus.py`. | `GraphPort.query` in `shared/memory`. |
+| Vector search | `QDRANT_URL` | Marks the port configured and returns a short configured message. With no URL, search uses the local document index. | `VectorPort.query` in `agentic/04-loops/memory`. |
+| Graph | `NEO4J_URL` | Marks the port configured and returns a short configured message. It does not open a Neo4j session. With no URL, `GraphPort` returns nothing. Memory retrieval still uses the local entity graph in `agentic/04-loops/memory/corpus.py`. | `GraphPort.query` in `agentic/04-loops/memory`. |
 
 No agent may call `query_sql`, `fetch_url`, or `invoke_n8n` until its contract sets `sql_read`, `web_read`, or `n8n_write`. The console cannot grant that permission and cannot paste a tool URL.
 
-Catalog, orders, billing, support, documents, and `shared/fixtures/sales.csv` are the reference domain. Years later you replace the function behind the same tool name. The agent files that already list that name stay as they are.
+Catalog, orders, billing, support, documents, and `agentic/04-loops/memory/fixtures/sales.csv` are the reference domain. Years later you replace the function behind the same tool name. The agent files that already list that name stay as they are.
 
 Leave every port on its local stand-in until the real host exists. Turn on one variable, prove the evaluation case, then turn on the next.
 
@@ -84,8 +84,8 @@ Leave every port on its local stand-in until the real host exists. Turn on one v
 
 | Process | Where it listens | What it is |
 | --- | --- | --- |
-| API | `127.0.0.1:8090` | `apps/agent-api/main.py`. Another machine cannot open this port. |
-| Console | `127.0.0.1:5173` | `apps/admin-dashboard`. The browser talks only to this port. The console proxies `/health`, `/platform`, `/agent-runs`, `/plugins`, `/approvals`, `/settings`, `/guide`, and `/memory` to the API. |
+| API | `127.0.0.1:8090` | `agentic/01-entry/main.py`. Another machine cannot open this port. |
+| Console | `127.0.0.1:5173` | `ui/admin-dashboard`. The browser talks only to this port. The console proxies `/health`, `/platform`, `/agent-runs`, `/plugins`, `/approvals`, `/settings`, `/guide`, and `/memory` to the API. |
 
 The interpreter is `.venv` in the repository root. The sample token is `PLATFORM_DEV_TOKEN`, default `local-dev-token-not-for-production`, sent as `Authorization: Bearer`. Health is `GET /health`. Interactive API docs are `GET /docs` on the API.
 

@@ -35,21 +35,21 @@ Prove the path with this task:
 Find a blue trail jacket under $150
 ```
 
-The run is the `product-discovery` workflow: shopping, then catalog, then inventory. Read the live trace. Then open `agents/catalog-agent/agent.yaml`. That file is the contract: instructions, plugins, memory, permissions, and `output_schema`.
+The run is the `product-discovery` workflow: shopping, then catalog, then inventory. Read the live trace. Then open `agentic/04-loops/specialists/catalog-agent/agent.yaml`. That file is the contract: instructions, plugins, memory, permissions, and `output_schema`.
 
 ## Seven components
 
 These stay in place when you replace the retail fixtures with your systems.
 
-1. **Perception** — `apps/agent-api` turns the HTTP body into an `AgentRequest`.
-2. **Planning** — `orchestrator/planner` orders the agents and checks hops and delegation. It does not write the answer.
-3. **Foundation model** — `shared/llm` chooses the next step. Mock mode needs no key. Live mode uses `MODEL_API_KEY`.
-4. **Memory** — `shared/memory` holds conversation state, optional notes, and RAG. An agent reads the index only when its contract sets `rag.retrieve`. Capture stores a redacted note only when `rag.capture` is true. Vector and embedding choices include a local index, Qdrant, and AWS.
-5. **Action** — `mcp/tool-gateway` calls only the plugins named in `agent.yaml`.
-6. **Learning** — `shared/evaluation` and traces record status, tool names, and duration. They do not store the raw question or change model weights.
+1. **Perception** — `agentic/01-entry` turns the HTTP body into an `AgentRequest`.
+2. **Planning** — `agentic/03-workflows` chooses the agent order. `agentic/02-guardrails/policy` checks hops and delegation. Neither one writes the answer.
+3. **Foundation model** — `agentic/04-loops/llm` chooses the next step. Mock mode needs no key. Live mode uses `MODEL_API_KEY`.
+4. **Memory** — `agentic/04-loops/memory` holds conversation state, optional notes, and RAG. An agent reads the index only when its contract sets `rag.retrieve`. Capture stores a redacted note only when `rag.capture` is true. Vector and embedding choices include a local index, Qdrant, and AWS.
+5. **Action** — `agentic/05-tools/mcp/tool-gateway` calls only the plugins named in `agent.yaml`.
+6. **Learning** — the request enqueues a stage or a score. The worker in `agentic/06-jobs/workers` stores it. The record does not include the raw question and does not change model weights.
 7. **Communication** — the `AgentResponse` is what the API returns and what the console shows.
 
-Security sits beside those steps: the bearer check in `apps/agent-api/auth.py`, handoff rules in `shared/security/delegation.py`, redaction in `shared/security/redact.py`, and the approval wait in `mcp/tool-gateway/gateway.py`. Observability is `shared/observability`. The trace records the agent, the tool name, the status, and the duration. It omits the raw question.
+Security sits beside those steps: the bearer check in `agentic/02-guardrails/auth/auth.py`, handoff rules in `agentic/02-guardrails/policy/delegation.py`, redaction in `agentic/02-guardrails/policy/redact.py`, and the approval wait in `agentic/05-tools/mcp/tool-gateway/gateway.py`. Observability is `agentic/07-observability`. The trace records the agent, the tool name, the status, and the duration. It omits the raw question.
 
 `GET /platform` returns this map: the seven steps, security, observability, the live workflow sequences, the n8n tool, and the files a business team edits. The same step names are labels on the `agentic-api` image. The page is [docs/server.md](docs/server.md).
 
@@ -71,74 +71,94 @@ The full placement rules are in [docs/implementation-guide.md](docs/implementati
 
 ## Folder structure
 
-A request starts in `apps`, is planned in `orchestrator`, runs a contract from `agents`, and may call a plugin from `mcp`. Shared behavior lives in `shared`.
+The console is `ui`. The request path is `agentic`, numbered in the order a request moves. `agentic/platform` is configuration and composition. It is not a request step. Python imports the numbered folders as `entry`, `guardrails`, `workflows`, `loops`, `tools`, `jobs`, `observability`, and `response` through `agentic/bootstrap.py`.
 
 ```text
 agentic-architecture/
-├── apps/                  What people open
-│   ├── agent-api/         HTTP API on port 8090
-│   └── admin-dashboard/   Console on port 5173
-├── orchestrator/          Who runs, and in what order
-│   ├── router/            Picks a workflow or the agents you selected
-│   ├── planner/           Checks hops and whether a handoff is allowed
-│   ├── workflow-engine/   Runs the agents and pauses for approval
-│   └── state-manager/     Stores the run and the approval decision
-├── agents/                One folder and one agent.yaml per specialist
-│   └── runtime.py         Loads the YAML and runs the LangChain loop
-├── mcp/                   Plugins. The gateway is the only caller
-│   ├── tool-gateway/      Allowlist, permission, and approval checks
-│   ├── catalog-tools/     Client for the product MCP server
-│   ├── order-tools/       Order status and a simulated order
-│   ├── billing-tools/     The local discount rule
-│   └── support-tools/     A refund request that waits for approval
-├── shared/                Used by every agent
-│   ├── llm/               Mock model, or a live model when MODEL_API_KEY is set
-│   ├── memory/            Conversation notes and the document index
-│   ├── security/          Permissions, delegation, and redaction
-│   ├── evaluation/        Status, tool names, and duration
-│   ├── contracts/         AgentRequest and AgentResponse
-│   ├── observability/     The trace
-│   └── platform_map.py    The map returned by GET /platform
-├── packages/controls/     Text, choice, and gear controls for the console
-├── workflows/             Discovery, support, and order sequences
-├── deploy/                API image, console image, and the server smoke test
-├── docker-compose.yml     The two images on one server
-├── tests/                 Unit, API, security, and evaluation cases
-└── docs/                  The guide an implementer follows
+├── ui/
+│   ├── admin-dashboard/
+│   │   └── src/
+│   │       ├── views
+│   │       ├── agent
+│   │       ├── plugins
+│   │       └── config
+│   └── packages/
+│       └── controls/
+│           └── src
+├── agentic/
+│   ├── platform
+│   ├── 01-entry/
+│   │   └── routes
+│   ├── 02-guardrails/
+│   │   ├── auth
+│   │   ├── limits
+│   │   ├── policy
+│   │   └── connections
+│   ├── 03-workflows/
+│   │   ├── router
+│   │   ├── sequences
+│   │   ├── engine
+│   │   └── state
+│   ├── 04-loops/
+│   │   ├── runtime
+│   │   ├── llm
+│   │   ├── memory
+│   │   └── specialists
+│   ├── 05-tools/
+│   │   └── mcp/
+│   │       ├── tool-gateway
+│   │       ├── catalog-tools
+│   │       ├── order-tools
+│   │       ├── billing-tools
+│   │       └── support-tools
+│   ├── 06-jobs/
+│   │   ├── queue
+│   │   └── workers
+│   ├── 07-observability/
+│   │   ├── trace
+│   │   ├── evaluation
+│   │   └── sinks
+│   └── 08-response/
+│       ├── contracts
+│       └── project
+├── examples/
+│   └── merchant-mcp
+├── deploy
+├── docs
+├── tests
+└── data
 ```
 
-### apps
+`ui/admin-dashboard` is the operations console. A gear on each agent opens that agent's configuration. Those fields come from `@agentic/controls` in `ui/packages/controls`. See [Console controls](docs/ui-controls.md).
 
-`apps/agent-api` receives the task and returns the response. `apps/admin-dashboard` is the operations console: Dashboard, Agent chat, Agent library, Run history, Approvals, Configuration, and Docs. A gear on each agent opens that agent's configuration. Those fields come from `@agentic/controls` in `packages/controls`. See [Console controls](docs/ui-controls.md).
+`agentic/01-entry` receives the task. `agentic/03-workflows/router` chooses the agents. `agentic/02-guardrails/policy` stops a plan that is too long or that hands work to an agent that is not allowed. `agentic/03-workflows/engine` runs that plan. `agentic/03-workflows/state` keeps the run so a different actor can approve or reject it.
 
-### orchestrator
+Each specialist is a folder such as `agentic/04-loops/specialists/catalog-agent/` with one `agent.yaml`. `agentic/04-loops/runtime/runtime.py` runs the same LangChain loop for every agent.
 
-The router chooses the agents. The planner stops a plan that is too long or that hands work to an agent that is not allowed. The workflow engine runs that plan and pauses when a write needs approval. The state manager keeps the run so a different actor can approve or reject it.
+`agentic/05-tools/mcp/tool-gateway` is the only code that calls a plugin. Catalog, orders, billing, and support are the clients. The example merchant process stays at `examples/merchant-mcp`.
 
-### agents
+`agentic/06-jobs/queue` accepts runs onto two workers. `agentic/06-jobs/workers` is the only writer of traces, scores, and feedback. `deploy` and `docker-compose.yml` run the API and the console as two images. `tests` checks routes, plugins, schema, denied calls, injection text, and approval.
 
-Each specialist is a folder such as `agents/catalog-agent/` with one `agent.yaml`. That file names the instructions, the plugins, the permissions, and the output shape. `agents/runtime.py` runs the same loop for every agent.
+## How one request moves
 
-### mcp
+LangChain is the loop inside one agent. LangGraph is the sequence of agents in `agentic/03-workflows/engine` only. A workflow file is only an `AGENTS` list. n8n is the simulated `invoke_n8n` tool. It is not the sequencer and this repository does not host it.
 
-`mcp/tool-gateway` is the only code that calls a plugin. It refuses a plugin that is not on the contract or that the permission does not allow. Catalog, orders, billing, and support are the reference packages. Stock, documents, and the sales file are registered from `shared/`.
+1. The console sends the brief and shows "Working in the background. This page will update when the run finishes."
+2. `agentic/01-entry` checks the body size, the rate limit, and the bearer token.
+3. `agentic/02-guardrails` checks the task size and strips instruction-like lines.
+4. The picker in `agentic/03-workflows/router` uses an agents list, then a workflow name, then a phrase. The workflow file is only the `AGENTS` list.
+5. An unknown agent, a hop past the limit, or a refused handoff ends the run before a tool is called.
+6. The run is stored. LangGraph steps one agent at a time. Cancel is checked before each step. A timeout or a failure ends the graph.
+7. The loop loads the contract, optional notes, retrieval only when `rag.retrieve` is set, and capture only when `rag.capture` is set.
+8. LangChain `create_agent` chooses the tool. Mock mode needs no key. Live mode is `ChatOpenAI` with `MODEL_API_KEY`. LangGraph is not inside this loop.
+9. The gateway checks the allowlist, the permission, the connection, and a repeated-call stop.
+10. A write in `approval.required_for` pauses. A different actor approves and the remaining agents run, or a rejection ends the run.
+11. The result is projected onto `output_schema`. A missing field fails that agent.
+12. The job queue can run two requests together. Agents inside one run stay in order. The timeout wrapper is one thread. It is not a second worker.
+13. The observability worker stores the stage, the score, and the export marker. The question is omitted. Later feedback uses the same queue.
+14. The done event replaces the whisper with the sentence and the product table.
 
-### shared
-
-The model, memory, security checks, evaluation record, and trace stay here. A new agent does not copy them.
-
-### workflows, tests, and docs
-
-`workflows/<name>/workflow.py` is the agent order. The router loads that list. `tests` checks routes, plugins, schema, denied calls, injection text, and approval. `docs` is the written standard. `deploy` and `docker-compose.yml` run the same two processes as images.
-
-## How a run moves
-
-1. The console sends the task, and optionally a workflow name or a list of agents.
-2. A list of agents wins. Otherwise a workflow name selects that sequence. Otherwise the task phrases in `orchestrator/router/router.py` select it. With no match, the planner stops the run as `ambiguous_intent`.
-3. The planner refuses a hop the delegation rules do not allow, and refuses a plan longer than six hops.
-4. LangGraph runs the agents in the workflow order. Each agent loads its YAML contract and may call only the plugins connected to it.
-5. A write plugin pauses until another actor approves it. The remaining agents run after that approval.
-6. The response and the trace come back to the console. The trace omits the raw question.
+A failed step does not replan. The next agent receives the same task. Learning does not change model weights.
 
 | Workflow | Agents, in order | Selected when the task contains |
 | --- | --- | --- |
@@ -146,14 +166,14 @@ The model, memory, security checks, evaluation record, and trace stay here. A ne
 | `customer-support` | support, billing | refund, return, order status, order 1001, order 1002 |
 | `order-processing` | order, billing | place an order, prepare an order, checkout, `buy ` |
 
-`billing`, `research`, and `data-analysis` can run as one specialist. Billing is also a step in support and in order processing. Add a sequence by creating `workflows/<name>/workflow.py`, registering it in the router, and allowing each handoff. The console Workflows tab reads the live list from `GET /platform`. The full path is [docs/workflows.md](docs/workflows.md).
+`billing`, `research`, and `data-analysis` can run as one specialist. Billing is also a step in support and in order processing. Add a sequence by creating `agentic/03-workflows/sequences/<name>/workflow.py`, registering it in the router, and allowing each handoff. The console Workflows tab reads the live list from `GET /platform`. The full path is [docs/workflows.md](docs/workflows.md).
 
 n8n is the write tool `invoke_n8n`, permission `n8n_write`. The workflow file stays the order of agents. The tool waits for approval. `N8N_BASE_URL` records an n8n you already run. The call stays simulated until the body of `invoke_n8n` posts to that URL. No reference agent lists `n8n_write` today.
 
 ## Add your agent
 
-1. Copy `agents/catalog-agent/agent.yaml` to `agents/<name>/agent.yaml`.
-2. Register any new plugin in `mcp/tool-gateway/gateway.py` before the contract names it.
+1. Copy `agentic/04-loops/specialists/catalog-agent/agent.yaml` to `agentic/04-loops/specialists/<name>/agent.yaml`.
+2. Register any new plugin in `agentic/05-tools/mcp/tool-gateway/gateway.py` before the contract names it.
 3. Set permissions the gateway already understands, and an `output_schema`.
 4. Add one case in `tests/agent-evaluation/cases.json` that lists `expect_tools`.
 5. Restart the API.
@@ -162,18 +182,18 @@ The gear opens Configuration for that agent. The tabs are instructions, memory, 
 
 | Change | File |
 | --- | --- |
-| Instructions, tools, permissions, output schema | `agents/<name>/agent.yaml` |
-| Catalog, order, billing, or support behavior | `mcp/<domain>-tools/tools.py` |
-| Register a plugin | `mcp/tool-gateway/gateway.py` |
-| SQL, web, or n8n stand-in | `mcp/tool-gateway/ports.py` |
-| Who may hand work to whom | `shared/security/delegation.py` |
-| Words that select a workflow | `orchestrator/router/router.py` |
-| Agent order in a workflow | `workflows/<name>/workflow.py` |
+| Instructions, tools, permissions, output schema | `agentic/04-loops/specialists/<name>/agent.yaml` |
+| Catalog, order, billing, or support behavior | `agentic/05-tools/mcp/<domain>-tools/tools.py` |
+| Register a plugin | `agentic/05-tools/mcp/tool-gateway/gateway.py` |
+| SQL, web, or n8n stand-in | `agentic/05-tools/mcp/tool-gateway/ports.py` |
+| Who may hand work to whom | `agentic/02-guardrails/policy/delegation.py` |
+| Words that select a workflow | `agentic/03-workflows/router/router.py` |
+| Agent order in a workflow | `agentic/03-workflows/sequences/<name>/workflow.py` |
 | A case the evaluation run must pass | `tests/agent-evaluation/cases.json` |
 
 ## Observability
 
-The API process records the agent, the tool name, the status, and the duration when the contract lists `platform_trace`. `evaluation` records the score. OpenTelemetry and a log store are optional tools on the same contract, configured with `OTEL_EXPORTER_OTLP_ENDPOINT` and `OBSERVABILITY_LOG_URL`. This reference keeps the record in the process. Field names and the feedback call are in [docs/operations.md](docs/operations.md).
+The request only enqueues a small record: run id, stage or score, agent, tool, status, and duration. The worker in `agentic/06-jobs/workers` is the only writer of the in-memory trace, the evaluation record, the feedback, and `traces.log`. The question is not a field. The run response waits until that worker has stored the trace. OpenTelemetry and a log store are optional addresses on the contract, configured with `OTEL_EXPORTER_OTLP_ENDPOINT` and `OBSERVABILITY_LOG_URL`. Field names and the feedback call are in [docs/operations.md](docs/operations.md).
 
 ## Tools you attach over years
 
@@ -203,8 +223,8 @@ An industry host keeps those two processes. One API process stays on a private a
 ```bash
 .venv/bin/python -m unittest tests.unit.test_runtime tests.integration.test_api tests.security.test_security
 .venv/bin/python tests/agent-evaluation/run.py
-.venv/bin/python -m ruff check shared agents orchestrator apps mcp tests
-npm test --prefix apps/admin-dashboard
+.venv/bin/python -m ruff check agentic tests
+npm test --prefix ui/admin-dashboard
 docker compose up -d --build && ./deploy/smoke.sh
 ```
 
