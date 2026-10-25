@@ -1,0 +1,12 @@
+---
+description: Update the request-path SVG when the design or the request flow changes
+alwaysApply: true
+---
+
+# Request-path picture
+
+`docs/assets/architecture.svg` is the picture in `README.md` and `docs/architecture.md`.
+
+When a change alters the request path, the console flow, the agent sequence, memory, the gateway, approval, the mock merchant, or the trace worker, update that SVG in the same change so the numbered boxes still match the code.
+
+Keep the labels on the real folders and the real behavior. Do not add a step the code does not run.

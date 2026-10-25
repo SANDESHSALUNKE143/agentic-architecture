@@ -1,57 +1,126 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 280" role="img" aria-labelledby="title desc">
-  <title id="title">Request path through the seven agent components</title>
-  <desc id="desc">A task moves from the API into planning, the model, memory, the tool gateway, evaluation, and the response.</desc>
-  <rect width="1280" height="280" fill="#f4f1ea"/>
-  <g font-family="Georgia, serif" font-size="14" fill="#1c2430">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 820" role="img" aria-labelledby="title desc">
+  <title id="title">How one brief becomes an answer</title>
+  <desc id="desc">The console sends a brief. Guardrails and the workflow build a context window from the contract, the task, and notes retrieved only when rag.retrieve is set. LangChain chooses a tool. The gateway calls it or waits for approval. The answer replaces the background whisper. A separate worker stores the trace without the question.</desc>
+  <rect width="1280" height="820" fill="#f7f4ee"/>
+  <g font-family="Georgia, serif" fill="#1c2430">
+    <text x="1040" y="78" font-size="42" fill="#1f4b3a" font-weight="700">Request</text>
+    <text x="1040" y="124" font-size="42" fill="#8a5a2a" font-weight="700">path</text>
+    <text x="1040" y="156" font-size="15" fill="#5c564c">One brief. One run.</text>
+    <text x="1040" y="180" font-size="15" fill="#5c564c">Agents stay in order.</text>
+
     <g>
-      <rect x="20" y="70" width="150" height="110" rx="12" fill="#1f4b3a"/>
-      <text x="95" y="110" fill="white" text-anchor="middle">Perception</text>
-      <text x="95" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">01-entry</text>
-      <text x="95" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">AgentRequest</text>
+      <rect x="390" y="28" width="360" height="132" rx="16" fill="none" stroke="#1c2430" stroke-width="1.5" stroke-dasharray="7 6"/>
+      <text x="570" y="56" text-anchor="middle" font-size="20">Chat</text>
+      <rect x="470" y="70" width="200" height="36" rx="6" fill="#fff" stroke="#1c2430"/>
+      <text x="570" y="93" text-anchor="middle" font-size="13" fill="#5c564c">Brief</text>
+      <rect x="530" y="116" width="80" height="26" rx="6" fill="#1f4b3a"/>
+      <text x="570" y="134" text-anchor="middle" font-size="13" fill="#f7f4ee">Send</text>
+      <text x="412" y="148" font-size="12" fill="#5c564c">ui/admin-dashboard</text>
     </g>
+
+    <circle cx="570" cy="196" r="16" fill="#6b4c9a"/>
+    <text x="570" y="201" text-anchor="middle" font-size="14" fill="#fff">1</text>
+    <rect x="500" y="228" width="140" height="36" rx="18" fill="#6b4c9a"/>
+    <text x="570" y="251" text-anchor="middle" font-size="16" fill="#fff">Brief</text>
+
     <g>
-      <rect x="200" y="70" width="150" height="110" rx="12" fill="#245c48"/>
-      <text x="275" y="110" fill="white" text-anchor="middle">Planning</text>
-      <text x="275" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">03-workflows</text>
-      <text x="275" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">hops and delegation</text>
+      <rect x="48" y="300" width="430" height="292" rx="16" fill="none" stroke="#2a6f8f" stroke-width="1.5" stroke-dasharray="7 6"/>
+      <text x="70" y="328" font-size="16" fill="#2a6f8f">Context window</text>
+      <rect x="78" y="346" width="370" height="68" rx="10" fill="#f8ead6" stroke="#c47b2b" stroke-width="1.5"/>
+      <text x="98" y="374" font-size="16">Contract</text>
+      <text x="98" y="396" font-size="13" fill="#5c564c">agent.yaml · instructions, tools, permissions</text>
+      <rect x="78" y="426" width="370" height="68" rx="10" fill="#fff" stroke="#6b4c9a" stroke-width="1.5"/>
+      <text x="98" y="454" font-size="16">Task</text>
+      <text x="98" y="476" font-size="13" fill="#5c564c">Redacted brief. Instruction-like lines are removed.</text>
+      <rect x="78" y="506" width="370" height="68" rx="10" fill="#f8ead6" stroke="#c47b2b" stroke-width="1.5"/>
+      <text x="98" y="534" font-size="16">Retrieved notes</text>
+      <text x="98" y="556" font-size="13" fill="#5c564c">Only when the contract sets rag.retrieve</text>
     </g>
+
     <g>
-      <rect x="380" y="70" width="160" height="110" rx="12" fill="#8a5a2a"/>
-      <text x="460" y="110" fill="white" text-anchor="middle">Foundation model</text>
-      <text x="460" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">04-loops/llm</text>
-      <text x="460" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">mock or MODEL_API_KEY</text>
+      <rect x="860" y="290" width="370" height="130" rx="16" fill="none" stroke="#1c2430" stroke-width="1.5" stroke-dasharray="7 6"/>
+      <text x="884" y="322" font-size="18">Contract</text>
+      <text x="884" y="348" font-size="14" fill="#5c564c">Loaded when that agent starts.</text>
+      <text x="884" y="370" font-size="14" fill="#5c564c">04-loops/specialists</text>
+      <text x="884" y="398" font-size="14" fill="#8a5a2a">With the agent. Not retrieved.</text>
     </g>
+
     <g>
-      <rect x="570" y="70" width="150" height="110" rx="12" fill="#1f4b3a"/>
-      <text x="645" y="110" fill="white" text-anchor="middle">Memory</text>
-      <text x="645" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">04-loops/memory</text>
-      <text x="645" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">notes and documents</text>
+      <rect x="860" y="450" width="370" height="142" rx="16" fill="none" stroke="#1c2430" stroke-width="1.5" stroke-dasharray="7 6"/>
+      <text x="884" y="482" font-size="18">Memory</text>
+      <text x="884" y="508" font-size="14" fill="#5c564c">Documents, session, and notes.</text>
+      <text x="884" y="530" font-size="14" fill="#5c564c">04-loops/memory</text>
+      <text x="884" y="558" font-size="14" fill="#8a5a2a">Read on this run when rag.retrieve is set.</text>
     </g>
+
     <g>
-      <rect x="750" y="70" width="160" height="110" rx="12" fill="#245c48"/>
-      <text x="830" y="110" fill="white" text-anchor="middle">Action</text>
-      <text x="830" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">05-tools/mcp</text>
-      <text x="830" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">allowlisted tools</text>
+      <rect x="530" y="318" width="250" height="150" rx="16" fill="#fff" stroke="#1c2430" stroke-width="1.5" stroke-dasharray="7 6"/>
+      <text x="655" y="368" text-anchor="middle" font-size="20">LangChain</text>
+      <text x="655" y="394" text-anchor="middle" font-size="14" fill="#5c564c">create_agent</text>
+      <text x="655" y="418" text-anchor="middle" font-size="14" fill="#5c564c">04-loops/llm</text>
+      <text x="655" y="442" text-anchor="middle" font-size="13" fill="#5c564c">Mock, or ChatOpenAI</text>
     </g>
+
     <g>
-      <rect x="940" y="70" width="150" height="110" rx="12" fill="#8a5a2a"/>
-      <text x="1015" y="110" fill="white" text-anchor="middle">Learning</text>
-      <text x="1015" y="136" fill="#f4f1ea" text-anchor="middle" font-size="11">06-jobs worker</text>
-      <text x="1015" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">status and duration</text>
+      <rect x="530" y="530" width="250" height="92" rx="14" fill="#1f4b3a"/>
+      <text x="655" y="566" text-anchor="middle" font-size="18" fill="#f7f4ee">Gateway</text>
+      <text x="655" y="590" text-anchor="middle" font-size="13" fill="#d7ebe3">05-tools/mcp · cached reads</text>
+      <text x="655" y="608" text-anchor="middle" font-size="13" fill="#d7ebe3">A write waits for approval</text>
     </g>
+
     <g>
-      <rect x="1120" y="70" width="140" height="110" rx="12" fill="#1f4b3a"/>
-      <text x="1190" y="110" fill="white" text-anchor="middle">Communication</text>
-      <text x="1190" y="136" fill="#f4f1ea" text-anchor="middle" font-size="12">AgentResponse</text>
-      <text x="1190" y="158" fill="#f4f1ea" text-anchor="middle" font-size="11">API and dashboard</text>
+      <rect x="860" y="640" width="370" height="88" rx="14" fill="none" stroke="#1c2430" stroke-width="1.5" stroke-dasharray="7 6"/>
+      <text x="884" y="674" font-size="16">mocks/merchant</text>
+      <text x="884" y="698" font-size="13" fill="#5c564c">Outside the platform. The tool calls it.</text>
     </g>
-    <g stroke="#1c2430" stroke-width="2" fill="none">
-      <path d="M170 125 H200"/>
-      <path d="M350 125 H380"/>
-      <path d="M540 125 H570"/>
-      <path d="M720 125 H750"/>
-      <path d="M910 125 H940"/>
-      <path d="M1090 125 H1120"/>
+
+    <g>
+      <rect x="48" y="640" width="430" height="88" rx="14" fill="none" stroke="#8a5a2a" stroke-width="1.5" stroke-dasharray="7 6"/>
+      <text x="72" y="674" font-size="16">06-jobs writer</text>
+      <text x="72" y="698" font-size="13" fill="#5c564c">Stores stage, tool, and status. The question is omitted.</text>
+    </g>
+
+    <rect x="575" y="748" width="160" height="44" rx="10" fill="#e5f5ea" stroke="#1f4b3a" stroke-width="1.5"/>
+    <text x="655" y="776" text-anchor="middle" font-size="18" fill="#1f4b3a">Answer</text>
+
+    <g fill="none" stroke="#1c2430" stroke-width="1.6">
+      <path d="M570 160 V180" marker-end="url(#arrow)"/>
+      <path d="M570 264 V286 H504 V460 H448" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+      <path d="M860 340 V276 H448 V346" stroke="#c47b2b" stroke-dasharray="5 4" marker-end="url(#arrow-gold)"/>
+      <path d="M860 510 V478 H448 V506" stroke="#c47b2b" stroke-dasharray="5 4" marker-end="url(#arrow-gold)"/>
+      <path d="M478 392 H530" marker-end="url(#arrow)"/>
+      <path d="M655 468 V530" marker-end="url(#arrow)"/>
+      <path d="M780 608 V684 H860" marker-end="url(#arrow)"/>
+      <path d="M655 622 V748" marker-end="url(#arrow)"/>
+    </g>
+
+    <g font-size="13" fill="#fff">
+      <circle cx="760" cy="276" r="13" fill="#c47b2b"/>
+      <text x="760" y="281" text-anchor="middle">2</text>
+      <circle cx="680" cy="478" r="13" fill="#c47b2b"/>
+      <text x="680" y="483" text-anchor="middle">3</text>
+      <circle cx="504" cy="392" r="13" fill="#1c2430"/>
+      <text x="504" y="397" text-anchor="middle">4</text>
+      <circle cx="655" cy="500" r="13" fill="#1f4b3a"/>
+      <text x="655" y="505" text-anchor="middle">5</text>
+      <circle cx="820" cy="684" r="13" fill="#1f4b3a"/>
+      <text x="820" y="689" text-anchor="middle">6</text>
+      <circle cx="655" cy="690" r="13" fill="#1f4b3a"/>
+      <text x="655" y="695" text-anchor="middle">7</text>
+    </g>
+
+    <g font-size="13" fill="#5c564c">
+      <text x="48" y="214">02-guardrails checks the brief before it enters the window.</text>
+      <text x="48" y="236">03-workflows runs the agents in order. LangGraph is that sequence.</text>
+      <text x="48" y="258">A failed step does not replan. The next agent receives the same task.</text>
     </g>
   </g>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1c2430"/>
+    </marker>
+    <marker id="arrow-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c47b2b"/>
+    </marker>
+  </defs>
 </svg>

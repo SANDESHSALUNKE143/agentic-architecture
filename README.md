@@ -4,7 +4,7 @@ Reference implementation for an industry team building the agentic platform it h
 
 LangChain runs each specialist from `agent.yaml`. LangGraph sequences the three workflows and pauses for approval. With no API key, a mock model drives the same loop.
 
-![Request path through the seven components](docs/assets/architecture.svg)
+![How one brief becomes an answer](docs/assets/architecture.svg)
 
 Read [docs/using.md](docs/using.md) to run the console and the API. Read [docs/implementation-guide.md](docs/implementation-guide.md) before changing code. Both pages are under Docs in the console. The interactive API page is `/docs`. The written route list is [docs/api.md](docs/api.md).
 
@@ -142,6 +142,10 @@ Each specialist is a folder such as `agentic/04-loops/specialists/catalog-agent/
 
 LangChain is the loop inside one agent. LangGraph is the sequence of agents in `agentic/03-workflows/engine` only. A workflow file is only an `AGENTS` list. n8n is the simulated `invoke_n8n` tool. It is not the sequencer and this repository does not host it.
 
+![How one brief becomes an answer](docs/assets/architecture.svg)
+
+The picture is `docs/assets/architecture.svg`. When the request path or the console flow changes, update that file in the same change.
+
 1. The console sends the brief and shows "Working in the background. This page will update when the run finishes."
 2. `agentic/01-entry` checks the body size, the rate limit, and the bearer token.
 3. `agentic/02-guardrails` checks the task size and strips instruction-like lines.
@@ -150,7 +154,7 @@ LangChain is the loop inside one agent. LangGraph is the sequence of agents in `
 6. The run is stored. LangGraph steps one agent at a time. Cancel is checked before each step. A timeout or a failure ends the graph.
 7. The loop loads the contract, optional notes, retrieval only when `rag.retrieve` is set, and capture only when `rag.capture` is set.
 8. LangChain `create_agent` chooses the tool. Mock mode needs no key. Live mode is `ChatOpenAI` with `MODEL_API_KEY`. LangGraph is not inside this loop.
-9. The gateway checks the allowlist, the permission, the connection, and a repeated-call stop.
+9. The gateway checks the allowlist, the permission, the connection, and a repeated-call stop. A successful read can be reused for 30 seconds. A write is not cached.
 10. A write in `approval.required_for` pauses. A different actor approves and the remaining agents run, or a rejection ends the run.
 11. The result is projected onto `output_schema`. A missing field fails that agent.
 12. The job queue can run two requests together. Agents inside one run stay in order. The timeout wrapper is one thread. It is not a second worker.
@@ -215,7 +219,7 @@ The console shows whether each variable is set. It does not show the value. SQL,
 
 `docker compose up -d --build` is the organization server. It builds `agentic-api` and `agentic-console` on that one machine. Operators open port 5173, or `CONSOLE_PORT` when that port is taken. The API image is private to the server network. `GET /platform` on the console port names the seven steps, security, observability, the workflow sequences, the n8n tool, and the files a business team edits. Prove it with `./infrastructure/smoke.sh`. The images, an Azure layout, and where Grafana and Kibana sit are in [infrastructure/README.md](infrastructure/README.md). The placement rules are in [docs/server.md](docs/server.md).
 
-An industry host keeps those two processes. One API process stays on a private address, because approvals, traces, and notes live in that process. Operators open the console, and the console proxies to that API. The model, SQL, n8n, Qdrant, and Neo4j are other hosts you already run. Set one variable when that host is ready. Secrets stay in the API environment. `PLATFORM_ENV=production` refuses the sample token. The placement rules are in [docs/operations.md](docs/operations.md).
+An industry host keeps those two processes. One API process stays on a private address, because approvals, traces, and notes live in that process. Two workers run a queue of 32. A full queue is `503`. Each caller is limited to 120 requests a minute (`429`) and a body of 256 KB (`413`). A repeated successful read is reused for 30 seconds inside the process. A write and the brief are not cached. HTTP responses stay `no-store`. Many callers from many addresses need a limiter in front of this private API. Operators open the console, and the console proxies to that API. The model, SQL, n8n, Qdrant, and Neo4j are other hosts you already run. Set one variable when that host is ready. Secrets stay in the API environment. `PLATFORM_ENV=production` refuses the sample token. The placement rules are in [docs/operations.md](docs/operations.md).
 
 ## Tests
 

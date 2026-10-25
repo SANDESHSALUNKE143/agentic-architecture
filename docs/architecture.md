@@ -2,7 +2,7 @@
 
 This is the reference architecture an industry implementation keeps. A request moves through seven components. Each one has a folder. Replacing a retail fixture does not replace the component.
 
-![Request path](assets/architecture.svg)
+![How one brief becomes an answer](assets/architecture.svg)
 
 1. **Perception.** `agentic/01-entry` turns the HTTP body into an `AgentRequest` with `request_id`, `user_id`, `task`, `context`, and `permissions`.
 2. **Planning.** `agentic/03-workflows/router` chooses the agents. `agentic/02-guardrails/policy` checks the hop limit and delegation before any tool runs.

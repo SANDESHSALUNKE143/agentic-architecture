@@ -31,6 +31,14 @@ This repository does not host n8n, Grafana, Qdrant, or AWS. Plugins has a form f
 
 The file is `data/connections.json`. That directory is not committed. A blank password on save keeps the password already stored.
 
+## Load and denial of service
+
+One API process serves the runs. Two workers take jobs from a queue of 32. The 33rd run receives `503`. Approvals, notes, and traces stay in that process, so a second API copy is not a way to add capacity. Add a shared store for those records before you run more than one API.
+
+`agentic/02-guardrails/limits/guard.py` limits each caller before the route runs. The default is 120 requests in 60 seconds, then `429`. A body over 256 KB is `413`. A task over 4000 characters never reaches the router. The limit is in memory and ends when the process stops. A flood from many addresses needs a limiter in front of this process, such as the platform gateway, with this API kept on a private address.
+
+`agentic/05-tools/mcp/tool-gateway/cache.py` reuses a successful read for 30 seconds. The key is the tool name, a hash of the server address, and a hash of its arguments. A different address is a different entry. The stored value omits `task`, `question`, and `text`. A write is never stored. `PLATFORM_READ_CACHE_SIZE` bounds the number of rows. The default is 128. Set it to 0 to turn the cache off. HTTP responses stay `Cache-Control: no-store`.
+
 ## Observability
 
 Each agent contract names the observability tools it uses. The list is `observability` in `agent.yaml`. The Settings Observability tab and the Plugins page edit that list. The Settings Connectors tab stores the URL, connection string, username, and password. A saved password is not shown again.

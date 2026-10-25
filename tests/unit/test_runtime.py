@@ -74,6 +74,53 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(first["status"], "completed")
         self.assertEqual(second["error_code"], "loop_detected")
 
+    def test_read_cache_reuses_a_read_and_skips_a_write(self):
+        import sys
+
+        registry = sys.modules["tool_registry"].REGISTRY
+        catalog = self.platform.contracts["catalog-agent"]
+        order = self.platform.contracts["order-agent"]
+        reads = {"n": 0}
+        original = registry["search_products"]["fn"]
+
+        def counted(**kwargs):
+            reads["n"] += 1
+            return original(**kwargs)
+
+        registry["search_products"]["fn"] = counted
+        args = {"query": "jacket"}
+        try:
+            first = self.platform.gateway.call(
+                "cache-1", catalog.permissions, catalog.tools, "search_products", args, {}, scope="catalog-agent"
+            )
+            second = self.platform.gateway.call(
+                "cache-2", catalog.permissions, catalog.tools, "search_products", args, {}, scope="catalog-agent"
+            )
+        finally:
+            registry["search_products"]["fn"] = original
+        self.assertEqual(reads["n"], 1)
+        self.assertEqual(second["result"]["products"], first["result"]["products"])
+        self.assertNotIn("question", second["result"])
+        writes = {"n": 0}
+        write_fn = registry["prepare_order"]["fn"]
+
+        def counted_write(**kwargs):
+            writes["n"] += 1
+            return write_fn(**kwargs)
+
+        registry["prepare_order"]["fn"] = counted_write
+        payload = {"product_id": "p-jacket-blue", "user_id": "local-development-user", "amount": 10}
+        try:
+            self.platform.gateway.call(
+                "cache-3", order.permissions, order.tools, "prepare_order", payload, {"required_for": []}, scope="order-agent"
+            )
+            self.platform.gateway.call(
+                "cache-4", order.permissions, order.tools, "prepare_order", payload, {"required_for": []}, scope="order-agent"
+            )
+        finally:
+            registry["prepare_order"]["fn"] = write_fn
+        self.assertEqual(writes["n"], 2)
+
     def test_order_amount_is_read_from_the_contract(self):
         self.assertEqual(self.platform.contracts["order-agent"].approval["amount_gte"], 100)
         small = self.platform.start(AgentRequest(task="Place an order for the jacket at $40"))

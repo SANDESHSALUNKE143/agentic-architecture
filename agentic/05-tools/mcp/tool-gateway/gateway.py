@@ -17,6 +17,7 @@ from agentic.platform.loader import load_module
 logger = logging.getLogger("agentic.gateway")
 
 _registry = load_module(ROOT / "agentic" / "05-tools" / "mcp" / "tool-gateway" / "registry.py", "tool_registry")
+_cache = load_module(ROOT / "agentic" / "05-tools" / "mcp" / "tool-gateway" / "cache.py", "tool_read_cache")
 REGISTRY = _registry.REGISTRY
 
 
@@ -38,6 +39,7 @@ def digest(arguments: dict) -> str:
 class ToolGateway:
     def __init__(self) -> None:
         self.seen: dict[str, set[tuple[str, str]]] = {}
+        self.reads = _cache.ReadCache()
 
     def names(self) -> set[str]:
         return set(REGISTRY)
@@ -120,6 +122,12 @@ class ToolGateway:
                 "arguments": arguments,
                 "result": {"explanation": "Waiting for approval.", "submitted": False},
             }
+        cache_key = _cache_key(name, spec, signature[1])
+        if not spec["write"]:
+            cached = self.reads.get(cache_key)
+            if cached is not None:
+                seen.add(signature)
+                return {"ok": True, "status": "completed", "name": name, "arguments": arguments, "result": cached}
         seen.add(signature)
         try:
             result = _invoke(spec["fn"], arguments, approved)
@@ -138,7 +146,21 @@ class ToolGateway:
         }
         if error:
             outcome["error_code"] = str(error)[:80]
+        elif not spec["write"]:
+            self.reads.put(cache_key, result)
         return outcome
+
+
+def _cache_key(name: str, spec: dict, argument_digest: str) -> str:
+    purpose = spec.get("mcp_purpose") or ""
+    if purpose:
+        from guardrails.connections.mcp_servers import address
+
+        location = address(purpose)
+    else:
+        location = spec.get("endpoint") or ""
+    mark = hashlib.sha256(location.encode()).hexdigest()[:12]
+    return f"{name}:{mark}:{argument_digest}"
 
 
 def _connection(spec: dict, host: dict, titles: dict) -> tuple[bool, str, str]:

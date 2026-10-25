@@ -13,6 +13,8 @@ This repository is the reference an industry team copies when it builds the agen
 | Secrets only in the environment | `MODEL_API_KEY`, SQL, web, n8n, Qdrant, Neo4j |
 | Evaluation of status, tools, and duration | Your cases in `tests/agent-evaluation/cases.json` |
 
+`docs/assets/architecture.svg` is the request picture in the README and on this Architecture page. A change to the request path, the console flow, or the folders on that picture includes an update to the SVG.
+
 The reference does not place an order, send a refund, or dispatch work. A write returns a simulated result until your team deliberately connects a real system, and it still waits for approval. Console text boxes, checkboxes, radios, and dropdowns come from `@agentic/controls`. See [Console controls](ui-controls.md).
 
 ## Standard an implementation must meet
@@ -38,6 +40,7 @@ Ruff checks the Python with the rules in `pyproject.toml`. Line length is 100.
 | --- | --- |
 | New specialist | `agentic/04-loops/specialists/<name>/agent.yaml` |
 | New plugin | A function in the matching `agentic/05-tools/mcp/<domain>-tools/tools.py`, then one entry in `agentic/05-tools/mcp/tool-gateway/gateway.py` |
+| Read cache | `agentic/05-tools/mcp/tool-gateway/cache.py`. A successful read only. A write and the brief stay out |
 | Who may call whom | `agentic/02-guardrails/policy/delegation.py` |
 | Which words select a workflow | `agentic/03-workflows/router/router.py` |
 | A fixed sequence of agents | `agentic/03-workflows/sequences/<name>/workflow.py`. The router loads that list. Words that select it stay in `agentic/03-workflows/router/router.py`. The full path, including n8n, is in [Workflows](workflows.md) |
