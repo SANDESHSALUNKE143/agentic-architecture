@@ -18,5 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: docker compose -f infrastructure/dependencies/docker-compose.yml --env-file infrastructure/dependencies/.env.example config --quiet
       - run: docker compose up -d --build --wait
       - run: ./infrastructure/smoke.sh

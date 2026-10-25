@@ -58,6 +58,10 @@ The router loads the agent order from the workflow file. A new specialist is a Y
 
 `PLATFORM_DATA_DIR` is the `agentic-data` volume. Connection addresses survive a restart. Runs and traces still live in the API process and clear when that container is replaced. Set `MODEL_API_KEY`, `SQL_CONNECTION`, `WEB_ALLOWLIST`, `N8N_BASE_URL`, `QDRANT_URL`, and `NEO4J_URL` on the API service when those hosts exist. The console shows that a variable is set and does not show the value.
 
+## Dependencies on a larger server
+
+`infrastructure/dependencies/docker-compose.yml` is the one file for a machine with about 16 GB of RAM. It includes this Compose file and also starts Grafana, Prometheus, an OpenTelemetry collector, Loki, Langfuse, MLflow, n8n, Qdrant, Neo4j, and Postgres. The shared lab password and the check command are in [infrastructure/dependencies/README.md](../infrastructure/dependencies/README.md). The API still keeps its trace in process, and `invoke_n8n` stays simulated. CI does not start this file.
+
 ## Tests before you ship the image
 
 ```bash

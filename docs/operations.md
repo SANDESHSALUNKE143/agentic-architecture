@@ -16,11 +16,11 @@ Local is the document index in this process. A set variable marks Qdrant or AWS 
 
 ## Connection configuration
 
-This repository does not host n8n, Grafana, Qdrant, or AWS. Plugins has a form for each system: direct URL, connection string, username, and password.
+The API process does not call n8n, Grafana, Qdrant, or AWS. Plugins has a form for each system: direct URL, connection string, username, and password. On a server with about 16 GB of RAM, `infrastructure/dependencies/docker-compose.yml` starts Grafana, Prometheus, Langfuse, MLflow, n8n, Qdrant, Neo4j, and Postgres. The root Compose file does not. Lab logins are in [the dependency README](../infrastructure/dependencies/README.md).
 
 | System | What the URL is |
 | --- | --- |
-| n8n | The n8n you already run. There is no n8n process in this repository. |
+| n8n | The n8n address. The dependency Compose can start one. The API still does not call it. |
 | Grafana | The dashboard address. The password is saved locally and is not returned by the API. |
 | OpenTelemetry | The collector endpoint. |
 | Qdrant | The vector database used when an agent selects Qdrant. |
@@ -109,7 +109,7 @@ Keep the same two processes when you leave the laptop.
 2. Run the console where operators open a browser. Point its proxy at the private API. The console build holds no secrets.
 3. Put secrets only in the API environment: `PLATFORM_DEV_TOKEN`, `MODEL_API_KEY`, `N8N_TOKEN`, and `SQL_CONNECTION`.
 4. Set `PLATFORM_ENV=production` only with a private token. The sample token refuses to start.
-5. Leave the model, SQL, n8n, Qdrant, and Neo4j as other hosts you already run. This repository does not install them. Set the matching variable when that host exists. Until then the local fixture remains.
+5. Leave the model as a host you already run. SQL, n8n, Qdrant, and Neo4j can be the containers in `infrastructure/dependencies/docker-compose.yml` on a large server, or hosts you already run. The root Compose file does not install them. Until a variable is set, the local fixture remains.
 6. Put `PLATFORM_DATA_DIR` on a disk that survives a process restart when you start writing files there. The in-memory trace still clears on restart until you export it.
 
 The check before a host change is the same suite the repository already runs: unit, API, security, evaluation, and Ruff.

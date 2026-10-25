@@ -1,6 +1,6 @@
 # Infrastructure
 
-This folder builds and checks the API image, the console image, and the mock store image. It does not create a cloud account, and it does not install Grafana, Kibana, or Elasticsearch.
+This folder builds and checks the API image, the console image, and the mock store image. It does not create a cloud account. The root Compose file does not install Grafana or Langfuse. [dependencies](dependencies/README.md) is the Compose file for a server that can carry Langfuse.
 
 ## Files
 
@@ -11,6 +11,7 @@ This folder builds and checks the API image, the console image, and the mock sto
 | `nginx.conf` | Proxies `/health`, `/platform`, `/agent-runs`, `/approvals`, `/plugins`, `/settings`, `/guide`, and `/memory` to the API. |
 | `Dockerfile.merchant` | The mock store image. It is not part of the API image. |
 | `smoke.sh` | Waits for the console, then checks health, the seven steps, and one catalog run. |
+| [dependencies](dependencies/README.md) | Grafana, Prometheus, Langfuse, MLflow, n8n, and the other connector hosts. |
 
 `docker-compose.yml` stays at the repository root because the build context is the whole tree.
 
@@ -46,15 +47,15 @@ The layout that matches the code:
 
 An Azure DevOps pipeline in this folder, named `azure-pipelines.yml` when you add it, is those six steps plus `./infrastructure/smoke.sh` against the console URL. The merchant, Grafana, and Elasticsearch are not pipeline stages unless your team is the one installing those products. This repository only needs their addresses.
 
-## Grafana, Kibana, and the other hosts
+## Grafana, Langfuse, and the other hosts
 
-The API writes the trace itself. The worker in `agentic/06-jobs/workers` stores the run id, stage, agent, tool, and status in `traces.log`. The question is not a field. Nothing in this build posts that line to Grafana or Kibana.
+The API writes the trace itself. The worker in `agentic/06-jobs/workers` stores the run id, stage, agent, tool, and status in `traces.log`. The question is not a field. Nothing in this build posts that line to Grafana or Loki.
 
 | System | Where you set the address | What this build does |
 | --- | --- | --- |
 | Grafana | Connectors, `GRAFANA_URL` and `GRAFANA_PASSWORD` | Saves the address. It does not open Grafana and does not push the trace. |
 | OpenTelemetry | `OTEL_EXPORTER_OTLP_ENDPOINT` | Marks the collector configured. The trace stays in this process. |
-| Kibana and Elasticsearch | There is no Kibana field. Use the log store, `OBSERVABILITY_LOG_URL` | Marks the store configured. The worker does not POST the trace there yet. |
+| Log store | `OBSERVABILITY_LOG_URL` | Marks the store configured. The worker does not POST the trace there yet. |
 | n8n, Qdrant, Neo4j, SQL, the model | The matching variable on Connectors | The local stand-in stays until that host exists. |
 
-Run Grafana, Kibana, and Elasticsearch as their own stacks: Grafana Cloud, Elastic Cloud, an Azure marketplace offer, or a cluster your platform team already operates. Then save the address on Connectors. Leave them out of `docker-compose.yml`. They are separate products, and a second copy of this API would split the approval list.
+Leave these out of the root `docker-compose.yml`. A second copy of this API would split the approval list. On a server with about 16 GB of RAM, [dependencies/docker-compose.yml](dependencies/docker-compose.yml) starts Grafana, Prometheus, the collector, Loki, Langfuse, MLflow, n8n, Qdrant, Neo4j, and Postgres beside the platform. Lab logins and the check command are in [dependencies/README.md](dependencies/README.md). Kibana and Elasticsearch stay out so Langfuse can have the memory. The API still does not call n8n, and it still keeps the trace in its own process.
