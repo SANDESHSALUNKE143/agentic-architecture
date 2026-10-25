@@ -54,19 +54,18 @@ agentic-architecture/
 │   └── 08-response/
 │       ├── contracts
 │       └── project
-├── examples/
-│   └── merchant-mcp
-├── deploy
+├── mocks/
+│   └── merchant
+├── infrastructure
 ├── docs
-├── tests
-└── data
+└── tests
 ```
 
 `ui/admin-dashboard` is the screen you are using. `agentic/01-entry` receives the task. The router in `agentic/03-workflows/router` chooses the agents. The planner in `agentic/02-guardrails/policy` stops a plan that is too long or that hands work to an agent that is not allowed. The engine in `agentic/03-workflows/engine` runs that plan and pauses when a write needs approval. The store in `agentic/03-workflows/state` keeps the run.
 
 Each specialist is a folder such as `agentic/04-loops/specialists/catalog-agent/` with a single `agent.yaml`. `agentic/04-loops/runtime/runtime.py` loads the file and runs the same LangChain loop for every agent.
 
-`agentic/05-tools/mcp/tool-gateway` is the only code that calls a plugin. Catalog, orders, billing, and support are the clients. Stock, documents, and the sales file are registered from `agentic/04-loops/memory`. The example merchant process is `examples/merchant-mcp`.
+`agentic/05-tools/mcp/tool-gateway` is the only code that calls a plugin. Catalog, orders, billing, and support are the clients. Stock, documents, and the sales file are registered from `agentic/04-loops/memory`. The mock merchant, an outside store, is `mocks/merchant`.
 
 `agentic/06-jobs` accepts runs onto two workers and writes traces on a separate worker. `tests` checks routes, tools, schema, denied calls, injection text, and approval. `docs` is what this page renders.
 

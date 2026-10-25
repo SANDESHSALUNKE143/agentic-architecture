@@ -6,7 +6,19 @@ BASE="${1:-http://127.0.0.1:5173}"
 TOKEN="${PLATFORM_DEV_TOKEN:-local-dev-token-not-for-production}"
 AUTH="Authorization: Bearer ${TOKEN}"
 
-health="$(curl -fsS -H "$AUTH" "$BASE/health")"
+health=""
+for _ in $(seq 1 30); do
+  if health="$(curl -fsS -H "$AUTH" "$BASE/health")"; then
+    break
+  fi
+  health=""
+  sleep 1
+done
+if [[ -z "$health" ]]; then
+  echo "The console did not answer $BASE/health" >&2
+  curl -sS -D - -H "$AUTH" "$BASE/health" >&2 || true
+  exit 1
+fi
 printf '%s' "$health" | grep -q '"status": *"ok"'
 printf '%s' "$health" | grep -q '"agents": *8'
 
@@ -21,8 +33,13 @@ printf '%s' "$platform" | grep -q 'agentic/03-workflows/sequences/<name>/workflo
 
 run="$(curl -fsS -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"task":"Find a blue trail jacket under $150","agents":["catalog-agent"]}' \
-  "$BASE/agent-runs")"
-printf '%s' "$run" | grep -q 'search_products'
-printf '%s' "$run" | grep -q '"status": *"completed"'
+  "$BASE/agent-runs")" || {
+  echo "The catalog run did not complete" >&2
+  exit 1
+}
+if ! printf '%s' "$run" | grep -q 'search_products' || ! printf '%s' "$run" | grep -q '"status": *"completed"'; then
+  echo "$run" >&2
+  exit 1
+fi
 
 echo "Server smoke passed at $BASE"

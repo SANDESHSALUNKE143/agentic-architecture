@@ -18,7 +18,7 @@ _support = load_module(ROOT / "agentic" / "05-tools" / "mcp" / "support-tools" /
 shared_ports = load_module(ROOT / "agentic" / "05-tools" / "mcp" / "tool-gateway" / "ports.py", "gateway_ports")
 
 Tool = dict[str, Any]
-_PRODUCT = "mcp/catalog-tools/tools.py calls the MCP server whose purpose is product. Prices and stock live on that server. The local example is examples/merchant-mcp."
+_PRODUCT = "mcp/catalog-tools/tools.py calls the MCP server whose purpose is product. Prices and stock live on that server. The local stand-in is mocks/merchant."
 _ORDERS = "mcp/order-tools/tools.py calls the MCP server whose purpose is orders. Order records live on that server."
 _BILLING = "mcp/billing-tools/tools.py calls the MCP server whose purpose is billing. Discount rules live on that server."
 _SUPPORT = "mcp/support-tools/tools.py calls the MCP server whose purpose is support. The refund decision lives on that server."

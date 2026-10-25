@@ -6,7 +6,7 @@ Two images run on the server you operate. `agentic-api` is the platform process.
 
 ```bash
 docker compose up -d --build
-./deploy/smoke.sh
+./infrastructure/smoke.sh
 ```
 
 Open <http://127.0.0.1:5173>. `CONSOLE_PORT` changes that port. Health is `/health`. The seven steps, security, and observability are `/platform`. Interactive API docs are `/docs` on that same port.
@@ -54,7 +54,7 @@ The router loads the agent order from the workflow file. A new specialist is a Y
 2. Set `PLATFORM_ENV=production`. The sample token refuses to start.
 3. Leave `PLATFORM_LLM_MODE=mock` until `MODEL_API_KEY` points at a model host you already run.
 4. Rebuild with `docker compose up -d --build`.
-5. Run `./deploy/smoke.sh` with that token in the environment.
+5. Run `./infrastructure/smoke.sh` with that token in the environment.
 
 `PLATFORM_DATA_DIR` is the `agentic-data` volume. Connection addresses survive a restart. Runs and traces still live in the API process and clear when that container is replaced. Set `MODEL_API_KEY`, `SQL_CONNECTION`, `WEB_ALLOWLIST`, `N8N_BASE_URL`, `QDRANT_URL`, and `NEO4J_URL` on the API service when those hosts exist. The console shows that a variable is set and does not show the value.
 
@@ -65,7 +65,7 @@ The router loads the agent order from the workflow file. A new specialist is a Y
 .venv/bin/python tests/agent-evaluation/run.py
 .venv/bin/python -m ruff check agentic tests
 docker compose up -d --build
-./deploy/smoke.sh
+./infrastructure/smoke.sh
 ```
 
 The unit suite checks the route, the plugins, the schema, a denied call, injection text, and approval. The smoke script checks the published port: eight agents, all seven steps, security, observability, and a catalog run that calls `search_products`.

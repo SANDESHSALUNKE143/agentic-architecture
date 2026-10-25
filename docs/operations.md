@@ -89,9 +89,9 @@ Leave every port on its local stand-in until the real host exists. Turn on one v
 
 The interpreter is `.venv` in the repository root. The sample token is `PLATFORM_DEV_TOKEN`, default `local-dev-token-not-for-production`, sent as `Authorization: Bearer`. Health is `GET /health`. Interactive API docs are `GET /docs` on the API.
 
-`PLATFORM_DATA_DIR` defaults to the `data/` directory next to the code. That directory is the place for files the process creates. Runs and traces are not written there in this reference. They stay in the API process.
+`PLATFORM_DATA_DIR` defaults to a `data/` directory next to the code. The process creates that directory. It is not part of the repository. `traces.log`, saved connector addresses, and saved merchant URLs are written there. Runs and approvals stay in the API process.
 
-`docker compose up -d --build` is the same two processes on one server. The console image publishes port 5173. The API image stays on the server network. [One server](server.md) names the seven steps, security, observability, and the files a business team edits. `GET /platform` returns that map. `./deploy/smoke.sh` proves the published port.
+`docker compose up -d --build` is the same two processes on one server. The console image publishes port 5173. The API image stays on the server network. [One server](server.md) names the seven steps, security, observability, and the files a business team edits. `GET /platform` returns that map. `./infrastructure/smoke.sh` proves the published port. The images, the Azure layout, and Grafana and Kibana are in `infrastructure/README.md`.
 
 ### Industry host
 

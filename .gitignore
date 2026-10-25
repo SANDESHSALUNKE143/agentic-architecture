@@ -14,5 +14,4 @@ dist/
 node_modules/
 ui/admin-dashboard/dist/
 ui/admin-dashboard/.vite/
-data/*
-!data/.gitignore
+data/

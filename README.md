@@ -24,7 +24,7 @@ On one server:
 
 ```bash
 docker compose up -d --build
-./deploy/smoke.sh
+./infrastructure/smoke.sh
 ```
 
 That builds `agentic-api` and `agentic-console`. Operators open <http://127.0.0.1:5173>. `CONSOLE_PORT` changes that port. The API stays on the server network. `/health`, `/platform`, and `/docs` are on the console port. Copy names from `.env.example` when you replace the sample token. `PLATFORM_ENV=production` refuses that token until `PLATFORM_DEV_TOKEN` is private.
@@ -121,12 +121,11 @@ agentic-architecture/
 │   └── 08-response/
 │       ├── contracts
 │       └── project
-├── examples/
-│   └── merchant-mcp
-├── deploy
+├── mocks/
+│   └── merchant
+├── infrastructure
 ├── docs
-├── tests
-└── data
+└── tests
 ```
 
 `ui/admin-dashboard` is the operations console. A gear on each agent opens that agent's configuration. Those fields come from `@agentic/controls` in `ui/packages/controls`. See [Console controls](docs/ui-controls.md).
@@ -135,7 +134,7 @@ agentic-architecture/
 
 Each specialist is a folder such as `agentic/04-loops/specialists/catalog-agent/` with one `agent.yaml`. `agentic/04-loops/runtime/runtime.py` runs the same LangChain loop for every agent.
 
-`agentic/05-tools/mcp/tool-gateway` is the only code that calls a plugin. Catalog, orders, billing, and support are the clients. The example merchant process stays at `examples/merchant-mcp`.
+`agentic/05-tools/mcp/tool-gateway` is the only code that calls a plugin. Catalog, orders, billing, and support are the clients. The mock merchant, an outside store, is `mocks/merchant`.
 
 `agentic/06-jobs/queue` accepts runs onto two workers. `agentic/06-jobs/workers` is the only writer of traces, scores, and feedback. `deploy` and `docker-compose.yml` run the API and the console as two images. `tests` checks routes, plugins, schema, denied calls, injection text, and approval.
 
@@ -214,7 +213,7 @@ The console shows whether each variable is set. It does not show the value. SQL,
 
 `./start-local.sh` starts both processes on the laptop. The API is `127.0.0.1:8090`. The console is `127.0.0.1:5173` and is the only page a browser opens.
 
-`docker compose up -d --build` is the organization server. It builds `agentic-api` and `agentic-console` on that one machine. Operators open port 5173, or `CONSOLE_PORT` when that port is taken. The API image is private to the server network. `GET /platform` on the console port names the seven steps, security, observability, the workflow sequences, the n8n tool, and the files a business team edits. Prove it with `./deploy/smoke.sh`. The placement rules are in [docs/server.md](docs/server.md).
+`docker compose up -d --build` is the organization server. It builds `agentic-api` and `agentic-console` on that one machine. Operators open port 5173, or `CONSOLE_PORT` when that port is taken. The API image is private to the server network. `GET /platform` on the console port names the seven steps, security, observability, the workflow sequences, the n8n tool, and the files a business team edits. Prove it with `./infrastructure/smoke.sh`. The images, an Azure layout, and where Grafana and Kibana sit are in [infrastructure/README.md](infrastructure/README.md). The placement rules are in [docs/server.md](docs/server.md).
 
 An industry host keeps those two processes. One API process stays on a private address, because approvals, traces, and notes live in that process. Operators open the console, and the console proxies to that API. The model, SQL, n8n, Qdrant, and Neo4j are other hosts you already run. Set one variable when that host is ready. Secrets stay in the API environment. `PLATFORM_ENV=production` refuses the sample token. The placement rules are in [docs/operations.md](docs/operations.md).
 
@@ -225,7 +224,7 @@ An industry host keeps those two processes. One API process stays on a private a
 .venv/bin/python tests/agent-evaluation/run.py
 .venv/bin/python -m ruff check agentic tests
 npm test --prefix ui/admin-dashboard
-docker compose up -d --build && ./deploy/smoke.sh
+docker compose up -d --build && ./infrastructure/smoke.sh
 ```
 
 The console test checks the shared controls, including the gear and the dropdown. The smoke script checks the published port: eight agents, all seven steps, security, observability, the business edit paths, and a catalog run that calls `search_products`.

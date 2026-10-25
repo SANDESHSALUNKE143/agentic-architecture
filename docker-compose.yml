@@ -1,16 +1,41 @@
-# One server, two images.
-# agentic-api holds the seven steps, security, and observability.
+# One server. The API and the console are the platform.
+# agentic-merchant is the mock store, not part of the API image.
 # agentic-console is the only published port.
 # GET /platform on the console port returns the same map.
 
 name: agentic-architecture
 
 services:
+  merchant:
+    build:
+      context: .
+      dockerfile: infrastructure/Dockerfile.merchant
+    image: agentic-merchant
+    environment:
+      MERCHANT_MCP_HOST: 0.0.0.0
+      MERCHANT_MCP_PORT: "8091"
+    expose:
+      - "8091"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import socket; socket.create_connection(('127.0.0.1', 8091), 2).close()",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
   api:
     build:
       context: .
-      dockerfile: deploy/Dockerfile.api
+      dockerfile: infrastructure/Dockerfile.api
     image: agentic-api
+    depends_on:
+      merchant:
+        condition: service_healthy
     environment:
       PLATFORM_BIND_HOST: 0.0.0.0
       PLATFORM_BIND_PORT: "8090"
@@ -18,6 +43,7 @@ services:
       PLATFORM_DEV_TOKEN: ${PLATFORM_DEV_TOKEN:-local-dev-token-not-for-production}
       PLATFORM_LLM_MODE: ${PLATFORM_LLM_MODE:-mock}
       PLATFORM_DATA_DIR: /var/lib/agentic
+      MERCHANT_MCP_URL: http://merchant:8091/mcp
     volumes:
       - agentic-data:/var/lib/agentic
     expose:
@@ -50,7 +76,7 @@ services:
   console:
     build:
       context: .
-      dockerfile: deploy/Dockerfile.console
+      dockerfile: infrastructure/Dockerfile.console
     image: agentic-console
     depends_on:
       api:

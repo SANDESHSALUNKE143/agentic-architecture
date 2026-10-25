@@ -134,7 +134,7 @@ class RuntimeTests(unittest.TestCase):
         details = described["get_product_details"]
         self.assertIn("mcp/catalog-tools/tools.py", details["source"])
         self.assertNotIn("http", details["source"])
-        self.assertIn("examples/merchant-mcp", details["source"])
+        self.assertIn("mocks/merchant", details["source"])
         catalog_contract = self.platform.contracts["catalog-agent"]
         fetched = self.platform.gateway.call(
             "run-merchant",

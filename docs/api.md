@@ -129,7 +129,7 @@ curl -s -H "Authorization: Bearer local-dev-token-not-for-production" \
 1. Add a class in `agentic/01-entry/bodies.py` when the new call has a JSON body. Describe each field. That text is what `/docs` shows.
 2. Add the route in the matching module: `agentic/01-entry/routes/runs.py`, `agentic/01-entry/routes/approvals.py`, `agentic/01-entry/routes/catalog.py`, `agentic/01-entry/routes/settings.py`, `agentic/01-entry/routes/mcp.py`, or `agentic/01-entry/routes/guide.py`. Check the bearer token. Call `platform`, the gateway, or another module under `agentic/`. Do not call a plugin from a route.
 3. Name the console function that will send it, in the route's docstring.
-4. Add the path to the console proxy in `ui/admin-dashboard/vite.config.ts` and in `deploy/nginx.conf`.
+4. Add the path to the console proxy in `ui/admin-dashboard/vite.config.ts` and in `infrastructure/nginx.conf`.
 5. Add a case in `tests/integration/test_api.py`.
 6. Add a row to this page.
 

@@ -32,7 +32,7 @@ if [[ ! -d "$ROOT/ui/admin-dashboard/node_modules" ]]; then
   npm install --prefix "$ROOT/ui/admin-dashboard"
 fi
 
-"$PYTHON" "$ROOT/examples/merchant-mcp/server.py" &
+"$PYTHON" "$ROOT/mocks/merchant/server.py" &
 MERCHANT_PID=$!
 export MERCHANT_MCP_URL="${MERCHANT_MCP_URL:-http://127.0.0.1:8091/mcp}"
 "$PYTHON" "$ROOT/agentic/01-entry/main.py" &

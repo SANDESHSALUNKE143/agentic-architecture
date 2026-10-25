@@ -21,7 +21,7 @@ Each plugin is a registered tool. An industry system replaces the local stand-in
 
 `check_stock`, `search_documents`, and `analyze_dataset` are registered by `agentic/05-tools/mcp/tool-gateway` from `agentic/04-loops/memory`. The sales fixture is `agentic/04-loops/memory/fixtures/sales.csv`.
 
-`get_product_details` calls the MCP server whose purpose is product. The price is not stored in this repository. `examples/merchant-mcp` is a separate process you can run locally; its `records.json` is the merchant's catalog. Orders, discounts, and support requests follow the same pattern with purposes `orders`, `billing`, and `support`.
+`get_product_details` calls the MCP server whose purpose is product. The price is not stored in this repository. `mocks/merchant` is a separate process you can run locally; its `records.json` is the merchant's catalog. Orders, discounts, and support requests follow the same pattern with purposes `orders`, `billing`, and `support`.
 
 Open a catalog, order, billing, or support tool on Plugins and save its Server URL and token. Every tool with that purpose calls the saved address. The token is sent as a bearer header and is not placed in the URL. The client opens an MCP session, keeps that session, and does not follow redirects. A call that the server does not answer fails the run. `MERCHANT_MCP_URL` points every merchant purpose at the local example when no address is saved for that purpose.
 

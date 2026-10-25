@@ -4,8 +4,8 @@
 **/*.pyc
 **/.ruff_cache
 **/node_modules
-apps/admin-dashboard/dist
-apps/admin-dashboard/.vite
+ui/admin-dashboard/dist
+ui/admin-dashboard/.vite
 data
 *.pem
 *.key

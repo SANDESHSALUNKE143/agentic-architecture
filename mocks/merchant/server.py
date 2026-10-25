@@ -1,7 +1,7 @@
-"""Example merchant MCP server.
+"""Mock of an external merchant.
 
-Purpose: a separate process that owns products, orders, discounts, and support drafts. The agent platform is the client.
-Used by: start-local.sh and tests. Replace records.json with a real merchant system; this process is the third party.
+Purpose: a separate process that stands in for a store the platform does not own. Products, orders, discounts, and support drafts live here.
+Used by: start-local.sh and the tests. A real merchant replaces this process through MERCHANT_MCP_URL.
 """
 
 from __future__ import annotations

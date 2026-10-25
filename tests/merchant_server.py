@@ -1,4 +1,4 @@
-"""Start the example merchant MCP server once for tests.
+"""Start the mock merchant once for tests.
 
 Purpose: catalog, order, billing, and support calls need a server. The test process sets MERCHANT_MCP_URL.
 Used by: the unit, API, security, and evaluation tests.
@@ -24,7 +24,7 @@ def ensure_merchant_server() -> None:
     global _started
     if os.environ.get("MERCHANT_MCP_URL", "").strip() or _started:
         return
-    server = load_module(ROOT / "examples" / "merchant-mcp" / "server.py", "merchant_mcp_server")
+    server = load_module(ROOT / "mocks" / "merchant" / "server.py", "merchant_mcp_server")
     httpd = server.make_server("127.0.0.1", 0)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     host, port = httpd.server_address

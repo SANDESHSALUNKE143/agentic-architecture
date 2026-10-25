@@ -1,0 +1,9 @@
+FROM python:3.12-slim-bookworm
+
+WORKDIR /app
+COPY mocks/merchant /app
+ENV MERCHANT_MCP_HOST=0.0.0.0 \
+    MERCHANT_MCP_PORT=8091
+
+EXPOSE 8091
+CMD ["python", "server.py"]

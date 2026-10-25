@@ -14,13 +14,13 @@ On a laptop, from the repository root:
 
 Open <http://127.0.0.1:5173>. The API is <http://127.0.0.1:8090>. The token is `local-dev-token-not-for-production`. Send it as `Authorization: Bearer`.
 
-`start-local.sh` also starts the example merchant MCP server at <http://127.0.0.1:8091/mcp> and sets `MERCHANT_MCP_URL` for the API. That process owns the sample products, orders, and discounts in `examples/merchant-mcp/records.json`. Catalog, order, billing, and support tools call it. To use another system, open that tool on Plugins and save its Server URL, or set `MERCHANT_MCP_URL` to its address.
+`start-local.sh` also starts the mock merchant at <http://127.0.0.1:8091/mcp> and sets `MERCHANT_MCP_URL` for the API. That process owns the sample products, orders, and discounts in `mocks/merchant/records.json`. Catalog, order, billing, and support tools call it. To use another system, open that tool on Plugins and save its Server URL, or set `MERCHANT_MCP_URL` to its address.
 
 On one server:
 
 ```bash
 docker compose up -d --build
-./deploy/smoke.sh
+./infrastructure/smoke.sh
 ```
 
 Operators open port 5173. `CONSOLE_PORT` changes that port. The API is on the server network. Health, the platform map, this guide, and the interactive API page are all on the console port: `/health`, `/platform`, `/guide`, and `/docs`.
@@ -102,7 +102,7 @@ Restart the API after a file change. A save from the console reloads that one co
 .venv/bin/python tests/agent-evaluation/run.py
 .venv/bin/python -m ruff check agentic tests
 npm test --prefix ui/admin-dashboard
-docker compose up -d --build && ./deploy/smoke.sh
+docker compose up -d --build && ./infrastructure/smoke.sh
 ```
 
 ## Read next
