@@ -133,4 +133,4 @@ curl -s -H "Authorization: Bearer local-dev-token-not-for-production" \
 5. Add a case in `tests/integration/test_api.py`.
 6. Add a row to this page.
 
-A new agent is `agentic/04-loops/specialists/<name>/agent.yaml`. A new workflow is `agentic/03-workflows/sequences/<name>/workflow.py`. Neither one is a new body class.
+A new agent is `agentic/04-loops/specialists/<name>/agent.yaml`. A new workflow is `agentic/03-workflows/sequences/<name>/workflow.yaml`. Neither one is a new body class. The steps are in [Onboard an agent](onboard-agent.md).

@@ -26,13 +26,25 @@ def usage_from_payload(payload: dict[str, Any]) -> dict[str, Any]:
     return copied
 
 
+def _endpoint() -> tuple[str, str, str]:
+    key = os.environ.get("MODEL_API_KEY", "")
+    base = os.environ.get("MODEL_BASE_URL", "").strip().rstrip("/") or "https://api.openai.com/v1"
+    model = os.environ.get("MODEL_NAME", "").strip() or "gpt-4.1-mini"
+    return key, base, model
+
+
+def _headers(key: str, base: str) -> dict[str, str]:
+    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+    if "openai.azure.com" in base:
+        headers["api-key"] = key
+    return headers
+
+
 class LiveChat:
     """OpenAI-compatible chat. Used only when MODEL_API_KEY is set and mode is live."""
 
     def __init__(self) -> None:
-        self.api_key = os.environ.get("MODEL_API_KEY", "")
-        self.base_url = os.environ.get("MODEL_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-        self.model = os.environ.get("MODEL_NAME", "gpt-4.1-mini")
+        self.api_key, self.base_url, self.model = _endpoint()
         self.last_usage: dict[str, Any] = {}
 
     def complete(self, messages: list[dict[str, str]]) -> str:
@@ -42,7 +54,7 @@ class LiveChat:
         request = urllib.request.Request(
             f"{self.base_url}/chat/completions",
             data=body,
-            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+            headers=_headers(self.api_key, self.base_url),
         )
         with urllib.request.urlopen(request, timeout=30) as response:
             payload = json.loads(response.read().decode())
@@ -57,4 +69,8 @@ def live_enabled() -> bool:
 def live_model():
     from langchain_openai import ChatOpenAI
 
-    return ChatOpenAI(api_key=os.environ["MODEL_API_KEY"], model=os.environ.get("MODEL_NAME", "gpt-4.1-mini"))
+    key, base, model = _endpoint()
+    kwargs: dict[str, Any] = {"api_key": key, "model": model, "base_url": base}
+    if "openai.azure.com" in base:
+        kwargs["default_headers"] = {"api-key": key}
+    return ChatOpenAI(**kwargs)

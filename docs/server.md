@@ -35,16 +35,13 @@ The retail fixtures are the worked example. Replace the data. Keep the runtime.
 
 | Change | File |
 | --- | --- |
-| Instructions, tools, permissions, output schema | `agentic/04-loops/specialists/<name>/agent.yaml` |
-| Catalog, order, billing, or support behavior | `agentic/05-tools/mcp/<domain>-tools/tools.py` |
-| Register a plugin | `agentic/05-tools/mcp/tool-gateway/gateway.py` |
+| Instructions, tools, permissions, output schema, route phrases, handoffs | `agentic/04-loops/specialists/<name>/agent.yaml` |
+| A plugin and the function that answers it | `agentic/05-tools/mcp/<domain>-tools/tools.py` |
 | SQL, web, or n8n stand-in | `agentic/05-tools/mcp/tool-gateway/ports.py` |
-| Who may hand work to whom | `agentic/02-guardrails/policy/delegation.py` |
-| Words that select a workflow | `agentic/03-workflows/router/router.py` |
-| Agent order in a workflow | `agentic/03-workflows/sequences/<name>/workflow.py` |
+| Agent order and the words that select a workflow | `agentic/03-workflows/sequences/<name>/workflow.yaml` |
 | Evaluation case | `tests/agent-evaluation/cases.json` |
 
-The router loads the agent order from the workflow file. A new specialist is a YAML file plus a plugin the gateway already knows. `agentic/04-loops/runtime/runtime.py` stays the only loop. A write stays in `approval.required_for`.
+The router loads every `workflow.yaml`. A new specialist is a YAML file plus a `TOOLS` entry when the plugin is new. `agentic/04-loops/runtime/runtime.py` stays the only loop. A write stays in `approval.required_for`. The steps are in [Onboard an agent](onboard-agent.md).
 
 `GET /platform` includes `workflows` and `n8n`. The three sequences run in `agentic/03-workflows/engine`. n8n is the `invoke_n8n` tool, and that call waits for approval. The guide is [Workflows](workflows.md).
 

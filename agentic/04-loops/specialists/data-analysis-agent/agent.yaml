@@ -40,3 +40,14 @@ observability:
 evaluation:
   expect_tools:
     - analyze_dataset
+route:
+  id: data-analysis
+  priority: 10
+  phrases:
+    - dataset
+    - sales csv
+    - mean amount
+    - analyze
+examples:
+  - Analyze the sales dataset
+  - What stands out in the sales numbers?

@@ -71,7 +71,7 @@ The contract names the plugin. The environment names the system behind it. Chang
 
 | Port | Variables | This reference, when the variable is set | What you replace later |
 | --- | --- | --- | --- |
-| Model | `PLATFORM_LLM_MODE=live`, `MODEL_API_KEY`, `MODEL_BASE_URL`, `MODEL_NAME` | Calls an OpenAI-compatible `/chat/completions` endpoint. Copies `model`, `total_tokens`, and `cost` when the provider sends them. | Point `MODEL_BASE_URL` at your model host. Leave mock mode until that host exists. |
+| Model | `PLATFORM_LLM_MODE=live`, `MODEL_API_KEY`, `MODEL_BASE_URL`, `MODEL_NAME`, `PLATFORM_TIMEOUT_SECONDS` | Calls an OpenAI-compatible `/chat/completions` endpoint. Azure OpenAI uses a base URL ending in `/openai/v1` and the deployment name as `MODEL_NAME`. Raise the timeout above the mock default of 8 seconds. | Point `MODEL_BASE_URL` at your model host. Leave mock mode until that host exists. The check is in [Onboard an agent](onboard-agent.md). |
 | SQL | `SQL_CONNECTION` | Marks the port configured. `query_sql` still returns the local read-only row. A statement that is not a `SELECT` is rejected. | The body of `query_sql` in `agentic/05-tools/mcp/tool-gateway/ports.py`. Keep the `SELECT` limit. |
 | Web | `WEB_ALLOWLIST` | The host must be on the list, or the call is denied. The page body is still the local fixture. The default list is `example.test`. | The body of `fetch_url`. Keep the allowlist. |
 | n8n | `N8N_BASE_URL`, `N8N_TOKEN` | Marks the port configured. `invoke_n8n` does not call n8n. `submitted` stays false and `simulated` stays true. The write still waits for approval. The token stays in the API environment. | The body of `invoke_n8n`, after approval, using `N8N_TOKEN` from the environment. |

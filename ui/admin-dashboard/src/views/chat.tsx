@@ -19,17 +19,6 @@ type ChatMessage = {
   sources?: { id: string; count: number }[];
 };
 
-const PROMPTS: Record<string, [string, string]> = {
-  "catalog-agent": ["Find a blue trail jacket under $150", "Compare the jackets you can see"],
-  "shopping-agent": ["Find a blue trail jacket under $150", "Which jacket should I look at first?"],
-  "inventory-agent": ["How many blue trail jackets are in stock?", "Is the trail jacket available?"],
-  "order-agent": ["Place an order for the jacket at $129", "What does an order for the jacket require?"],
-  "billing-agent": ["What discount applies to the blue trail jacket?", "Explain the charge for order 1001"],
-  "support-agent": ["Refund order 1001", "What can you check before a refund?"],
-  "data-analysis-agent": ["Analyze the sales dataset", "What stands out in the sales numbers?"],
-  "research-agent": ["What does the indexed document say about the jacket?", "Cite the note you can retrieve"],
-};
-
 export function ChatView({
   agent,
   agents,
@@ -44,7 +33,8 @@ export function ChatView({
   onOpenSettings: (agent: string) => void;
 }) {
   const card = agents.find((item) => item.name === agent);
-  const prompts = PROMPTS[agent] || ["What can you do?", "Show the sources you use"];
+  const saved = card?.examples ?? [];
+  const prompts: [string, string] = [saved[0] || "What can you do?", saved[1] || "Show the sources you use"];
   const [task, setTask] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [busy, setBusy] = useState(false);

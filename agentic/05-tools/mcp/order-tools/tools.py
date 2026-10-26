@@ -22,3 +22,32 @@ def prepare_order(product_id: str, user_id: str, amount: float, approved: bool =
         "prepare_order",
         {"product_id": product_id, "user_id": user_id, "amount": amount, "approved": approved},
     )
+
+
+_ORDERS = (
+    "mcp/order-tools/tools.py calls the MCP server whose purpose is orders. "
+    "Order records live on that server."
+)
+
+TOOLS = {
+    "get_order_status": {
+        "group": "Orders",
+        "summary": "Reads whether an order is open or shipped.",
+        "source": _ORDERS,
+        "permission": "order_read",
+        "write": False,
+        "mcp_purpose": "orders",
+        "fn": get_order_status,
+        "schema": {"order_id": "string"},
+    },
+    "prepare_order": {
+        "group": "Orders",
+        "summary": "Asks the orders MCP server to store a draft. It does not charge a card.",
+        "source": _ORDERS,
+        "permission": "order_write",
+        "write": True,
+        "mcp_purpose": "orders",
+        "fn": prepare_order,
+        "schema": {"product_id": "string", "user_id": "string", "amount": "number"},
+    },
+}

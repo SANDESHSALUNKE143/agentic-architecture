@@ -1,0 +1,14 @@
+name: product-discovery
+order: 1
+priority: 60
+agents:
+  - shopping-agent
+  - catalog-agent
+  - inventory-agent
+phrases:
+  - jacket
+  - boot
+  - lamp
+  - stock
+  - shop
+  - product

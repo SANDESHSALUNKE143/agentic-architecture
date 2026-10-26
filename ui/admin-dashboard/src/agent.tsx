@@ -6,7 +6,7 @@ import { toolsForSave } from "./tools";
 import { AgentRun, SituationPanel } from "./agent/run";
 import { Instructions, Memory, Observability, Retrieval, Tools, Workflows } from "./agent/sections";
 import { label, readable, role } from "./agent/text";
-import { BRIEFS, SECTIONS, type AgentCard, type Contract, type PlatformSettings, type Sequence, type ToolInfo, type RunSnapshot } from "./agent/types";
+import { SECTIONS, type AgentCard, type Contract, type PlatformSettings, type Sequence, type ToolInfo, type RunSnapshot } from "./agent/types";
 
 export type { FeedItem } from "./agent/types";
 export { activityLine, finishWithAnswer, foldStep } from "./agent/text";
@@ -143,7 +143,12 @@ export function AgentWorkspace({
             </div>
           ) : <p className="empty">Loading this agent…</p>
         ) : (
-          <AgentRun agent={agent} brief={BRIEFS[agent] || ""} onError={onError} onSnapshot={setSnapshot} />
+          <AgentRun
+            agent={agent}
+            brief={agents.find((item) => item.name === agent)?.examples?.[0] || ""}
+            onError={onError}
+            onSnapshot={setSnapshot}
+          />
         )}
       </section>
       {mode === "run" ? (

@@ -49,7 +49,7 @@ These stay in place when you replace the retail fixtures with your systems.
 6. **Learning** — the request enqueues a stage or a score. The worker in `agentic/06-jobs/workers` stores it. The record does not include the raw question and does not change model weights.
 7. **Communication** — the `AgentResponse` is what the API returns and what the console shows.
 
-Security sits beside those steps: the bearer check in `agentic/02-guardrails/auth/auth.py`, handoff rules in `agentic/02-guardrails/policy/delegation.py`, redaction in `agentic/02-guardrails/policy/redact.py`, and the approval wait in `agentic/05-tools/mcp/tool-gateway/gateway.py`. Observability is `agentic/07-observability`. The trace records the agent, the tool name, the status, and the duration. It omits the raw question.
+Security sits beside those steps: the bearer check in `agentic/02-guardrails/auth/auth.py`, handoff checks in `agentic/02-guardrails/policy/delegation.py` (the allowed pairs come from each `agent.yaml`), redaction in `agentic/02-guardrails/policy/redact.py`, and the approval wait in `agentic/05-tools/mcp/tool-gateway/gateway.py`. Observability is `agentic/07-observability`. The trace records the agent, the tool name, the status, and the duration. It omits the raw question.
 
 `GET /platform` returns this map: the seven steps, security, observability, the live workflow sequences, the n8n tool, and the files a business team edits. The same step names are labels on the `agentic-api` image. The page is [docs/server.md](docs/server.md).
 
@@ -169,29 +169,26 @@ A failed step does not replan. The next agent receives the same task. Learning d
 | `customer-support` | support, billing | refund, return, order status, order 1001, order 1002 |
 | `order-processing` | order, billing | place an order, prepare an order, checkout, `buy ` |
 
-`billing`, `research`, and `data-analysis` can run as one specialist. Billing is also a step in support and in order processing. Add a sequence by creating `agentic/03-workflows/sequences/<name>/workflow.py`, registering it in the router, and allowing each handoff. The console Workflows tab reads the live list from `GET /platform`. The full path is [docs/workflows.md](docs/workflows.md).
+`billing`, `research`, and `data-analysis` can run as one specialist. Billing is also a step in support and in order processing. Add a sequence by creating `agentic/03-workflows/sequences/<name>/workflow.yaml`. The router loads that file. The console Workflows tab reads the live list from `GET /platform`. The full path is [docs/workflows.md](docs/workflows.md). Onboarding a new agent is [docs/onboard-agent.md](docs/onboard-agent.md).
 
 n8n is the write tool `invoke_n8n`, permission `n8n_write`. The workflow file stays the order of agents. The tool waits for approval. `N8N_BASE_URL` records an n8n you already run. The call stays simulated until the body of `invoke_n8n` posts to that URL. No reference agent lists `n8n_write` today.
 
 ## Add your agent
 
-1. Copy `agentic/04-loops/specialists/catalog-agent/agent.yaml` to `agentic/04-loops/specialists/<name>/agent.yaml`.
-2. Register any new plugin in `agentic/05-tools/mcp/tool-gateway/gateway.py` before the contract names it.
-3. Set permissions the gateway already understands, and an `output_schema`.
-4. Add one case in `tests/agent-evaluation/cases.json` that lists `expect_tools`.
-5. Restart the API.
+State the problem. The command writes the contract, the tool, and the workflow. Replace the tool function with the system that solves it, then restart the API. The live Azure check is in [docs/onboard-agent.md](docs/onboard-agent.md).
 
-The gear opens Configuration for that agent. The tabs are instructions, memory, observability, retrieval, tools, and workflows. Connectors store a URL, connection string, username, and password, and a saved password is not shown again. Settings cannot grant `order_write` to a read-only agent or clear approval on a write.
+```bash
+./new-agent.sh claims "Look up whether a claim is open and explain the next step"
+```
+
+The gear opens Configuration for that agent. The tabs are instructions, memory, observability, retrieval, tools, and workflows. Connectors store a URL, connection string, username, and password, and a saved password is not shown again. A permission the contract sets to false stays off. A write stays behind approval.
 
 | Change | File |
 | --- | --- |
-| Instructions, tools, permissions, output schema | `agentic/04-loops/specialists/<name>/agent.yaml` |
-| Catalog, order, billing, or support behavior | `agentic/05-tools/mcp/<domain>-tools/tools.py` |
-| Register a plugin | `agentic/05-tools/mcp/tool-gateway/gateway.py` |
+| Instructions, tools, permissions, output schema, route phrases, handoffs | `agentic/04-loops/specialists/<name>/agent.yaml` |
+| A plugin and the function that answers it | `agentic/05-tools/mcp/<domain>-tools/tools.py` |
 | SQL, web, or n8n stand-in | `agentic/05-tools/mcp/tool-gateway/ports.py` |
-| Who may hand work to whom | `agentic/02-guardrails/policy/delegation.py` |
-| Words that select a workflow | `agentic/03-workflows/router/router.py` |
-| Agent order in a workflow | `agentic/03-workflows/sequences/<name>/workflow.py` |
+| Agent order and the words that select a workflow | `agentic/03-workflows/sequences/<name>/workflow.yaml` |
 | A case the evaluation run must pass | `tests/agent-evaluation/cases.json` |
 
 ## Observability
@@ -204,7 +201,7 @@ The contract keeps the plugin name. The environment points at the host. Leave a 
 
 | Port | Variables | What this reference does |
 | --- | --- | --- |
-| Model | `PLATFORM_LLM_MODE=live`, `MODEL_API_KEY`, `MODEL_BASE_URL`, `MODEL_NAME` | Calls an OpenAI-compatible chat endpoint |
+| Model | `PLATFORM_LLM_MODE=live`, `MODEL_API_KEY`, `MODEL_BASE_URL`, `MODEL_NAME` | Calls an OpenAI-compatible chat endpoint, including Azure OpenAI at `/openai/v1` |
 | SQL | `SQL_CONNECTION` | Marks the port configured. `query_sql` still returns the local `SELECT` fixture |
 | Web | `WEB_ALLOWLIST` | Denies a host that is not listed. The page body stays local |
 | n8n | `N8N_BASE_URL`, `N8N_TOKEN` | Does not call n8n. The write stays simulated and still needs approval |
@@ -247,6 +244,7 @@ The console test checks the shared controls, including the gear and the dropdown
 | [Repository](docs/repository.md) | The folder map in more detail |
 | [Architecture](docs/architecture.md) | The seven components and the folders that own them |
 | [Workflows](docs/workflows.md) | When a sequence is required, how to add one, and where n8n fits |
+| [Onboard an agent](docs/onboard-agent.md) | Add an agent, a tool, or a workflow, and prove it with Azure OpenAI |
 | [Agent catalog](docs/agent-catalog.md) | The reference specialists and how to copy one |
 | [Tool contracts](docs/tool-contracts.md) | Each plugin, its permission, and whether it needs approval |
 | [Console controls](docs/ui-controls.md) | The shared fields and the gear that opens an agent's configuration |

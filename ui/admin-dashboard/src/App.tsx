@@ -42,7 +42,8 @@ export function App() {
   const [devToken, setDevToken] = useState(token());
   const [error, setError] = useState("");
   const [agents, setAgents] = useState<AgentCard[]>([]);
-  const [agent, setAgent] = useState("catalog-agent");
+  const [agent, setAgent] = useState("");
+  const [mode, setMode] = useState("mock");
   const [pending, setPending] = useState(0);
   const [history, setHistory] = useState<SessionRun[]>([]);
 
@@ -52,6 +53,12 @@ export function App() {
       if (rows[0] && !rows.some((item) => item.name === agent)) setAgent(rows[0].name);
     }).catch((exc) => setError(readableError(exc)));
   }, [agent]);
+
+  useEffect(() => {
+    api<{ mode: string }>("/settings/platform")
+      .then((row) => setMode(row.mode || "mock"))
+      .catch(() => setMode("mock"));
+  }, []);
 
   useEffect(() => {
     api<Approval[]>("/approvals")
@@ -119,7 +126,7 @@ export function App() {
             <div className="crumb">Workspace / {NAV.find((item) => item.id === view)?.label}</div>
             <h1>{TITLES[view]}</h1>
           </div>
-          <div className="mock-pill"><i /><span>Mock mode · safe to test</span></div>
+          <div className="mock-pill"><i /><span>{mode === "live" ? "Live model" : "Mock mode · safe to test"}</span></div>
         </header>
         {error ? <p className="banner" role="alert">{error}</p> : null}
         <div className="page-body">

@@ -25,8 +25,4 @@ The sequences the planner can require are in [Workflows](workflows.md).
 
 ## Add an agent
 
-1. Copy `agentic/04-loops/specialists/catalog-agent/agent.yaml` to `agentic/04-loops/specialists/<name>/agent.yaml`.
-2. List only tools that already exist in the gateway registry.
-3. Set permissions the gateway already understands, and an `output_schema`.
-4. Add one case under `tests/agent-evaluation/cases.json`.
-5. Restart the API. Authentication, logging, errors, and state stay in the shared runtime.
+Follow [Onboard an agent](onboard-agent.md). Copy one contract, export `TOOLS` only when the tool is new, and restart the API. Authentication, logging, errors, and state stay in the shared runtime.

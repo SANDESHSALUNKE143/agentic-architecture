@@ -36,6 +36,9 @@ class ApiTests(unittest.TestCase):
         health = self.client.get("/health", headers=self.headers)
         self.assertEqual(health.status_code, 200)
         self.assertEqual(health.json()["agents"], 8)
+        agents = self.client.get("/agents", headers=self.headers).json()
+        catalog = next(item for item in agents if item["name"] == "catalog-agent")
+        self.assertIn("Find a blue trail jacket under $150", catalog["examples"])
         settings = self.client.get("/settings/platform", headers=self.headers).json()
         self.assertIn("mode", settings)
         self.assertFalse(settings["model_api_key_set"])
@@ -88,6 +91,7 @@ class ApiTests(unittest.TestCase):
         page_ids = [page["id"] for page in guide.json()]
         self.assertIn("repository", page_ids)
         self.assertIn("server", page_ids)
+        self.assertIn("onboard-agent", page_ids)
         self.assertIn("workflows", page_ids)
         self.assertIn("using", page_ids)
         self.assertIn("api", page_ids)
@@ -112,8 +116,10 @@ class ApiTests(unittest.TestCase):
         self.assertTrue(body["observability"])
         business = {item["path"] for item in body["business"]}
         self.assertIn("agentic/04-loops/specialists/<name>/agent.yaml", business)
-        self.assertIn("agentic/03-workflows/sequences/<name>/workflow.py", business)
-        self.assertIn("agentic/02-guardrails/policy/delegation.py", business)
+        self.assertIn("agentic/03-workflows/sequences/<name>/workflow.yaml", business)
+        self.assertNotIn("agentic/02-guardrails/policy/delegation.py", business)
+        self.assertNotIn("agentic/03-workflows/router/router.py", business)
+        self.assertNotIn("agentic/05-tools/mcp/tool-gateway/gateway.py", business)
         images = {item["name"]: item for item in body["images"]}
         self.assertFalse(images["agentic-api"]["published"])
         self.assertTrue(images["agentic-console"]["published"])

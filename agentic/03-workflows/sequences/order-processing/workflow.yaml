@@ -1,0 +1,11 @@
+name: order-processing
+order: 3
+priority: 40
+agents:
+  - order-agent
+  - billing-agent
+phrases:
+  - place an order
+  - prepare an order
+  - checkout
+  - "buy "

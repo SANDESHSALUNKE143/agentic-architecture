@@ -83,12 +83,12 @@ Open <http://127.0.0.1:8090/docs> on the laptop, or <http://127.0.0.1:5173/docs>
 
 | You want to | Open |
 | --- | --- |
+| Start an agent for a new problem | `./new-agent.sh <name> "<problem>"`, then the generated `tools.py` |
 | Change what an agent may say and which tools it has | `agentic/04-loops/specialists/<name>/agent.yaml`, or the gear in the console |
 | Change a catalog, order, billing, or support result | `agentic/05-tools/mcp/<domain>-tools/tools.py` |
-| Add a plugin | Register it in `agentic/05-tools/mcp/tool-gateway/gateway.py`, then name it on a contract that already has the permission |
-| Change who may hand work to whom | `agentic/02-guardrails/policy/delegation.py` |
-| Change which words select a workflow | `agentic/03-workflows/router/router.py` |
-| Change the agent order | `agentic/03-workflows/sequences/<name>/workflow.py` |
+| Add a plugin | Export `TOOLS` from `agentic/05-tools/mcp/<domain>-tools/tools.py`, then name it on a contract that already has the permission |
+| Change who may hand work to whom | `delegation` on the source `agent.yaml` |
+| Change which words select a workflow, and the agent order | `agentic/03-workflows/sequences/<name>/workflow.yaml` |
 | Attach n8n later | `invoke_n8n` in `agentic/05-tools/mcp/tool-gateway/ports.py`, after the contract has `n8n_write` and approval |
 
 Restart the API after a file change. A save from the console reloads that one contract without a restart.
@@ -114,6 +114,7 @@ docker compose up -d --build && ./infrastructure/smoke.sh
 | [One server](server.md) | You are running the two images |
 | [Implementation guide](implementation-guide.md) | You are changing the platform and must keep the standard |
 | [Operations](operations.md) | You are setting a model, SQL, web, n8n, Qdrant, or Neo4j host |
+| [Onboard an agent](onboard-agent.md) | You are adding an agent, a tool, or a workflow, or proving a live model |
 | [Agent catalog](agent-catalog.md) | You are copying a specialist |
 | [Tool contracts](tool-contracts.md) | You need a plugin's permission and whether it waits |
 | [Console controls](ui-controls.md) | You are adding a field to the console |

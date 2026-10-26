@@ -39,11 +39,11 @@ Ruff checks the Python with the rules in `pyproject.toml`. Line length is 100.
 | Change | Place it here |
 | --- | --- |
 | New specialist | `agentic/04-loops/specialists/<name>/agent.yaml` |
-| New plugin | A function in the matching `agentic/05-tools/mcp/<domain>-tools/tools.py`, then one entry in `agentic/05-tools/mcp/tool-gateway/gateway.py` |
+| New plugin | A function and a `TOOLS` entry in `agentic/05-tools/mcp/<domain>-tools/tools.py`. The gateway loads that file |
 | Read cache | `agentic/05-tools/mcp/tool-gateway/cache.py`. A successful read only. A write and the brief stay out |
-| Who may call whom | `agentic/02-guardrails/policy/delegation.py` |
-| Which words select a workflow | `agentic/03-workflows/router/router.py` |
-| A fixed sequence of agents | `agentic/03-workflows/sequences/<name>/workflow.py`. The router loads that list. Words that select it stay in `agentic/03-workflows/router/router.py`. The full path, including n8n, is in [Workflows](workflows.md) |
+| Who may call whom | `delegation` on the source `agent.yaml`. Read agents may hand work to each other |
+| Which words select a workflow | `phrases` in `agentic/03-workflows/sequences/<name>/workflow.yaml`, or `route` on one agent |
+| A fixed sequence of agents | `agentic/03-workflows/sequences/<name>/workflow.yaml`. The router loads every file in that folder. The full path, including n8n, is in [Workflows](workflows.md) |
 | A regression | `tests/unit`, `tests/integration`, `tests/security`, or `tests/agent-evaluation/cases.json` |
 | Operator-facing explanation | `docs/` |
 
@@ -53,8 +53,8 @@ Do not put a second tool loop in an agent folder. Do not call a plugin from the 
 
 1. Run `./start-local.sh` and complete the jacket task. Read the trace.
 2. Read `agentic/04-loops/specialists/catalog-agent/agent.yaml` until the contract fields are familiar.
-3. Name your specialists and the permissions they need. Copy the catalog contract and change only those fields.
-4. Register each industry plugin in the gateway with a permission and `write: true` or `write: false`.
+3. Name the problem. Run `./new-agent.sh <name> "<problem>"` and replace the generated tool body with your system.
+4. Export each industry plugin from its `tools.py` as `TOOLS`, with a permission and `write: true` or `write: false`.
 5. Connect the plugin in the console only to agents that already have that permission.
 6. Add one evaluation case that names the plugin the test must see.
 7. Turn on one long-lived port at a time. The order is model, SQL, web allowlist, n8n, Qdrant, Neo4j. Leave the others on the local fixture. See [Operations](operations.md).
@@ -122,4 +122,4 @@ An industry host keeps those two processes. The API stays on a private address, 
 
 ## Definition of done
 
-An industry implementation is ready to show when a new agent is only a YAML file plus a registered plugin, a denied plugin never runs, a write stays paused until a different actor approves it, the output matches the schema, and the evaluation case fails if the expected plugin is missing.
+An industry implementation is ready to show when a new agent is a YAML file plus a `TOOLS` entry, a denied plugin never runs, a write stays paused until a different actor approves it, the output matches the schema, and the evaluation case fails if the expected plugin is missing. The steps are in [Onboard an agent](onboard-agent.md).

@@ -18,3 +18,22 @@ def request_approval(action: str, summary: str, approved: bool = False) -> dict:
         "request_approval",
         {"action": action, "summary": summary, "approved": approved},
     )
+
+
+_SUPPORT = (
+    "mcp/support-tools/tools.py calls the MCP server whose purpose is support. "
+    "The refund decision lives on that server."
+)
+
+TOOLS = {
+    "request_approval": {
+        "group": "Support",
+        "summary": "Sends a refund request to the support MCP server and waits for an operator.",
+        "source": _SUPPORT,
+        "permission": "support_write",
+        "write": True,
+        "mcp_purpose": "support",
+        "fn": request_approval,
+        "schema": {"action": "string", "summary": "string"},
+    },
+}

@@ -16,6 +16,7 @@ dependencies = [
   "pyyaml>=6,<7",
   "langchain>=1.0,<2",
   "langchain-core>=1.2,<2",
+  "langchain-openai>=1.0,<2",
   "langgraph>=1.0,<2",
 ]
 

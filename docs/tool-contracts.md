@@ -19,7 +19,7 @@ Each plugin is a registered tool. An industry system replaces the local stand-in
 | invoke_n8n | n8n_write | yes |
 | use_mcp_server | mcp_client | no. Lists the tools on a configured MCP server |
 
-`check_stock`, `search_documents`, and `analyze_dataset` are registered by `agentic/05-tools/mcp/tool-gateway` from `agentic/04-loops/memory`. The sales fixture is `agentic/04-loops/memory/fixtures/sales.csv`.
+Each `tools.py` exports `TOOLS`. The gateway loads those maps and does not keep a second list of names. The sales fixture is `agentic/04-loops/memory/fixtures/sales.csv`.
 
 `get_product_details` calls the MCP server whose purpose is product. The price is not stored in this repository. `mocks/merchant` is a separate process you can run locally; its `records.json` is the merchant's catalog. Orders, discounts, and support requests follow the same pattern with purposes `orders`, `billing`, and `support`.
 

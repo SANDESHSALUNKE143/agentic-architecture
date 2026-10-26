@@ -14,4 +14,4 @@ This is the reference architecture an industry implementation keeps. A request m
 
 The runtime in `agentic/04-loops/runtime/runtime.py` loads instructions, resolves permitted tools, runs the reasoning loop, validates `output_schema`, and the state manager persists the response.
 
-LangChain `create_agent` is the per-agent loop. LangGraph sequences product discovery, customer support, and order processing, and it stops when a write needs approval.
+LangChain `create_agent` is the per-agent loop. LangGraph runs the agent list from the matched workflow file and stops when a write needs approval.

@@ -1,5 +1,5 @@
 /** Purpose: names and initials shared by every console screen. Used by: the views and the shell. */
-export type AgentCard = { name: string; description: string; tools: string[] };
+export type AgentCard = { name: string; description: string; tools: string[]; examples?: string[] };
 
 export type SessionRun = {
   id: string;

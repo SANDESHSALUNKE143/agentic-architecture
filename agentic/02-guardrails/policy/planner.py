@@ -20,7 +20,7 @@ class Plan:
     error_code: str = ""
 
 
-def build_plan(agent_ids: list[str], known: set[str]) -> Plan:
+def build_plan(agent_ids: list[str], known: set[str], contracts: dict) -> Plan:
     if not agent_ids:
         return Plan([], "The request did not match a workflow.", "ambiguous_intent")
     if len(agent_ids) > MAX_HOPS:
@@ -29,7 +29,7 @@ def build_plan(agent_ids: list[str], known: set[str]) -> Plan:
     if unknown:
         return Plan([], f"Unknown agent {unknown[0]}.", "unknown_agent")
     for source, target in zip(agent_ids, agent_ids[1:]):
-        allowed, reason = can_delegate(source, target)
+        allowed, reason = can_delegate(source, target, contracts)
         if not allowed:
             return Plan([], reason, "delegation_denied")
     return Plan(agent_ids)

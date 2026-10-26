@@ -47,6 +47,9 @@ def _memory(memory: dict) -> dict:
 
 def apply_contract(platform, agent_id: str, updates: dict) -> AgentContract:
     contract = platform.contracts[agent_id]
+    for key, value in (updates.get("permissions") or {}).items():
+        if value and contract.permissions.get(key) is False:
+            raise ValueError(f"{key} stays off until the contract itself sets it.")
     unknown = set(updates) - {"instructions", "tools", "memory", "approval", "observability", "rag", "model"}
     if unknown:
         raise ValueError("Only instructions, tools, memory, approval, observability, RAG, and model can be edited.")
@@ -64,8 +67,6 @@ def apply_contract(platform, agent_id: str, updates: dict) -> AgentContract:
     for tool in tools:
         if tool in WRITE_TOOLS and tool not in required:
             raise ValueError("A write tool must keep its approval requirement.")
-    if contract.permissions.get("order_write") is False and updates.get("permissions", {}).get("order_write"):
-        raise ValueError("A read-only agent cannot be granted order_write.")
     selected = ordered(list(updates.get("observability", contract.observability)))
     if any(item not in IDS for item in updates.get("observability", contract.observability)):
         raise ValueError("Observability tools must be chosen from the catalog.")

@@ -33,10 +33,14 @@ def _user_text(messages: list[BaseMessage]) -> str:
     return _text(messages)
 
 
+def _tool_name(tool: Any) -> str:
+    return getattr(tool, "name", None) or tool.get("name") or ""
+
+
 def _wanted(tools: list[Any], task: str) -> list[str]:
     names = []
     for tool in tools:
-        name = getattr(tool, "name", None) or tool.get("name")
+        name = _tool_name(tool)
         if name:
             names.append(name)
     writes = {"prepare_order", "request_approval", "invoke_n8n"}
@@ -46,7 +50,7 @@ def _wanted(tools: list[Any], task: str) -> list[str]:
     return chosen or names
 
 
-def tool_arguments(name: str, task: str) -> dict[str, Any]:
+def tool_arguments(name: str, task: str, tool: Any = None) -> dict[str, Any]:
     product = "p-jacket-blue"
     if "boot" in task.lower():
         product = "p-boots"
@@ -72,7 +76,30 @@ def tool_arguments(name: str, task: str) -> dict[str, Any]:
         "fetch_url": {"url": "https://example.test/catalog"},
         "invoke_n8n": {"path": "/webhook/product-discovery"},
     }
-    return dict(mapping.get(name, {}))
+    if name in mapping:
+        return dict(mapping[name])
+    return _from_tool(tool, task)
+
+
+def _from_tool(tool: Any, task: str) -> dict[str, Any]:
+    model = getattr(tool, "args_schema", None)
+    fields = getattr(model, "model_fields", None) or {}
+    if not fields:
+        return {"query": task[:180]}
+    return {key: _sample(getattr(field, "annotation", str), task) for key, field in fields.items()}
+
+
+def _sample(annotation: Any, task: str) -> Any:
+    label = str(annotation).lower()
+    if "list" in label:
+        return []
+    if "dict" in label:
+        return {}
+    if "bool" in label:
+        return False
+    if "int" in label or "float" in label:
+        return 0
+    return task[:180]
 
 
 class MockChatModel(BaseChatModel):
@@ -94,12 +121,17 @@ class MockChatModel(BaseChatModel):
         done = [message for message in messages if isinstance(message, ToolMessage)]
         done_names = {message.name for message in done}
         task = _user_text(messages)
+        bound = {_tool_name(item): item for item in self.bound_tools}
         pending = [name for name in _wanted(self.bound_tools, task) if name not in done_names]
         if pending and len(done) < 4:
             name = pending[0]
             message = AIMessage(
                 content="",
-                tool_calls=[{"name": name, "args": tool_arguments(name, task), "id": f"call-{name}"}],
+                tool_calls=[{
+                    "name": name,
+                    "args": tool_arguments(name, task, bound.get(name)),
+                    "id": f"call-{name}",
+                }],
             )
             return ChatResult(generations=[ChatGeneration(message=message)])
         payload = {"explanation": "Completed from tool observations.", "answer": "Completed from tool observations."}

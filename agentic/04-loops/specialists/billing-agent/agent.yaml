@@ -40,3 +40,12 @@ observability:
 evaluation:
   expect_tools:
     - get_eligible_discounts
+route:
+  id: billing
+  priority: 50
+  phrases:
+    - discount
+    - coupon
+examples:
+  - What discount applies to the blue trail jacket?
+  - Explain the charge for order 1001

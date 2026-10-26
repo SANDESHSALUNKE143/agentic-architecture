@@ -16,11 +16,12 @@ sys.path.insert(0, str(ROOT))
 
 from agentic.platform.composition import Platform  # noqa: E402
 from guardrails.connections.credentials import CredentialStore  # noqa: E402
+from guardrails.policy.delegation import can_delegate  # noqa: E402
 from jobs.queue.checks import JobRunner  # noqa: E402
 from loops.llm import usage_from_payload  # noqa: E402
 from loops.memory import GraphPort, VectorPort  # noqa: E402
 from response.contracts import AgentRequest, validate_output  # noqa: E402
-from workflows.router.router import WORKFLOWS  # noqa: E402
+from workflows.router.router import load_sequences, route  # noqa: E402
 
 
 def setUpModule():
@@ -34,14 +35,23 @@ class RuntimeTests(unittest.TestCase):
         self.platform = Platform()
 
     def test_workflow_files_are_the_route(self):
-        from agentic.platform.loader import load_module
-
-        for name, agents in WORKFLOWS.items():
-            module = load_module(
-                ROOT / "agentic" / "03-workflows" / "sequences" / name / "workflow.py",
-                f"check_{name.replace('-', '_')}",
-            )
-            self.assertEqual(list(module.AGENTS), agents)
+        sequences = load_sequences()
+        self.assertEqual(
+            [item["name"] for item in sequences],
+            ["product-discovery", "customer-support", "order-processing"],
+        )
+        discovery = sequences[0]
+        self.assertEqual(discovery["agents"], ["shopping-agent", "catalog-agent", "inventory-agent"])
+        self.assertTrue((ROOT / discovery["path"]).is_file())
+        self.assertTrue(discovery["path"].endswith("workflow.yaml"))
+        self.assertEqual(route("Find a blue trail jacket under $150", None, None)[0], "product-discovery")
+        name, agents = route("Which coupon applies", None, None)
+        self.assertEqual(name, "billing")
+        self.assertEqual(agents, ["billing-agent"])
+        contracts = self.platform.contracts
+        self.assertTrue(can_delegate("shopping-agent", "order-agent", contracts)[0])
+        self.assertTrue(can_delegate("catalog-agent", "inventory-agent", contracts)[0])
+        self.assertFalse(can_delegate("catalog-agent", "order-agent", contracts)[0])
 
     def test_jacket_uses_catalog_tools(self):
         run = self.platform.start(AgentRequest(task="Find a blue trail jacket under $150"))

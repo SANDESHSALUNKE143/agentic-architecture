@@ -42,6 +42,10 @@ services:
       PLATFORM_ENV: ${PLATFORM_ENV:-development}
       PLATFORM_DEV_TOKEN: ${PLATFORM_DEV_TOKEN:-local-dev-token-not-for-production}
       PLATFORM_LLM_MODE: ${PLATFORM_LLM_MODE:-mock}
+      PLATFORM_TIMEOUT_SECONDS: ${PLATFORM_TIMEOUT_SECONDS:-8}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+      MODEL_BASE_URL: ${MODEL_BASE_URL:-}
+      MODEL_NAME: ${MODEL_NAME:-}
       PLATFORM_DATA_DIR: /var/lib/agentic
       MERCHANT_MCP_URL: http://merchant:8091/mcp
       # Empty on the small stack. The dependency env file fills these in.

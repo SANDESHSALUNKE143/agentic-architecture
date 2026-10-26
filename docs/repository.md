@@ -65,7 +65,7 @@ agentic-architecture/
 
 Each specialist is a folder such as `agentic/04-loops/specialists/catalog-agent/` with a single `agent.yaml`. `agentic/04-loops/runtime/runtime.py` loads the file and runs the same LangChain loop for every agent.
 
-`agentic/05-tools/mcp/tool-gateway` is the only code that calls a plugin. Catalog, orders, billing, and support are the clients. Stock, documents, and the sales file are registered from `agentic/04-loops/memory`. The mock merchant, an outside store, is `mocks/merchant`.
+`agentic/05-tools/mcp/tool-gateway` is the only code that calls a plugin. It loads every `TOOLS` map under `agentic/05-tools/mcp`. Catalog, orders, billing, and support are the sample clients. The mock merchant, an outside store, is `mocks/merchant`.
 
 `agentic/06-jobs` accepts runs onto two workers and writes traces on a separate worker. `tests` checks routes, tools, schema, denied calls, injection text, and approval. `docs` is what this page renders.
 

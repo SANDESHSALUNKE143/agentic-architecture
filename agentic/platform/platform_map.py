@@ -8,18 +8,17 @@ from __future__ import annotations
 
 
 def _workflows() -> list[dict]:
-    from workflows.router.router import RULES, WORKFLOWS
+    from workflows.router.router import load_sequences
 
-    phrases = {name: list(words) for name, words in RULES}
     return [
         {
-            "id": name,
-            "agents": agents,
-            "phrases": phrases.get(name, []),
-            "path": f"agentic/03-workflows/sequences/{name}/workflow.py",
+            "id": item["name"],
+            "agents": item["agents"],
+            "phrases": item["phrases"],
+            "path": item["path"],
             "engine": "agentic/03-workflows/engine",
         }
-        for name, agents in WORKFLOWS.items()
+        for item in load_sequences()
     ]
 
 
@@ -104,7 +103,7 @@ def describe_platform() -> dict:
             {
                 "id": "delegation",
                 "path": "agentic/02-guardrails/policy/delegation.py",
-                "role": "Who may hand work to whom. This is the delegation file a team edits.",
+                "role": "A read agent may hand work to another read agent. A write hop runs only when the source contract lists that target.",
             },
             {
                 "id": "redaction",
@@ -146,32 +145,24 @@ def describe_platform() -> dict:
         ],
         "business": [
             {
-                "change": "Specialist instructions, tools, permissions, and output schema",
+                "change": "Scaffold an agent from the problem it should solve",
+                "path": "new-agent.sh",
+            },
+            {
+                "change": "Specialist instructions, tools, permissions, output schema, route phrases, and handoffs",
                 "path": "agentic/04-loops/specialists/<name>/agent.yaml",
             },
             {
-                "change": "Catalog, order, billing, or support behavior",
+                "change": "A plugin, its permission, and the function that answers it",
                 "path": "agentic/05-tools/mcp/<domain>-tools/tools.py",
-            },
-            {
-                "change": "Register a plugin before a contract names it",
-                "path": "agentic/05-tools/mcp/tool-gateway/gateway.py",
             },
             {
                 "change": "SQL, web, or n8n stand-in behind the same tool name",
                 "path": "agentic/05-tools/mcp/tool-gateway/ports.py",
             },
             {
-                "change": "Who may hand work to whom",
-                "path": "agentic/02-guardrails/policy/delegation.py",
-            },
-            {
-                "change": "Words that select a workflow or a specialist",
-                "path": "agentic/03-workflows/router/router.py",
-            },
-            {
-                "change": "Agent order inside a workflow",
-                "path": "agentic/03-workflows/sequences/<name>/workflow.py",
+                "change": "Agent order and the words that select a workflow",
+                "path": "agentic/03-workflows/sequences/<name>/workflow.yaml",
             },
             {
                 "change": "A case the evaluation run must pass",

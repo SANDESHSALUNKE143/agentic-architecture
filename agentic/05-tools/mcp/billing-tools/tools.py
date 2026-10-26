@@ -18,3 +18,22 @@ def get_eligible_discounts(user_id: str, product_id: str) -> dict:
         "get_eligible_discounts",
         {"user_id": user_id, "product_id": product_id},
     )
+
+
+_BILLING = (
+    "mcp/billing-tools/tools.py calls the MCP server whose purpose is billing. "
+    "Discount rules live on that server."
+)
+
+TOOLS = {
+    "get_eligible_discounts": {
+        "group": "Billing",
+        "summary": "Returns a discount only when the billing MCP server matches a rule.",
+        "source": _BILLING,
+        "permission": "billing_read",
+        "write": False,
+        "mcp_purpose": "billing",
+        "fn": get_eligible_discounts,
+        "schema": {"user_id": "string", "product_id": "string"},
+    },
+}

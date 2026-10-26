@@ -3,6 +3,13 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 PYTHON="$ROOT/.venv/bin/python"
+if [[ -f "$ROOT/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/.env"
+  set +a
+fi
+TOKEN="${PLATFORM_DEV_TOKEN:-local-dev-token-not-for-production}"
 API_PID=""
 UI_PID=""
 MERCHANT_PID=""
@@ -41,7 +48,7 @@ npm run dev --prefix "$ROOT/ui/admin-dashboard" &
 UI_PID=$!
 
 for _ in $(seq 1 50); do
-  if curl -fsS -H "Authorization: Bearer local-dev-token-not-for-production" http://127.0.0.1:8090/health >/dev/null 2>&1; then
+  if curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8090/health >/dev/null 2>&1; then
     echo "API http://127.0.0.1:8090"
     echo "Merchant MCP http://127.0.0.1:8091/mcp"
     echo "Dashboard http://127.0.0.1:5173"

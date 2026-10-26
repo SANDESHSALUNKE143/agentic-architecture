@@ -55,6 +55,9 @@ class AgentContract:
     rag: dict[str, Any]
     model: dict[str, Any]
     path: str
+    handoff: str = "read"
+    delegates_to: list[str] = field(default_factory=list)
+    examples: list[str] = field(default_factory=list)
 
 
 def load_contract(path) -> AgentContract:
@@ -62,6 +65,10 @@ def load_contract(path) -> AgentContract:
     for key in ("name", "description", "instructions", "tools", "permissions", "output_schema"):
         if key not in raw:
             raise ValueError(f"{path} is missing {key}")
+    delegation = dict(raw.get("delegation") or {})
+    handoff = str(delegation.get("handoff") or "read")
+    if handoff not in {"read", "write"}:
+        raise ValueError(f"{path} delegation.handoff must be read or write")
     return AgentContract(
         name=raw["name"],
         description=str(raw["description"]).strip(),
@@ -76,7 +83,17 @@ def load_contract(path) -> AgentContract:
         rag=normalize_rag(raw.get("rag"), path),
         model=normalize_model(raw.get("model"), path),
         path=str(path),
+        handoff=handoff,
+        delegates_to=[str(item) for item in delegation.get("delegates_to") or []],
+        examples=_examples(raw.get("examples")),
     )
+
+
+def _examples(raw) -> list[str]:
+    if raw is None:
+        return []
+    items = [raw] if isinstance(raw, str) else list(raw)
+    return [str(item).strip() for item in items if str(item).strip()]
 
 
 def _observability(raw, path) -> list[str]:

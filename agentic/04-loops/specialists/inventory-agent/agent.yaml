@@ -41,3 +41,6 @@ observability:
 evaluation:
   expect_tools:
     - check_stock
+examples:
+  - How many blue trail jackets are in stock?
+  - Is the trail jacket available?

@@ -1,0 +1,12 @@
+name: customer-support
+order: 2
+priority: 30
+agents:
+  - support-agent
+  - billing-agent
+phrases:
+  - refund
+  - return
+  - order status
+  - order 1001
+  - order 1002

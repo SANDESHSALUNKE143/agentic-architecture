@@ -33,7 +33,12 @@ def mount(app, platform) -> None:
     def agents(authorization: str | None = Header(default=None)):
         _auth.authorized(authorization)
         return [
-            {"name": contract.name, "description": contract.description, "tools": contract.tools}
+            {
+                "name": contract.name,
+                "description": contract.description,
+                "tools": contract.tools,
+                "examples": contract.examples,
+            }
             for contract in platform.contracts.values()
         ]
 

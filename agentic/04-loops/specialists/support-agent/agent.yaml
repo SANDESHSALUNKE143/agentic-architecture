@@ -44,3 +44,6 @@ observability:
 evaluation:
   expect_tools:
     - get_order_status
+examples:
+  - Refund order 1001
+  - What can you check before a refund?

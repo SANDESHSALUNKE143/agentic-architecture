@@ -41,3 +41,14 @@ observability:
 evaluation:
   expect_tools:
     - search_documents
+route:
+  id: research
+  priority: 20
+  phrases:
+    - document
+    - source
+    - indexed
+    - according to the
+examples:
+  - What does the indexed document say about the jacket?
+  - Cite the note you can retrieve

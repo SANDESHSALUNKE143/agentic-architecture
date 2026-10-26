@@ -43,3 +43,10 @@ observability:
 evaluation:
   expect_tools:
     - prepare_order
+delegation:
+  handoff: write
+  delegates_to:
+    - billing-agent
+examples:
+  - Place an order for the jacket at $129
+  - What does an order for the jacket require?

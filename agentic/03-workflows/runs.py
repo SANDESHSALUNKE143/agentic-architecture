@@ -30,7 +30,7 @@ class RunFlow:
             return self._finish(request, [], "failed", problem, "task_rejected")
         emit({"type": "activity", "message": "The agent accepted the brief"})
         name, agents = route(request.task, request.workflow, request.agents)
-        plan: Plan = build_plan(agents, set(self.contracts))
+        plan: Plan = build_plan(agents, set(self.contracts), self.contracts)
         if plan.error:
             emit({"type": "error", "message": plan.error})
             return self._finish(request, [], "failed", plan.error, plan.error_code, workflow=name)

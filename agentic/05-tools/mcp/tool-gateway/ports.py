@@ -100,3 +100,59 @@ def invoke_n8n(path: str, approved: bool = False) -> dict:
         "simulated": True,
         "explanation": "n8n was not called. This repository does not host n8n. Set its URL in connection configuration. Writes still wait for approval.",
     }
+
+
+TOOLS = {
+    "search_documents": {
+        "group": "Research",
+        "summary": "Answers from the local document index.",
+        "permission": "research_read",
+        "write": False,
+        "fn": search_documents,
+        "schema": {"query": "string"},
+    },
+    "analyze_dataset": {
+        "group": "Analysis",
+        "summary": "Summarizes the local sales fixture.",
+        "permission": "analysis_read",
+        "write": False,
+        "fn": analyze_dataset,
+        "schema": {"dataset_reference": "string"},
+    },
+    "query_sql": {
+        "group": "Connections",
+        "summary": "Runs a read-only SELECT. Writes are rejected.",
+        "permission": "sql_read",
+        "write": False,
+        "endpoint": "sql",
+        "fn": query_sql,
+        "schema": {"query": "string"},
+    },
+    "fetch_url": {
+        "group": "Connections",
+        "summary": "Reads a page only when the host is allowlisted.",
+        "permission": "web_read",
+        "write": False,
+        "endpoint": "web",
+        "fn": fetch_url,
+        "schema": {"url": "string"},
+    },
+    "invoke_n8n": {
+        "group": "Connections",
+        "summary": "Simulates an n8n call and waits for approval.",
+        "permission": "n8n_write",
+        "write": True,
+        "endpoint": "n8n",
+        "fn": invoke_n8n,
+        "schema": {"path": "string"},
+    },
+    "use_mcp_server": {
+        "group": "MCP",
+        "summary": "Lists the tools published by a configured MCP server.",
+        "permission": "mcp_client",
+        "write": False,
+        "endpoint": "mcp",
+        "fn": use_mcp_server,
+        "schema": {"tool_name": "string"},
+    },
+}

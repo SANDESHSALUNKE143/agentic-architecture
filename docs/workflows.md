@@ -10,10 +10,10 @@ A run needs a list of agents before any tool is called. The router in `agentic/0
 
 1. An `agents` list on the request wins. The workflow name is ignored. The run is called `agent-chain`.
 2. A `workflow` name on the request selects that sequence, or one of the single specialists `billing`, `research`, and `data-analysis`.
-3. With neither field, the task text is matched against the phrases in the router. The first match wins.
+3. With neither field, the task text is matched against phrases in `workflow.yaml` files and `route` blocks. The lowest `priority` wins.
 4. With no match, the planner stops the run. The error is `ambiguous_intent`: "The request did not match a workflow."
 
-The planner then checks the list. Every name must be a loaded `agent.yaml`. The list cannot be longer than the hop limit, which is 6. Each handoff must be allowed by `agentic/02-guardrails/policy/delegation.py`. A refused handoff is `delegation_denied`.
+The planner then checks the list. Every name must be a loaded `agent.yaml`. The list cannot be longer than the hop limit, which is 6. A read agent may hand work to another read agent. A hop into an agent with `delegation.handoff: write` must be listed on the source contract under `delegation.delegates_to`. A refused handoff is `delegation_denied`.
 
 The engine then runs the agents one at a time. Each agent loads its own contract and may call only the tools named there. A write that is in `approval.required_for` pauses the sequence. A different actor approves or rejects it. After approval, the engine continues with the remaining agents.
 
@@ -25,7 +25,7 @@ The engine then runs the agents one at a time. Each agent loads its own contract
 | `customer-support` | support, billing | refund, return, order status, order 1001, order 1002 |
 | `order-processing` | order, billing | place an order, prepare an order, checkout, `buy ` |
 
-The order is the `AGENTS` list in `agentic/03-workflows/sequences/<name>/workflow.py`. The router loads that list. The phrases stay in the router.
+The order and the phrases are `agentic/03-workflows/sequences/<name>/workflow.yaml`. The router loads every file in that folder. A single specialist is selected by the `route` block on its `agent.yaml`.
 
 `billing`, `research`, and `data-analysis` are single specialists. They have phrases and no workflow file. Research and data analysis are not a step in the three sequences. Billing is a step in support and in order processing, and it can also run alone.
 
@@ -35,12 +35,13 @@ Example: "Place an order for the jacket at $129" matches `order-processing`. The
 
 ## Add a workflow
 
-1. Create `agentic/03-workflows/sequences/<name>/workflow.py` with `AGENTS = ["first-agent", "second-agent"]`.
-2. Add that name to `WORKFLOWS` in `agentic/03-workflows/router/router.py` with `_agents("<name>")`.
-3. Add a phrase row to `RULES` when the task text should select it. A caller can also send `"workflow": "<name>"` and skip the phrases.
-4. Allow each handoff in `agentic/02-guardrails/policy/delegation.py`. Read-only agents may hand work to each other. A hop into a write agent must be an allowlisted pair.
-5. Add one case in `tests/agent-evaluation/cases.json` with that workflow name and the tool the test must see.
-6. Restart the API. `GET /platform` and the console Workflows tab then show the new order.
+1. Create `agentic/03-workflows/sequences/<name>/workflow.yaml` with `name`, `agents`, `phrases`, `priority`, and `order`.
+2. A caller can also send `"workflow": "<name>"` and skip the phrases. An `agents` list on the request wins over the file.
+3. Read agents may hand work to each other. On the source contract, list a write target under `delegation.delegates_to`, and set `delegation.handoff: write` on that target.
+4. Add one case in `tests/agent-evaluation/cases.json` with that workflow name and the tool the test must see.
+5. Restart the API. `GET /platform` and the console Workflows tab then show the new order.
+
+The full agent, tool, and live-model steps are in [Onboard an agent](onboard-agent.md).
 
 ## Where n8n fits
 
