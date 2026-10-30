@@ -12,6 +12,6 @@ dist/
 *.key
 .ruff_cache/
 node_modules/
-ui/admin-dashboard/dist/
-ui/admin-dashboard/.vite/
+**/ui/admin-dashboard/dist/
+**/ui/admin-dashboard/.vite/
 data/

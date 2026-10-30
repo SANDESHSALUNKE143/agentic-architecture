@@ -11,13 +11,33 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e '.[dev]'
+        working-directory: multi-agent
       - run: ruff check .
+        working-directory: multi-agent
       - run: python -m unittest tests.unit.test_runtime tests.integration.test_api tests.security.test_security
+        working-directory: multi-agent
       - run: python tests/agent-evaluation/run.py
+        working-directory: multi-agent
+  single-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e '.[dev]'
+        working-directory: single-agent
+      - run: ruff check .
+        working-directory: single-agent
+      - run: python -m unittest tests.unit.test_harness tests.integration.test_api tests.security.test_security
+        working-directory: single-agent
   server:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: docker compose -f infrastructure/dependencies/docker-compose.yml --env-file infrastructure/dependencies/.env.example config --quiet
+        working-directory: multi-agent
       - run: docker compose up -d --build --wait
+        working-directory: multi-agent
       - run: ./infrastructure/smoke.sh
+        working-directory: multi-agent

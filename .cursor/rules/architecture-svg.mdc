@@ -5,8 +5,10 @@ alwaysApply: true
 
 # Request-path picture
 
-`docs/assets/architecture.svg` is the picture in `README.md` and `docs/architecture.md`.
+`multi-agent/docs/assets/architecture.svg` is the multi-agent picture in the root `README.md`, `multi-agent/README.md`, and `multi-agent/docs/architecture.md`.
 
-When a change alters the request path, the console flow, the agent sequence, memory, the gateway, approval, the mock merchant, or the trace worker, update that SVG in the same change so the numbered boxes still match the code.
+`single-agent/docs/assets/architecture.svg` is the single-agent picture in the root `README.md`, `single-agent/README.md`, and `single-agent/docs/architecture.md`.
+
+When a change alters the request path, the console flow, the agent sequence, memory, the gateway, approval, the mock merchant, or the trace worker, update that architecture's SVG in the same change so the numbered boxes still match the code.
 
 Keep the labels on the real folders and the real behavior. Do not add a step the code does not run.

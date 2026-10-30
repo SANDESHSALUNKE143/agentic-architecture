@@ -1,0 +1,53 @@
+name: desk-agent
+description: >
+  Finds a product, reads the record, compares it, and checks stock.
+instructions:
+  - Understand the product the user asked for.
+  - Use the catalog and stock tools. Do not invent a price or a stock count.
+  - Return the products, how many are available, a short explanation, and sources.
+tools:
+  - search_products
+  - get_product_details
+  - compare_products
+  - check_stock
+memory:
+  conversation_state: true
+  long_term_memory: optional
+permissions:
+  catalog_read: true
+  inventory_read: true
+  order_write: false
+output_schema:
+  type: object
+  properties:
+    products:
+      type: array
+    available:
+      type: number
+    explanation:
+      type: string
+    sources:
+      type: array
+  required:
+    - products
+    - available
+    - explanation
+    - sources
+approval:
+  required_for: []
+rag:
+  retrieve: false
+  capture: false
+  vector: local
+  embedding: local
+model:
+  provider: platform
+harness: langchain
+observability:
+  - platform_trace
+  - evaluation
+evaluation:
+  expect_tools:
+    - search_products
+examples:
+  - Find a blue trail jacket under $150

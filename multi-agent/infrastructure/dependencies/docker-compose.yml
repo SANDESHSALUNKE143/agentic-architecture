@@ -1,0 +1,296 @@
+# One file for a server with about 16 GB of RAM. Most of that is Langfuse.
+# The root docker-compose.yml stays the small stack that CI starts.
+# Run from multi-agent/:
+#   docker compose -f infrastructure/dependencies/docker-compose.yml --env-file infrastructure/dependencies/.env.example up -d
+#   ./infrastructure/dependencies/check.sh
+
+name: agentic-architecture
+
+include:
+  - path: ../../docker-compose.yml
+
+services:
+  grafana:
+    image: grafana/grafana:11.6.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${LAB_PASSWORD:-lab-password}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.128.0
+    restart: unless-stopped
+    command: ["--config=/etc/otel/config.yaml"]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "13133:13133"
+    volumes:
+      - ./otel-collector.yaml:/etc/otel/config.yaml:ro
+
+  loki:
+    image: grafana/loki:3.4.2
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+
+  langfuse-web:
+    image: docker.langfuse.com/langfuse/langfuse:4
+    restart: unless-stopped
+    depends_on:
+      langfuse-postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      langfuse-redis:
+        condition: service_healthy
+      langfuse-minio:
+        condition: service_healthy
+    ports:
+      - "3003:3000"
+    environment: &langfuse-env
+      NEXTAUTH_URL: ${LANGFUSE_PUBLIC_URL:-http://localhost:3003}
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-lab-nextauth-secret}
+      DATABASE_URL: postgresql://postgres:${LAB_PASSWORD:-lab-password}@langfuse-postgres:5432/postgres
+      SALT: ${LANGFUSE_SALT:-lab-salt}
+      ENCRYPTION_KEY: ${LANGFUSE_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      TELEMETRY_ENABLED: "false"
+      CLICKHOUSE_MIGRATION_URL: clickhouse://clickhouse:9000
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: ${LAB_PASSWORD:-lab-password}
+      CLICKHOUSE_CLUSTER_ENABLED: "false"
+      LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse
+      LANGFUSE_S3_EVENT_UPLOAD_REGION: auto
+      LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: minio
+      LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${LAB_PASSWORD:-lab-password}
+      LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://langfuse-minio:9000
+      LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: "true"
+      LANGFUSE_S3_EVENT_UPLOAD_PREFIX: events/
+      LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: langfuse
+      LANGFUSE_S3_MEDIA_UPLOAD_REGION: auto
+      LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: minio
+      LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: ${LAB_PASSWORD:-lab-password}
+      LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: http://langfuse-minio:9000
+      LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: "true"
+      LANGFUSE_S3_MEDIA_UPLOAD_PREFIX: media/
+      REDIS_HOST: langfuse-redis
+      REDIS_PORT: "6379"
+      REDIS_AUTH: ${LAB_PASSWORD:-lab-password}
+      LANGFUSE_INIT_ORG_ID: lab-org
+      LANGFUSE_INIT_ORG_NAME: Lab
+      LANGFUSE_INIT_PROJECT_ID: lab-project
+      LANGFUSE_INIT_PROJECT_NAME: Lab
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: pk-lf-lab
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: sk-lf-lab
+      LANGFUSE_INIT_USER_EMAIL: ${LANGFUSE_INIT_USER_EMAIL:-lab@example.test}
+      LANGFUSE_INIT_USER_NAME: ${LANGFUSE_INIT_USER_NAME:-Lab}
+      LANGFUSE_INIT_USER_PASSWORD: ${LAB_PASSWORD:-lab-password}
+
+  langfuse-worker:
+    image: docker.langfuse.com/langfuse/langfuse-worker:4
+    restart: unless-stopped
+    depends_on:
+      langfuse-postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      langfuse-redis:
+        condition: service_healthy
+      langfuse-minio:
+        condition: service_healthy
+    environment: *langfuse-env
+
+  langfuse-postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${LAB_PASSWORD:-lab-password}
+      POSTGRES_DB: postgres
+    volumes:
+      - langfuse-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.12
+    restart: unless-stopped
+    user: "101:101"
+    environment:
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: ${LAB_PASSWORD:-lab-password}
+    volumes:
+      - langfuse-clickhouse-data:/var/lib/clickhouse
+      - langfuse-clickhouse-logs:/var/log/clickhouse-server
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  langfuse-redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${LAB_PASSWORD:-lab-password}", "--maxmemory-policy", "noeviction"]
+    environment:
+      REDISCLI_AUTH: ${LAB_PASSWORD:-lab-password}
+    volumes:
+      - langfuse-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  langfuse-minio:
+    image: cgr.dev/chainguard/minio
+    restart: unless-stopped
+    entrypoint: ["sh"]
+    command: ["-c", "mkdir -p /data/langfuse && minio server --address \":9000\" --console-address \":9001\" /data"]
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: ${LAB_PASSWORD:-lab-password}
+    volumes:
+      - langfuse-minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.22.0
+    restart: unless-stopped
+    environment:
+      MLFLOW_ADMIN_PASSWORD: ${LAB_PASSWORD:-lab-password}
+      MLFLOW_AUTH_CONFIG_PATH: /mlflow/basic_auth.ini
+      MLFLOW_FLASK_SERVER_SECRET_KEY: lab-mlflow-secret
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        cat > /mlflow/basic_auth.ini << EOF
+        [mlflow]
+        default_permission = READ
+        database_uri = sqlite:////mlflow/basic_auth.db
+        admin_username = ${MLFLOW_ADMIN_USER:-admin}
+        admin_password = $$MLFLOW_ADMIN_PASSWORD
+        authorization_function = mlflow.server.auth:authenticate_request_basic_auth
+        EOF
+        exec mlflow server --app-name basic-auth --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:////mlflow/mlflow.db
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-data:/mlflow
+
+  n8n:
+    image: n8nio/n8n:1.90.2
+    restart: unless-stopped
+    environment:
+      N8N_HOST: 0.0.0.0
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: http
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-lab-n8n-encryption-key-not-for-production}
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_TEMPLATES_ENABLED: "false"
+      GENERIC_TIMEZONE: UTC
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n-data:/home/node/.n8n
+
+  qdrant:
+    image: qdrant/qdrant:v1.13.4
+    restart: unless-stopped
+    environment:
+      QDRANT__SERVICE__API_KEY: ${LAB_PASSWORD:-lab-password}
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant-data:/qdrant/storage
+
+  neo4j:
+    image: neo4j:5.26.4
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/${LAB_PASSWORD:-lab-password}
+      NEO4J_server_memory_heap_initial__size: 512m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j-data:/data
+
+  sql:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agentic
+      POSTGRES_PASSWORD: ${LAB_PASSWORD:-lab-password}
+      POSTGRES_DB: agentic
+    ports:
+      - "5432:5432"
+    volumes:
+      - sql-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentic -d agentic"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  grafana-data:
+  prometheus-data:
+  loki-data:
+  langfuse-postgres-data:
+  langfuse-clickhouse-data:
+  langfuse-clickhouse-logs:
+  langfuse-redis-data:
+  langfuse-minio-data:
+  mlflow-data:
+  n8n-data:
+  qdrant-data:
+  neo4j-data:
+  sql-data:

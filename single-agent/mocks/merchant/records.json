@@ -1,0 +1,14 @@
+{
+  "products": [
+    {"product_id": "p-jacket-blue", "name": "Blue trail jacket", "price": 129, "stock": 4, "source_id": "product:p-jacket-blue"},
+    {"product_id": "p-boots", "name": "Trail boots", "price": 89, "stock": 0, "source_id": "product:p-boots"},
+    {"product_id": "p-lamp", "name": "Desk lamp", "price": 24, "stock": 12, "source_id": "product:p-lamp"}
+  ],
+  "orders": [
+    {"order_id": "1001", "status": "open", "product_id": "p-jacket-blue"},
+    {"order_id": "1002", "status": "shipped", "product_id": "p-boots"}
+  ],
+  "discounts": [
+    {"user_id": "local-development-user", "product_id": "p-jacket-blue", "label": "trail-club", "percent": 10}
+  ]
+}
