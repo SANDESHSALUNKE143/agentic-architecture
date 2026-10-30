@@ -1,75 +1,119 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 780" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" role="img" aria-labelledby="title desc">
   <title id="title">How one brief becomes an answer</title>
-  <desc id="desc">One desk-agent. The request walks 01-entry, 02-guardrails, 03-harness, 04-loops, 05-tools, 06-jobs, 07-observability, and 08-response. One harness adapter runs.</desc>
-  <rect width="1100" height="780" fill="#f7f4ee"/>
-  <g font-family="Georgia, serif" fill="#1c2430">
-    <text x="720" y="64" font-size="36" fill="#1f4b3a" font-weight="700">Single agent</text>
-    <text x="720" y="100" font-size="16" fill="#5c564c">One brief. One harness.</text>
+  <desc id="desc">The console sends a brief through entry and guardrails. Settings choose one harness adapter. That adapter reads desk-agent.yaml, calls the gateway, and the gateway calls the merchant. The response is the answer. Jobs then store a trace without the question.</desc>
+  <rect width="1200" height="780" fill="#f7f4ee"/>
+  <g font-family="Georgia, Palatino, serif" fill="#1c2430">
+    <text x="40" y="42" font-size="30" font-weight="700" fill="#1f4b3a">Single agent</text>
+    <text x="250" y="40" font-size="16" fill="#5c564c">desk-agent. One adapter. No workflow list.</text>
+    <text x="40" y="68" font-size="14" fill="#5c564c">Numbered folders are the request order. A missing schema field fails the run.</text>
 
-    <g>
-      <circle cx="70" cy="70" r="16" fill="#6b4c9a"/>
-      <text x="70" y="75" text-anchor="middle" font-size="14" fill="#fff">1</text>
-      <rect x="100" y="48" width="520" height="44" rx="10" fill="#fff" stroke="#1c2430"/>
-      <text x="118" y="76" font-size="16">01-entry</text>
-      <text x="240" y="76" font-size="14" fill="#5c564c">task, user, session</text>
-    </g>
-    <g>
-      <circle cx="70" cy="140" r="16" fill="#6b4c9a"/>
-      <text x="70" y="145" text-anchor="middle" font-size="14" fill="#fff">2</text>
-      <rect x="100" y="118" width="520" height="44" rx="10" fill="#fff" stroke="#1c2430"/>
-      <text x="118" y="146" font-size="16">02-guardrails</text>
-      <text x="280" y="146" font-size="14" fill="#5c564c">auth, limits, strip untrusted lines</text>
-    </g>
-    <g>
-      <circle cx="70" cy="250" r="16" fill="#1f4b3a"/>
-      <text x="70" y="255" text-anchor="middle" font-size="14" fill="#fff">3</text>
-      <rect x="100" y="188" width="520" height="164" rx="10" fill="#f3f7f4" stroke="#1f4b3a" stroke-width="1.5"/>
-      <text x="118" y="216" font-size="16">03-harness</text>
-      <text x="230" y="216" font-size="14" fill="#5c564c">settings pick one adapter</text>
-      <rect x="118" y="232" width="480" height="32" rx="6" fill="#fff" stroke="#1c2430"/>
-      <text x="132" y="253" font-size="14">langchain.py</text>
-      <text x="280" y="253" font-size="13" fill="#5c564c">offline. create_agent</text>
-      <rect x="118" y="272" width="480" height="32" rx="6" fill="#fff" stroke="#1f4b3a"/>
-      <text x="132" y="293" font-size="14">claude.py</text>
-      <text x="250" y="293" font-size="13" fill="#5c564c">live. Claude Agent SDK</text>
-      <rect x="118" y="312" width="480" height="32" rx="6" fill="#fff" stroke="#8a5a2a"/>
-      <text x="132" y="333" font-size="14">deepagent.py</text>
-      <text x="280" y="333" font-size="13" fill="#5c564c">shadow. Deep Agents</text>
-    </g>
-    <g>
-      <circle cx="70" cy="400" r="16" fill="#6b4c9a"/>
-      <text x="70" y="405" text-anchor="middle" font-size="14" fill="#fff">4</text>
-      <rect x="100" y="378" width="520" height="44" rx="10" fill="#fff" stroke="#1c2430"/>
-      <text x="118" y="406" font-size="16">04-loops</text>
-      <text x="230" y="406" font-size="14" fill="#5c564c">desk-agent.yaml, session, model</text>
-    </g>
-    <g>
-      <circle cx="70" cy="470" r="16" fill="#6b4c9a"/>
-      <text x="70" y="475" text-anchor="middle" font-size="14" fill="#fff">5</text>
-      <rect x="100" y="448" width="520" height="44" rx="10" fill="#fff" stroke="#1c2430"/>
-      <text x="118" y="476" font-size="16">05-tools</text>
-      <text x="220" y="476" font-size="14" fill="#5c564c">gateway. search, details, compare, stock</text>
-    </g>
-    <g>
-      <circle cx="70" cy="540" r="16" fill="#6b4c9a"/>
-      <text x="70" y="545" text-anchor="middle" font-size="14" fill="#fff">6</text>
-      <rect x="100" y="518" width="520" height="44" rx="10" fill="#fff" stroke="#1c2430"/>
-      <text x="118" y="546" font-size="16">06-jobs</text>
-      <text x="220" y="546" font-size="14" fill="#5c564c">enqueue the trace</text>
-    </g>
-    <g>
-      <circle cx="70" cy="610" r="16" fill="#6b4c9a"/>
-      <text x="70" y="615" text-anchor="middle" font-size="14" fill="#fff">7</text>
-      <rect x="100" y="588" width="520" height="44" rx="10" fill="#fff" stroke="#1c2430"/>
-      <text x="118" y="616" font-size="16">07-observability</text>
-      <text x="310" y="616" font-size="14" fill="#5c564c">agent, tool, status, duration, harness</text>
-    </g>
-    <g>
-      <circle cx="70" cy="680" r="16" fill="#6b4c9a"/>
-      <text x="70" y="685" text-anchor="middle" font-size="14" fill="#fff">8</text>
-      <rect x="100" y="658" width="520" height="44" rx="10" fill="#fff" stroke="#1c2430"/>
-      <text x="118" y="686" font-size="16">08-response</text>
-      <text x="260" y="686" font-size="14" fill="#5c564c">schema and the model reply</text>
-    </g>
+    <rect x="40" y="92" width="200" height="92" rx="12" fill="#fff" stroke="#1c2430"/>
+    <text x="56" y="126" font-size="16">Console</text>
+    <text x="56" y="148" font-size="13" fill="#5c564c">ui/admin-dashboard</text>
+    <text x="56" y="168" font-size="13" fill="#5c564c">Brief, then Send</text>
+
+    <rect x="276" y="92" width="220" height="92" rx="12" fill="#fff" stroke="#1c2430"/>
+    <circle cx="298" cy="118" r="12" fill="#3d4f7c"/>
+    <text x="298" y="123" text-anchor="middle" font-size="12" fill="#fff">1</text>
+    <text x="318" y="124" font-size="16">01-entry</text>
+    <text x="292" y="150" font-size="13" fill="#5c564c">task, user, session</text>
+    <text x="292" y="170" font-size="13" fill="#5c564c">API on port 8092</text>
+
+    <rect x="532" y="92" width="250" height="92" rx="12" fill="#fff" stroke="#1c2430"/>
+    <circle cx="554" cy="118" r="12" fill="#2a6f8f"/>
+    <text x="554" y="123" text-anchor="middle" font-size="12" fill="#fff">2</text>
+    <text x="574" y="124" font-size="16">02-guardrails</text>
+    <text x="548" y="150" font-size="13" fill="#5c564c">token, rate, task size</text>
+    <text x="548" y="170" font-size="13" fill="#5c564c">strip untrusted lines</text>
+
+    <rect x="818" y="92" width="342" height="92" rx="12" fill="#f8ead6" stroke="#8a5a2a"/>
+    <text x="834" y="126" font-size="16">Settings</text>
+    <text x="834" y="150" font-size="13" fill="#5c564c">PUT /settings/harness</text>
+    <text x="834" y="170" font-size="13" fill="#5c564c">writes desk-agent.yaml</text>
+
+    <rect x="40" y="220" width="1120" height="176" rx="16" fill="#f3f7f4" stroke="#1f4b3a" stroke-width="1.5"/>
+    <circle cx="64" cy="248" r="12" fill="#1f4b3a"/>
+    <text x="64" y="253" text-anchor="middle" font-size="12" fill="#fff">3</text>
+    <text x="84" y="254" font-size="16">03-harness</text>
+    <text x="210" y="254" font-size="14" fill="#5c564c">one adapter runs. The others stay idle.</text>
+
+    <rect x="60" y="274" width="346" height="100" rx="10" fill="#e7f2ec" stroke="#1f4b3a"/>
+    <text x="76" y="306" font-size="16">langchain.py</text>
+    <text x="76" y="330" font-size="13" fill="#5c564c">shipped default</text>
+    <text x="76" y="350" font-size="13" fill="#5c564c">mock, or ChatOpenAI when live</text>
+
+    <rect x="426" y="274" width="346" height="100" rx="10" fill="#fff" stroke="#1c2430"/>
+    <text x="442" y="306" font-size="16">claude.py</text>
+    <text x="442" y="330" font-size="13" fill="#5c564c">provisional live harness</text>
+    <text x="442" y="350" font-size="13" fill="#5c564c">needs ANTHROPIC_API_KEY</text>
+
+    <rect x="792" y="274" width="346" height="100" rx="10" fill="#fff" stroke="#8a5a2a"/>
+    <text x="808" y="306" font-size="16">deepagent.py</text>
+    <text x="808" y="330" font-size="13" fill="#5c564c">shadow run of the same task</text>
+    <text x="808" y="350" font-size="13" fill="#5c564c">shell and filesystem stay off</text>
+
+    <rect x="40" y="460" width="250" height="150" rx="12" fill="#f8ead6" stroke="#8a5a2a"/>
+    <circle cx="62" cy="488" r="12" fill="#1f4b3a"/>
+    <text x="62" y="493" text-anchor="middle" font-size="12" fill="#fff">4</text>
+    <text x="82" y="494" font-size="16">04-loops</text>
+    <text x="56" y="522" font-size="13" fill="#5c564c">desk-agent/agent.yaml</text>
+    <text x="56" y="544" font-size="13" fill="#5c564c">session turns</text>
+    <text x="56" y="566" font-size="13" fill="#5c564c">model choice</text>
+    <text x="56" y="588" font-size="13" fill="#5c564c">sent into the adapter</text>
+
+    <rect x="330" y="460" width="300" height="150" rx="12" fill="#1f4b3a"/>
+    <circle cx="352" cy="488" r="12" fill="#f7f4ee"/>
+    <text x="352" y="493" text-anchor="middle" font-size="12" fill="#1f4b3a">5</text>
+    <text x="372" y="494" font-size="16" fill="#f7f4ee">05-tools gateway</text>
+    <text x="346" y="522" font-size="13" fill="#d7ebe3">search, details, compare, stock</text>
+    <text x="346" y="544" font-size="13" fill="#d7ebe3">allowlist. A repeat stops.</text>
+    <text x="346" y="566" font-size="13" fill="#d7ebe3">a read can be reused</text>
+    <text x="346" y="588" font-size="13" fill="#d7ebe3">only caller of a tool</text>
+
+    <rect x="670" y="460" width="210" height="150" rx="12" fill="#fff" stroke="#8a5a2a" stroke-dasharray="6 4"/>
+    <text x="686" y="500" font-size="16">mocks/merchant</text>
+    <text x="686" y="526" font-size="13" fill="#5c564c">outside the platform</text>
+    <text x="686" y="548" font-size="13" fill="#5c564c">MCP on port 8093</text>
+    <text x="686" y="570" font-size="13" fill="#5c564c">the tool calls it</text>
+
+    <rect x="920" y="460" width="240" height="150" rx="12" fill="#e7f2ec" stroke="#1f4b3a" stroke-width="1.5"/>
+    <circle cx="942" cy="488" r="12" fill="#1f4b3a"/>
+    <text x="942" y="493" text-anchor="middle" font-size="12" fill="#fff">8</text>
+    <text x="962" y="494" font-size="16" fill="#1f4b3a">08-response</text>
+    <text x="936" y="526" font-size="13" fill="#5c564c">project onto the schema</text>
+    <text x="936" y="548" font-size="13" fill="#5c564c">keep the model reply</text>
+    <text x="936" y="580" font-size="16" fill="#1f4b3a">Answer</text>
+
+    <rect x="40" y="660" width="1120" height="84" rx="14" fill="#fff" stroke="#8a5a2a" stroke-dasharray="7 5"/>
+    <text x="56" y="684" font-size="13" fill="#8a5a2a">After the answer. This lane does not choose a tool.</text>
+    <rect x="56" y="696" width="250" height="36" rx="8" fill="#fff" stroke="#8a5a2a"/>
+    <circle cx="74" cy="714" r="10" fill="#8a5a2a"/>
+    <text x="74" y="718" text-anchor="middle" font-size="11" fill="#fff">6</text>
+    <text x="90" y="719" font-size="14">06-jobs  enqueue the trace</text>
+    <rect x="340" y="696" width="620" height="36" rx="8" fill="#fff" stroke="#8a5a2a"/>
+    <circle cx="358" cy="714" r="10" fill="#8a5a2a"/>
+    <text x="358" y="718" text-anchor="middle" font-size="11" fill="#fff">7</text>
+    <text x="376" y="719" font-size="14">07-observability  agent, tool, status, duration, harness. Question omitted.</text>
   </g>
+
+  <g fill="none" stroke="#1c2430" stroke-width="1.7">
+    <path d="M240 138 H276" marker-end="url(#sa)"/>
+    <path d="M496 138 H532" marker-end="url(#sa)"/>
+    <path d="M657 184 V220" marker-end="url(#sa)"/>
+    <path d="M989 184 V220" stroke="#8a5a2a" stroke-dasharray="5 4" marker-end="url(#sa-gold)"/>
+    <path d="M165 396 V460" marker-end="url(#sa)"/>
+    <path d="M290 535 H330" marker-end="url(#sa)"/>
+    <path d="M630 535 H670" marker-end="url(#sa)"/>
+    <path d="M880 535 H920" marker-end="url(#sa)"/>
+    <path d="M1040 610 V696" stroke="#8a5a2a" stroke-dasharray="5 4" marker-end="url(#sa-gold)"/>
+    <path d="M306 714 H340" stroke="#8a5a2a" marker-end="url(#sa-gold)"/>
+  </g>
+  <defs>
+    <marker id="sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1c2430"/>
+    </marker>
+    <marker id="sa-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8a5a2a"/>
+    </marker>
+  </defs>
 </svg>
